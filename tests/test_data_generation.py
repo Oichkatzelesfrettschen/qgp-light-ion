@@ -105,7 +105,7 @@ def test_raa_physical_constraints() -> TestResult:
             errors.append(f"{filename}: file not found")
             continue
 
-        data, cols = load_dat_file(filepath)
+        data, _cols = load_dat_file(filepath)
         pt = data[:, 0]
         raa = data[:, 1]
 
@@ -150,7 +150,7 @@ def test_flow_physical_constraints() -> TestResult:
             errors.append(f"{filename}: file not found")
             continue
 
-        data, cols = load_dat_file(filepath)
+        data, _cols = load_dat_file(filepath)
         centrality = data[:, 0]
         vn = data[:, 1]
 
@@ -185,7 +185,7 @@ def test_data_format_consistency() -> TestResult:
     all_files = list(DATA_DIR.glob("*.dat"))
     for filepath in all_files:
         try:
-            data, cols = load_dat_file(filepath)
+            data, _cols = load_dat_file(filepath)
 
             # Must have at least 2 columns
             if data.ndim == 1 or data.shape[1] < 2:

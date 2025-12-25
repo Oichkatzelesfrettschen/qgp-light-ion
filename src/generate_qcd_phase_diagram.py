@@ -27,9 +27,9 @@ Author: QGP Light-Ion Whitepaper (2025)
 """
 
 import os
-import numpy as np
 from dataclasses import dataclass
-from typing import Optional
+
+import numpy as np
 
 # Output directory
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "figure_curves")
@@ -96,14 +96,12 @@ class FreezeOutPoint:
 FREEZE_OUT_DATA = [
     # AGS 4.85 GeV (highest μ_B shown, within axis)
     FreezeOutPoint(4.85, 125.0, 4.0, 420.0, 25.0, "AGS", "Au-Au"),
-
     # SPS energies (NA49)
     FreezeOutPoint(6.3, 136.0, 4.0, 380.0, 20.0, "NA49", "Pb-Pb"),
     FreezeOutPoint(7.7, 148.0, 4.0, 340.0, 18.0, "NA49/STAR", "Au-Au"),
     FreezeOutPoint(8.8, 150.0, 4.0, 310.0, 16.0, "NA49", "Pb-Pb"),
     FreezeOutPoint(12.3, 156.0, 4.0, 260.0, 14.0, "NA49", "Pb-Pb"),
     FreezeOutPoint(17.3, 158.0, 4.0, 220.0, 12.0, "NA49", "Pb-Pb"),
-
     # RHIC energies (STAR)
     FreezeOutPoint(19.6, 160.0, 4.0, 195.0, 12.0, "STAR", "Au-Au"),
     FreezeOutPoint(27.0, 162.0, 4.0, 160.0, 10.0, "STAR", "Au-Au"),
@@ -111,7 +109,6 @@ FREEZE_OUT_DATA = [
     FreezeOutPoint(62.4, 166.0, 4.0, 75.0, 6.0, "STAR", "Au-Au"),
     FreezeOutPoint(130.0, 167.0, 4.0, 40.0, 5.0, "STAR", "Au-Au"),
     FreezeOutPoint(200.0, 166.0, 4.0, 25.0, 4.0, "STAR", "Au-Au"),
-
     # LHC energies (ALICE) - small but nonzero errors
     FreezeOutPoint(2760.0, 156.5, 3.0, 1.0, 1.0, "ALICE", "Pb-Pb"),
     FreezeOutPoint(5020.0, 156.5, 3.0, 0.7, 0.7, "ALICE", "Pb-Pb"),
@@ -126,19 +123,31 @@ class CollisionSystem:
     sqrt_s_NN: float  # GeV
     mu_B: float  # MeV (approximate at freeze-out)
     T: float  # MeV (freeze-out temperature)
-    T_initial: Optional[float] = None  # Initial temperature estimate
+    T_initial: float | None = None  # Initial temperature estimate
     marker: str = "square"
     color_key: str = "PbPbcolor"
 
 
 # Collision systems for markers on phase diagram
 COLLISION_SYSTEMS = [
-    CollisionSystem("LHC Pb-Pb", 5020, 0.7, 156.5, T_initial=400, marker="square*", color_key="PbPbcolor"),
-    CollisionSystem("LHC O-O", 7000, 0.5, 156.5, T_initial=350, marker="triangle*", color_key="OOcolor"),
-    CollisionSystem("LHC Ne-Ne", 6500, 0.5, 156.5, T_initial=360, marker="diamond*", color_key="NeNecolor"),
-    CollisionSystem("RHIC Au-Au", 200, 25, 166, T_initial=340, marker="pentagon*", color_key="accentpurple"),
-    CollisionSystem("SPS Pb-Pb", 17.3, 250, 158, T_initial=260, marker="star", color_key="accentred"),
-    CollisionSystem("AGS Au-Au", 4.85, 526, 125, T_initial=180, marker="oplus", color_key="textmid"),
+    CollisionSystem(
+        "LHC Pb-Pb", 5020, 0.7, 156.5, T_initial=400, marker="square*", color_key="PbPbcolor"
+    ),
+    CollisionSystem(
+        "LHC O-O", 7000, 0.5, 156.5, T_initial=350, marker="triangle*", color_key="OOcolor"
+    ),
+    CollisionSystem(
+        "LHC Ne-Ne", 6500, 0.5, 156.5, T_initial=360, marker="diamond*", color_key="NeNecolor"
+    ),
+    CollisionSystem(
+        "RHIC Au-Au", 200, 25, 166, T_initial=340, marker="pentagon*", color_key="accentpurple"
+    ),
+    CollisionSystem(
+        "SPS Pb-Pb", 17.3, 250, 158, T_initial=260, marker="star", color_key="accentred"
+    ),
+    CollisionSystem(
+        "AGS Au-Au", 4.85, 526, 125, T_initial=180, marker="oplus", color_key="textmid"
+    ),
 ]
 
 
@@ -147,8 +156,13 @@ def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def save_curve(filename: str, x: np.ndarray, y: np.ndarray,
-               header: str = "x y", comments: Optional[list] = None) -> None:
+def save_curve(
+    filename: str,
+    x: np.ndarray,
+    y: np.ndarray,
+    header: str = "x y",
+    comments: list | None = None,
+) -> None:
     """Save a simple x-y curve to a .dat file."""
     filepath = os.path.join(OUTPUT_DIR, filename)
     with open(filepath, "w") as f:
@@ -161,8 +175,9 @@ def save_curve(filename: str, x: np.ndarray, y: np.ndarray,
     print(f"  {filename}: {len(x)} points")
 
 
-def save_curve_multi(filename: str, x: np.ndarray, columns: list,
-                     header: str, comments: Optional[list] = None) -> None:
+def save_curve_multi(
+    filename: str, x: np.ndarray, columns: list, header: str, comments: list | None = None
+) -> None:
     """Save curve with multiple y columns."""
     filepath = os.path.join(OUTPUT_DIR, filename)
     with open(filepath, "w") as f:
@@ -175,7 +190,7 @@ def save_curve_multi(filename: str, x: np.ndarray, columns: list,
             for col in columns:
                 row += f" {col[i]:.6f}"
             f.write(row + "\n")
-    print(f"  {filename}: {len(x)} points x {len(columns)+1} columns")
+    print(f"  {filename}: {len(x)} points x {len(columns) + 1} columns")
 
 
 def save_points_with_errors(filename: str, points: list, header: str) -> None:
@@ -191,6 +206,7 @@ def save_points_with_errors(filename: str, points: list, header: str) -> None:
 # =============================================================================
 # CROSSOVER LINE FROM LATTICE QCD
 # =============================================================================
+
 
 def crossover_temperature(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarray:
     """
@@ -222,11 +238,10 @@ def crossover_uncertainty_band(mu_B: np.ndarray, params: PhaseTransitionParams) 
     dT_dkappa2 = -params.T_c0 * ratio**2
 
     # Error propagation (quadrature)
-    delta_T = np.sqrt((dT_dTc0 * params.T_c0_err)**2 +
-                      (dT_dkappa2 * params.kappa2_err)**2)
+    delta_T = np.sqrt((dT_dTc0 * params.T_c0_err) ** 2 + (dT_dkappa2 * params.kappa2_err) ** 2)
 
     # Add systematic ~5 MeV at higher μ_B for model uncertainty
-    systematic = 5.0 * (mu_B / 300)**2
+    systematic = 5.0 * (mu_B / 300) ** 2
     total_err = np.sqrt(delta_T**2 + systematic**2)
 
     T_upper = T_central + total_err
@@ -238,6 +253,7 @@ def crossover_uncertainty_band(mu_B: np.ndarray, params: PhaseTransitionParams) 
 # =============================================================================
 # CHEMICAL FREEZE-OUT CURVE
 # =============================================================================
+
 
 def freeze_out_parametrization(mu_B: np.ndarray) -> np.ndarray:
     """
@@ -288,6 +304,7 @@ def freeze_out_from_sqrt_s(sqrt_s: np.ndarray) -> tuple:
 # FIRST-ORDER TRANSITION LINE (SCHEMATIC)
 # =============================================================================
 
+
 def first_order_line(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarray:
     """
     First-order phase transition line beyond the critical point.
@@ -316,6 +333,7 @@ def first_order_line(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndar
 # CRITICAL POINT: EXCLUSION REGION + FRG CONSENSUS
 # December 2025 update: Borsányi et al. excludes CP at μ_B < 450 MeV
 # =============================================================================
+
 
 def critical_point_exclusion_region(n_points: int = 100) -> tuple:
     """
@@ -361,7 +379,7 @@ def critical_point_frg_ellipse(n_points: int = 100) -> tuple:
     """
     params = PhaseTransitionParams()
 
-    theta = np.linspace(0, 2*np.pi, n_points)
+    theta = np.linspace(0, 2 * np.pi, n_points)
 
     # Symmetric ~10% uncertainty
     sigma_T = params.T_cp_frg_err  # ~11 MeV
@@ -400,7 +418,7 @@ def critical_point_ellipse_excluded(n_points: int = 100) -> tuple:
     """
     params = PhaseTransitionParams()
 
-    theta = np.linspace(0, 2*np.pi, n_points)
+    theta = np.linspace(0, 2 * np.pi, n_points)
 
     # Asymmetric errors from Clarke et al.
     sigma_T = (params.T_cp_clarke_err_up + params.T_cp_clarke_err_down) / 2
@@ -431,6 +449,7 @@ def critical_point_box_excluded() -> tuple:
 # FREEZE-OUT SYSTEMATIC UNCERTAINTY BAND
 # =============================================================================
 
+
 def freeze_out_uncertainty_band(mu_B: np.ndarray) -> tuple:
     """
     Calculate freeze-out systematic uncertainty band.
@@ -444,7 +463,7 @@ def freeze_out_uncertainty_band(mu_B: np.ndarray) -> tuple:
     T_central = freeze_out_parametrization(mu_B)
 
     # Temperature systematic: ~5 MeV at low μ_B, increasing at high μ_B
-    T_sys = 5.0 + 3.0 * (mu_B / 500)**2
+    T_sys = 5.0 + 3.0 * (mu_B / 500) ** 2
 
     # Additional model uncertainty at high μ_B
     model_unc = 8.0 * np.tanh(mu_B / 400)
@@ -461,6 +480,7 @@ def freeze_out_uncertainty_band(mu_B: np.ndarray) -> tuple:
 # FIRST-ORDER TRANSITION: MULTIPLE THEORETICAL MODELS
 # =============================================================================
 
+
 def first_order_njl(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarray:
     """
     First-order line from Nambu--Jona-Lasinio (NJL) model.
@@ -475,7 +495,7 @@ def first_order_njl(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarr
     # Curve from CP to nuclear matter
     mask = mu_B >= mu_cp_njl
     T = np.full_like(mu_B, np.nan)
-    T[mask] = T_cp_njl * np.exp(-(mu_B[mask] - mu_cp_njl)**2 / (2 * 400**2))
+    T[mask] = T_cp_njl * np.exp(-((mu_B[mask] - mu_cp_njl) ** 2) / (2 * 400**2))
 
     return T
 
@@ -514,7 +534,7 @@ def first_order_frg(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarr
     mask = mu_B >= mu_cp_frg
     T = np.full_like(mu_B, np.nan)
     # Curved transition from CP to nuclear matter
-    T[mask] = T_cp_frg * (1 - ((mu_B[mask] - mu_cp_frg) / (930 - mu_cp_frg))**1.5)
+    T[mask] = T_cp_frg * (1 - ((mu_B[mask] - mu_cp_frg) / (930 - mu_cp_frg)) ** 1.5)
     T[mask] = np.maximum(T[mask], 0)
 
     return T
@@ -545,15 +565,16 @@ def first_order_consensus_band(n_points: int = 100) -> tuple:
     mu_B_range = np.linspace(630, 920, n_points)
 
     # FRG upper boundary (from FRG CP going right)
-    T_frg = params.T_cp_frg * (1 - ((mu_B_range - params.mu_B_cp_frg) /
-                                      (930 - params.mu_B_cp_frg))**1.5)
+    T_frg = params.T_cp_frg * (
+        1 - ((mu_B_range - params.mu_B_cp_frg) / (930 - params.mu_B_cp_frg)) ** 1.5
+    )
     T_frg = np.maximum(T_frg, 0)
 
     # NJL lower boundary (same μ_B range, but NJL gives lower T)
     # NJL CP is at (80, 330), so at μ_B=630, NJL is already at low T
-    T_njl_at_630 = 80.0 * np.exp(-(630 - 330)**2 / (2 * 400**2))
+    T_njl_at_630 = 80.0 * np.exp(-((630 - 330) ** 2) / (2 * 400**2))
     # Approximate NJL in overlap region
-    T_njl = T_njl_at_630 * np.exp(-(mu_B_range - 630)**2 / (2 * 250**2))
+    T_njl = T_njl_at_630 * np.exp(-((mu_B_range - 630) ** 2) / (2 * 250**2))
     T_njl = np.maximum(T_njl, 0)
 
     return mu_B_range, T_frg, T_njl
@@ -562,6 +583,7 @@ def first_order_consensus_band(n_points: int = 100) -> tuple:
 # =============================================================================
 # ISENTROPIC TRAJECTORIES (s/n_B = const)
 # =============================================================================
+
 
 def isentropic_trajectory(s_over_nB: float, n_points: int = 100) -> tuple:
     """
@@ -594,9 +616,9 @@ def isentropic_trajectory(s_over_nB: float, n_points: int = 100) -> tuple:
 
     for i, Ti in enumerate(T):
         if Ti > 170:  # QGP phase
-            mu_B[i] = 3 * Ti / s_over_nB * (170 / Ti)**0.5
+            mu_B[i] = 3 * Ti / s_over_nB * (170 / Ti) ** 0.5
         else:  # Hadron phase - steeper increase
-            mu_B_170 = 3 * 170 / s_over_nB * (170 / 170)**0.5
+            mu_B_170 = 3 * 170 / s_over_nB * (170 / 170) ** 0.5
             mu_B[i] = mu_B_170 + (170 - Ti) * (300 / s_over_nB)
 
     # Filter to reasonable μ_B range
@@ -617,6 +639,7 @@ ISENTROPE_VALUES = [
 # =============================================================================
 # PEDAGOGICAL CONTEXT: COSMOLOGY, ASTROPHYSICS, FUTURE FACILITIES
 # =============================================================================
+
 
 def early_universe_trajectory(n_points: int = 100) -> tuple:
     """
@@ -718,6 +741,7 @@ COLLISION_SQRT_S = {
 # COOLING TRAJECTORY
 # =============================================================================
 
+
 def cooling_trajectory(n_points: int = 100) -> tuple:
     """
     Generate cooling trajectory for central Pb-Pb collision.
@@ -734,7 +758,7 @@ def cooling_trajectory(n_points: int = 100) -> tuple:
     T_0 = 400.0  # Initial temperature (MeV)
     T_f = 100.0  # Final kinetic freeze-out (MeV)
     # Sigmoid-like cooling
-    T = T_0 - (T_0 - T_f) * (1 - np.exp(-3*t)) / (1 - np.exp(-3))
+    T = T_0 - (T_0 - T_f) * (1 - np.exp(-3 * t)) / (1 - np.exp(-3))
 
     # μ_B: starts ~0, increases slightly due to baryon stopping
     # At LHC, very small μ_B throughout
@@ -748,6 +772,7 @@ def cooling_trajectory(n_points: int = 100) -> tuple:
 # =============================================================================
 # MAIN GENERATION
 # =============================================================================
+
 
 def generate_all():
     """Generate all QCD phase diagram data files."""
@@ -776,15 +801,17 @@ def generate_all():
         "Valid for mu_B < 300 MeV",
         "Source: arXiv:1807.05607",
     ]
-    save_curve("qcd_crossover_line.dat", mu_B_crossover, T_crossover,
-               "mu_B T_c", comments)
+    save_curve("qcd_crossover_line.dat", mu_B_crossover, T_crossover, "mu_B T_c", comments)
 
     # Uncertainty band
     T_upper, T_lower = crossover_uncertainty_band(mu_B_crossover, params)
-    save_curve_multi("qcd_hadronization_band.dat", mu_B_crossover,
-                     [T_crossover, T_upper, T_lower],
-                     "mu_B T_c T_upper T_lower",
-                     ["Crossover uncertainty band (+/- 1 sigma)"])
+    save_curve_multi(
+        "qcd_hadronization_band.dat",
+        mu_B_crossover,
+        [T_crossover, T_upper, T_lower],
+        "mu_B T_c T_upper T_lower",
+        ["Crossover uncertainty band (+/- 1 sigma)"],
+    )
 
     # -------------------------------------------------------------------------
     # 2. Chemical freeze-out curve and experimental data
@@ -806,8 +833,7 @@ def generate_all():
     fo_points = []
     for fp in FREEZE_OUT_DATA:
         fo_points.append([fp.mu_B, fp.T, fp.mu_B_err, fp.T_err])
-    save_points_with_errors("qcd_freezeout_data.dat", fo_points,
-                            "mu_B T mu_B_err T_err")
+    save_points_with_errors("qcd_freezeout_data.dat", fo_points, "mu_B T mu_B_err T_err")
 
     # -------------------------------------------------------------------------
     # 2b. Freeze-out systematic uncertainty band
@@ -815,12 +841,17 @@ def generate_all():
     print("\n--- Freeze-out Systematic Uncertainty ---")
 
     T_fo_upper, T_fo_lower = freeze_out_uncertainty_band(mu_B_fo)
-    save_curve_multi("qcd_freezeout_band.dat", mu_B_fo,
-                     [T_fo, T_fo_upper, T_fo_lower],
-                     "mu_B T_central T_upper T_lower",
-                     ["Freeze-out systematic uncertainty band",
-                      "Source: Andronic et al., Nature 561, 321 (2018)",
-                      "Includes HRG model and feed-down uncertainties"])
+    save_curve_multi(
+        "qcd_freezeout_band.dat",
+        mu_B_fo,
+        [T_fo, T_fo_upper, T_fo_lower],
+        "mu_B T_central T_upper T_lower",
+        [
+            "Freeze-out systematic uncertainty band",
+            "Source: Andronic et al., Nature 561, 321 (2018)",
+            "Includes HRG model and feed-down uncertainties",
+        ],
+    )
 
     # -------------------------------------------------------------------------
     # 3. First-order lines: Multiple theoretical models
@@ -832,46 +863,79 @@ def generate_all():
     # FRG consensus first-order line (uses QM2025 CP at 630 MeV)
     T_fo_line = first_order_line(mu_B_fo_line, params)
     valid = ~np.isnan(T_fo_line) & (T_fo_line > 0)
-    save_curve("qcd_firstorder_line.dat", mu_B_fo_line[valid], T_fo_line[valid],
-               "mu_B T", ["First-order line (FRG consensus QM2025)",
-                          f"CP: T = {params.T_cp_frg} MeV, μ_B = {params.mu_B_cp_frg} MeV",
-                          "Source: Fu et al., arXiv:2510.11270"])
+    save_curve(
+        "qcd_firstorder_line.dat",
+        mu_B_fo_line[valid],
+        T_fo_line[valid],
+        "mu_B T",
+        [
+            "First-order line (FRG consensus QM2025)",
+            f"CP: T = {params.T_cp_frg} MeV, μ_B = {params.mu_B_cp_frg} MeV",
+            "Source: Fu et al., arXiv:2510.11270",
+        ],
+    )
 
     # NJL model (CP at low μ_B - now known to be EXCLUDED)
     T_njl = first_order_njl(mu_B_fo_line, params)
     valid_njl = ~np.isnan(T_njl) & (T_njl > 0)
-    save_curve("qcd_firstorder_njl.dat", mu_B_fo_line[valid_njl], T_njl[valid_njl],
-               "mu_B T", ["First-order line from NJL model (EXCLUDED region)",
-                          "CP: T ~ 80 MeV, μ_B ~ 330 MeV",
-                          "NOTE: This CP location is EXCLUDED by Dec 2025 lattice",
-                          "Source: Buballa, Phys. Rep. 407 (2005) 205"])
+    save_curve(
+        "qcd_firstorder_njl.dat",
+        mu_B_fo_line[valid_njl],
+        T_njl[valid_njl],
+        "mu_B T",
+        [
+            "First-order line from NJL model (EXCLUDED region)",
+            "CP: T ~ 80 MeV, μ_B ~ 330 MeV",
+            "NOTE: This CP location is EXCLUDED by Dec 2025 lattice",
+            "Source: Buballa, Phys. Rep. 407 (2005) 205",
+        ],
+    )
 
     # PQM model (CP at moderate μ_B - now known to be EXCLUDED)
     T_pqm = first_order_pqm(mu_B_fo_line, params)
     valid_pqm = ~np.isnan(T_pqm) & (T_pqm > 0)
-    save_curve("qcd_firstorder_pqm.dat", mu_B_fo_line[valid_pqm], T_pqm[valid_pqm],
-               "mu_B T", ["First-order line from PQM model (EXCLUDED region)",
-                          "CP: T ~ 95 MeV, μ_B ~ 370 MeV",
-                          "NOTE: This CP location is EXCLUDED by Dec 2025 lattice",
-                          "Source: Schaefer et al., PRD 76 (2007) 074023"])
+    save_curve(
+        "qcd_firstorder_pqm.dat",
+        mu_B_fo_line[valid_pqm],
+        T_pqm[valid_pqm],
+        "mu_B T",
+        [
+            "First-order line from PQM model (EXCLUDED region)",
+            "CP: T ~ 95 MeV, μ_B ~ 370 MeV",
+            "NOTE: This CP location is EXCLUDED by Dec 2025 lattice",
+            "Source: Schaefer et al., PRD 76 (2007) 074023",
+        ],
+    )
 
     # FRG model (updated to QM2025 consensus)
     T_frg = first_order_frg(mu_B_fo_line, params)
     valid_frg = ~np.isnan(T_frg) & (T_frg > 0)
-    save_curve("qcd_firstorder_frg.dat", mu_B_fo_line[valid_frg], T_frg[valid_frg],
-               "mu_B T", ["First-order line from FRG (QM2025 consensus)",
-                          f"CP: T = {params.T_cp_frg} MeV, μ_B = {params.mu_B_cp_frg} MeV",
-                          "BEYOND lattice exclusion (μ_B > 450 MeV)",
-                          "Source: Fu et al., arXiv:2510.11270"])
+    save_curve(
+        "qcd_firstorder_frg.dat",
+        mu_B_fo_line[valid_frg],
+        T_frg[valid_frg],
+        "mu_B T",
+        [
+            "First-order line from FRG (QM2025 consensus)",
+            f"CP: T = {params.T_cp_frg} MeV, μ_B = {params.mu_B_cp_frg} MeV",
+            "BEYOND lattice exclusion (μ_B > 450 MeV)",
+            "Source: Fu et al., arXiv:2510.11270",
+        ],
+    )
 
     # CONSENSUS BAND (encompasses NJL/PQM/FRG spread for visualization)
     mu_B_band, T_upper, T_lower = first_order_consensus_band(100)
-    save_curve_multi("qcd_firstorder_consensus_band.dat", mu_B_band,
-                     [T_upper, T_lower],
-                     "mu_B T_upper T_lower",
-                     ["First-order CONSENSUS BAND",
-                      "Encompasses NJL/PQM/FRG theoretical spread",
-                      "Use for shaded band visualization"])
+    save_curve_multi(
+        "qcd_firstorder_consensus_band.dat",
+        mu_B_band,
+        [T_upper, T_lower],
+        "mu_B T_upper T_lower",
+        [
+            "First-order CONSENSUS BAND",
+            "Encompasses NJL/PQM/FRG theoretical spread",
+            "Use for shaded band visualization",
+        ],
+    )
 
     # -------------------------------------------------------------------------
     # 4. Critical point: EXCLUSION + FRG consensus (December 2025 update)
@@ -881,16 +945,28 @@ def generate_all():
     # CP EXCLUSION REGION from Borsányi et al. PRD 112, L111505
     print("  Generating CP exclusion region (μ_B < 450 MeV at 2σ)...")
     mu_B_excl, T_excl = critical_point_exclusion_region(100)
-    save_curve("qcd_cp_exclusion_region.dat", mu_B_excl, T_excl, "mu_B T",
-               ["CRITICAL POINT EXCLUSION REGION",
-                "μ_B < 450 MeV EXCLUDED at 2σ confidence",
-                "Source: Borsányi et al., PRD 112, L111505 (Dec 2025)",
-                "Method: Yang-Lee edge singularity extrapolation"])
+    save_curve(
+        "qcd_cp_exclusion_region.dat",
+        mu_B_excl,
+        T_excl,
+        "mu_B T",
+        [
+            "CRITICAL POINT EXCLUSION REGION",
+            "μ_B < 450 MeV EXCLUDED at 2σ confidence",
+            "Source: Borsányi et al., PRD 112, L111505 (Dec 2025)",
+            "Method: Yang-Lee edge singularity extrapolation",
+        ],
+    )
 
     # Exclusion boundary line
     mu_B_excl_line, T_excl_line = critical_point_exclusion_boundary(100)
-    save_curve("qcd_cp_exclusion_boundary.dat", mu_B_excl_line, T_excl_line,
-               "mu_B T", ["CP exclusion boundary: μ_B = 450 MeV (2σ)"])
+    save_curve(
+        "qcd_cp_exclusion_boundary.dat",
+        mu_B_excl_line,
+        T_excl_line,
+        "mu_B T",
+        ["CP exclusion boundary: μ_B = 450 MeV (2σ)"],
+    )
 
     # FRG CONSENSUS CP (QM2025) - the current best estimate
     cp_frg_point = [[params.mu_B_cp_frg, params.T_cp_frg]]
@@ -899,11 +975,18 @@ def generate_all():
 
     # FRG consensus ellipse
     mu_B_frg_ell, T_frg_ell = critical_point_frg_ellipse(100)
-    save_curve("qcd_critical_ellipse.dat", mu_B_frg_ell, T_frg_ell, "mu_B T",
-               ["1-sigma uncertainty ellipse for FRG consensus CP",
-                f"Center: ({params.mu_B_cp_frg}, {params.T_cp_frg}) MeV",
-                "~10% uncertainty",
-                "Source: Fu et al., arXiv:2510.11270 (QM2025 consensus)"])
+    save_curve(
+        "qcd_critical_ellipse.dat",
+        mu_B_frg_ell,
+        T_frg_ell,
+        "mu_B T",
+        [
+            "1-sigma uncertainty ellipse for FRG consensus CP",
+            f"Center: ({params.mu_B_cp_frg}, {params.T_cp_frg}) MeV",
+            "~10% uncertainty",
+            "Source: Fu et al., arXiv:2510.11270 (QM2025 consensus)",
+        ],
+    )
 
     # FRG consensus box
     box_frg = critical_point_frg_box()
@@ -919,11 +1002,18 @@ def generate_all():
     # DEPRECATED: Clarke et al. 2024 CP estimate (NOW EXCLUDED)
     print("  Generating EXCLUDED Clarke et al. CP region for reference...")
     mu_B_clarke_ell, T_clarke_ell = critical_point_ellipse_excluded(100)
-    save_curve("qcd_critical_ellipse_excluded.dat", mu_B_clarke_ell, T_clarke_ell,
-               "mu_B T", ["EXCLUDED: Clarke et al. 2024 CP estimate",
-                          f"Center: ({params.mu_B_cp_clarke}, {params.T_cp_clarke}) MeV",
-                          "NOW EXCLUDED by Borsányi et al. (Dec 2025)",
-                          "Kept for reference only"])
+    save_curve(
+        "qcd_critical_ellipse_excluded.dat",
+        mu_B_clarke_ell,
+        T_clarke_ell,
+        "mu_B T",
+        [
+            "EXCLUDED: Clarke et al. 2024 CP estimate",
+            f"Center: ({params.mu_B_cp_clarke}, {params.T_cp_clarke}) MeV",
+            "NOW EXCLUDED by Borsányi et al. (Dec 2025)",
+            "Kept for reference only",
+        ],
+    )
 
     # -------------------------------------------------------------------------
     # 5. QGP region boundary (for fills)
@@ -959,8 +1049,7 @@ def generate_all():
         f.write("# Collision system freeze-out locations\n")
         f.write("# name mu_B T sqrt_s_NN marker color\n")
         for cs in COLLISION_SYSTEMS:
-            f.write(f"# {cs.name}: ({cs.mu_B:.1f}, {cs.T:.1f}) MeV, "
-                    f"sqrt_s = {cs.sqrt_s_NN} GeV\n")
+            f.write(f"# {cs.name}: ({cs.mu_B:.1f}, {cs.T:.1f}) MeV, sqrt_s = {cs.sqrt_s_NN} GeV\n")
         f.write("# mu_B T sqrt_s_NN\n")
         for d in cs_data:
             f.write(f"{d[0]:.2f} {d[1]:.2f} {d[2]:.1f}\n")
@@ -972,9 +1061,13 @@ def generate_all():
     print("\n--- Cooling Trajectory ---")
 
     mu_B_cool, T_cool = cooling_trajectory(N_MEDIUM)
-    save_curve("qcd_cooling_trajectory.dat", mu_B_cool, T_cool, "mu_B T",
-               ["Cooling trajectory for central Pb-Pb at LHC",
-                "T_0 ~ 400 MeV -> T_kinetic ~ 100 MeV"])
+    save_curve(
+        "qcd_cooling_trajectory.dat",
+        mu_B_cool,
+        T_cool,
+        "mu_B T",
+        ["Cooling trajectory for central Pb-Pb at LHC", "T_0 ~ 400 MeV -> T_kinetic ~ 100 MeV"],
+    )
 
     # -------------------------------------------------------------------------
     # 8. Isentropic trajectories (s/n_B = const)
@@ -984,10 +1077,13 @@ def generate_all():
     for s_nB, label in ISENTROPE_VALUES:
         mu_B_isen, T_isen = isentropic_trajectory(s_nB, N_MEDIUM)
         filename = f"qcd_isentrope_{s_nB}.dat"
-        save_curve(filename, mu_B_isen, T_isen, "mu_B T",
-                   [f"Isentropic trajectory s/n_B = {s_nB}",
-                    f"{label}",
-                    "Source: arXiv:1506.07350"])
+        save_curve(
+            filename,
+            mu_B_isen,
+            T_isen,
+            "mu_B T",
+            [f"Isentropic trajectory s/n_B = {s_nB}", f"{label}", "Source: arXiv:1506.07350"],
+        )
 
     # Combined isentropes file for easy plotting
     filepath = os.path.join(OUTPUT_DIR, "qcd_isentropes_all.dat")
@@ -1009,26 +1105,45 @@ def generate_all():
 
     # Early universe trajectory (cosmological hook)
     mu_B_eu, T_eu = early_universe_trajectory(N_MEDIUM)
-    save_curve("qcd_early_universe.dat", mu_B_eu, T_eu, "mu_B T",
-               ["Early universe trajectory (Big Bang → Hadronization)",
-                "μ_B ≈ 0 due to baryon-antibaryon symmetry",
-                "Hadronization at t ~ 10^-5 s, T ~ 150 MeV"])
+    save_curve(
+        "qcd_early_universe.dat",
+        mu_B_eu,
+        T_eu,
+        "mu_B T",
+        [
+            "Early universe trajectory (Big Bang → Hadronization)",
+            "μ_B ≈ 0 due to baryon-antibaryon symmetry",
+            "Hadronization at t ~ 10^-5 s, T ~ 150 MeV",
+        ],
+    )
 
     # Neutron star core region
     mu_B_ns, T_ns, T_ns_up, T_ns_lo = neutron_star_trajectory(100)
-    save_curve_multi("qcd_neutron_star.dat", mu_B_ns,
-                     [T_ns, T_ns_up, T_ns_lo],
-                     "mu_B T T_upper T_lower",
-                     ["Neutron star core region (cold, dense matter)",
-                      "μ_B ~ 1000-1500 MeV, T ~ 0 (after cooling)",
-                      "Probes cold QCD at extreme density"])
+    save_curve_multi(
+        "qcd_neutron_star.dat",
+        mu_B_ns,
+        [T_ns, T_ns_up, T_ns_lo],
+        "mu_B T T_upper T_lower",
+        [
+            "Neutron star core region (cold, dense matter)",
+            "μ_B ~ 1000-1500 MeV, T ~ 0 (after cooling)",
+            "Probes cold QCD at extreme density",
+        ],
+    )
 
     # Color superconductivity boundary (schematic)
     mu_B_csc, T_csc = color_superconductivity_region()
-    save_curve("qcd_csc_boundary.dat", mu_B_csc, T_csc, "mu_B T",
-               ["Color superconductivity phase boundary (schematic)",
-                "CSC: Cooper pairs of quarks at high μ_B, low T",
-                "Phases: 2SC, CFL, crystalline variants"])
+    save_curve(
+        "qcd_csc_boundary.dat",
+        mu_B_csc,
+        T_csc,
+        "mu_B T",
+        [
+            "Color superconductivity phase boundary (schematic)",
+            "CSC: Cooper pairs of quarks at high μ_B, low T",
+            "Phases: 2SC, CFL, crystalline variants",
+        ],
+    )
 
     # -------------------------------------------------------------------------
     # 10. Future Facilities Coverage Regions
@@ -1042,8 +1157,10 @@ def generate_all():
         for key, fac in FUTURE_FACILITIES.items():
             f.write(f"# {fac['name']}: {fac['description']}\n")
             f.write(f"# √s_NN range: {fac['sqrt_s_range'][0]}-{fac['sqrt_s_range'][1]} GeV\n")
-            f.write(f"{key} {fac['mu_B_range'][0]} {fac['mu_B_range'][1]} "
-                    f"{fac['T_range'][0]} {fac['T_range'][1]}\n")
+            f.write(
+                f"{key} {fac['mu_B_range'][0]} {fac['mu_B_range'][1]} "
+                f"{fac['T_range'][0]} {fac['T_range'][1]}\n"
+            )
     print(f"  qcd_future_facilities.dat: {len(FUTURE_FACILITIES)} facilities")
 
     # -------------------------------------------------------------------------

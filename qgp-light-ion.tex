@@ -32,6 +32,10 @@
 % With calc package, \real{} should just pass through the decimal factor
 \providecommand{\real}[1]{#1}
 
+% Define \tightlist for Pandoc-generated lists (reduces spacing)
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 % Fix "Infinite glue shrinkage" errors in longtable page breaks
 % raggedbottom allows flexible page bottoms instead of forcing \flushbottom
 \raggedbottom

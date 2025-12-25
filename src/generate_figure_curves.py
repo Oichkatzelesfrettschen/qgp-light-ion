@@ -12,7 +12,7 @@ with precomputed .dat files that pgfplots can load directly via:
 """
 
 import os
-import sys
+
 import numpy as np
 
 # Output directory
@@ -44,7 +44,7 @@ def save_curve_multi(filename, x, columns, header):
             for col in columns:
                 row += f" {col[i]:.6f}"
             f.write(row + "\n")
-    print(f"  {filename}: {len(x)} points x {len(columns)+1} columns")
+    print(f"  {filename}: {len(x)} points x {len(columns) + 1} columns")
 
 
 # =============================================================================
@@ -156,7 +156,7 @@ def generate_raa_curves():
     R_PbPb = (
         0.15  # baseline (minimum)
         + 0.20 * np.exp(-((pT - 1.5) ** 2) / 2.0)  # Cronin-like peak at low pT
-        + 0.50 * (1 - np.exp(-(pT / 25) ** 1.5))  # high-pT recovery
+        + 0.50 * (1 - np.exp(-((pT / 25) ** 1.5)))  # high-pT recovery
         - 0.08 * np.exp(-((pT - 7) ** 2) / 20)  # slight dip around pT=7
     )
     R_PbPb = np.clip(R_PbPb, 0.14, 1.0)  # Physical bounds

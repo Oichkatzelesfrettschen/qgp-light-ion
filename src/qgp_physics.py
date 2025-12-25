@@ -13,27 +13,60 @@ Physical constants and formulas from:
 - Relativistic hydrodynamics flow response
 """
 
+from __future__ import annotations
+
 import warnings
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.special import iv as bessel_i  # Modified Bessel function I_n(x)
 
+if TYPE_CHECKING:
+    pass
+
 warnings.filterwarnings("ignore")
+
+# =============================================================================
+# TYPE ALIASES FOR PHYSICS QUANTITIES
+# =============================================================================
+
+# Generic array types
+FloatArray: TypeAlias = NDArray[np.floating[Any]]
+IntArray: TypeAlias = NDArray[np.signedinteger[Any]]
+BoolArray: TypeAlias = NDArray[np.bool_]
+
+# Physics-specific type aliases (documentation purposes)
+# These are runtime floats but carry semantic meaning
+Energy = float  # GeV
+Temperature = float  # GeV (or MeV where noted)
+Length = float  # fm
+Area = float  # fm²
+Time = float  # fm/c
+Momentum = float  # GeV/c
+ChemicalPotential = float  # GeV
+TransportCoefficient = float  # GeV²/fm (q-hat)
+CrossSection = float  # fm² (or mb)
+Centrality = float  # 0-1 fraction
+Angle = float  # radians
+
+# Composite types for function signatures
+ScalarOrArray = float | FloatArray
 
 # =============================================================================
 # PHYSICAL CONSTANTS
 # =============================================================================
 
 # QCD constants
-T_C = 0.155  # Critical/crossover temperature [GeV] ≈ 155 MeV
-EPSILON_C = 1.0  # Critical energy density for deconfinement [GeV/fm³]
-HBARC = 0.197  # ℏc [GeV·fm]
-FM_TO_GEV_INV = 1 / HBARC  # Conversion factor
+T_C: Temperature = 0.155  # Critical/crossover temperature [GeV] ≈ 155 MeV
+EPSILON_C: float = 1.0  # Critical energy density for deconfinement [GeV/fm³]
+HBARC: float = 0.197  # ℏc [GeV·fm]
+FM_TO_GEV_INV: float = 1 / HBARC  # Conversion factor
 
 # Transport coefficients (typical values)
-ETA_OVER_S = 0.12  # Shear viscosity to entropy ratio (near KSS bound 1/4π ≈ 0.08)
-QHAT_0 = 2.0  # Jet transport coefficient at T = T_c [GeV²/fm]
+ETA_OVER_S: float = 0.12  # Shear viscosity to entropy ratio (near KSS bound 1/4π ≈ 0.08)
+QHAT_0: TransportCoefficient = 2.0  # Jet transport coefficient at T = T_c [GeV²/fm]
 
 
 # Nuclear parameters
@@ -44,14 +77,14 @@ class Nucleus:
     name: str
     A: int  # Mass number
     Z: int  # Atomic number
-    R0: float  # Nuclear radius parameter [fm]
-    a: float  # Skin thickness [fm]
+    R0: Length  # Nuclear radius parameter [fm]
+    a: Length  # Skin thickness [fm]
     beta2: float = 0.0  # Quadrupole deformation
     beta3: float = 0.0  # Octupole deformation
 
 
 # Standard nuclei used in LHC collisions
-NUCLEI = {
+NUCLEI: dict[str, Nucleus] = {
     "O": Nucleus("Oxygen-16", A=16, Z=8, R0=2.608, a=0.513, beta2=0.0),
     "Ne": Nucleus("Neon-20", A=20, Z=10, R0=2.791, a=0.535, beta2=0.45),  # Prolate!
     "Ar": Nucleus("Argon-40", A=40, Z=18, R0=3.427, a=0.569, beta2=0.0),
@@ -64,7 +97,7 @@ NUCLEI = {
 # =============================================================================
 
 
-def woods_saxon(r: np.ndarray, nucleus: Nucleus, theta: float = 0) -> np.ndarray:
+def woods_saxon(r: FloatArray, nucleus: Nucleus, theta: Angle = 0) -> FloatArray:
     """
     Woods-Saxon nuclear density distribution.
 
@@ -88,40 +121,40 @@ def woods_saxon(r: np.ndarray, nucleus: Nucleus, theta: float = 0) -> np.ndarray
         Nuclear density (normalized to peak = 1)
     """
     # Spherical harmonics Y_l0 at theta
-    Y20 = 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta) ** 2 - 1)
-    Y30 = 0.25 * np.sqrt(7 / np.pi) * (5 * np.cos(theta) ** 3 - 3 * np.cos(theta))
+    Y20: float = 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta) ** 2 - 1)
+    Y30: float = 0.25 * np.sqrt(7 / np.pi) * (5 * np.cos(theta) ** 3 - 3 * np.cos(theta))
 
     # Deformed radius
-    R = nucleus.R0 * (1 + nucleus.beta2 * Y20 + nucleus.beta3 * Y30)
+    R: Length = nucleus.R0 * (1 + nucleus.beta2 * Y20 + nucleus.beta3 * Y30)
 
     # Woods-Saxon form
-    rho = 1.0 / (1.0 + np.exp((r - R) / nucleus.a))
+    rho: FloatArray = 1.0 / (1.0 + np.exp((r - R) / nucleus.a))
     return rho
 
 
 def get_nuclear_profile_2d(
-    nucleus: Nucleus, grid_size: int = 100, extent: float = 10.0
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    nucleus: Nucleus, grid_size: int = 100, extent: Length = 10.0
+) -> tuple[FloatArray, FloatArray, FloatArray]:
     """
     Generate 2D nuclear density profile in the transverse plane.
 
     Returns x, y coordinates and density ρ(x,y).
     """
-    x = np.linspace(-extent, extent, grid_size)
-    y = np.linspace(-extent, extent, grid_size)
+    x: FloatArray = np.linspace(-extent, extent, grid_size)
+    y: FloatArray = np.linspace(-extent, extent, grid_size)
     X, Y = np.meshgrid(x, y)
-    R = np.sqrt(X**2 + Y**2)
+    R: FloatArray = np.sqrt(X**2 + Y**2)
 
     # For deformed nuclei, average over orientations or use specific angle
     # Here we show the maximum deformation (θ = π/2 for prolate)
     if nucleus.beta2 > 0:
         # Show prolate shape - elongated along one axis
         # Compute per-point angles for deformed profile
-        rho = np.zeros_like(R)
+        rho: FloatArray = np.zeros_like(R)
         for i in range(grid_size):
             for j in range(grid_size):
-                r_eff = np.sqrt(X[i, j] ** 2 + Y[i, j] ** 2)
-                theta_eff = np.arctan2(abs(Y[i, j]), abs(X[i, j]))
+                r_eff: float = np.sqrt(X[i, j] ** 2 + Y[i, j] ** 2)
+                theta_eff: Angle = np.arctan2(abs(Y[i, j]), abs(X[i, j]))
                 rho[i, j] = woods_saxon(np.array([r_eff]), nucleus, theta_eff)[0]
     else:
         rho = woods_saxon(R, nucleus)
@@ -134,28 +167,28 @@ def get_nuclear_profile_2d(
 # =============================================================================
 
 
-def sample_nucleon_positions(nucleus: Nucleus, n_events: int = 1) -> np.ndarray:
+def sample_nucleon_positions(nucleus: Nucleus, n_events: int = 1) -> FloatArray:
     """
     Sample nucleon positions from Woods-Saxon distribution using rejection sampling.
 
     Returns array of shape (n_events, A, 3) with (x, y, z) positions in fm.
     """
-    positions = np.zeros((n_events, nucleus.A, 3))
+    positions: FloatArray = np.zeros((n_events, nucleus.A, 3))
 
     for event in range(n_events):
         for i in range(nucleus.A):
-            accepted = False
+            accepted: bool = False
             while not accepted:
                 # Sample in a box
-                r_max = nucleus.R0 + 5 * nucleus.a
-                x = np.random.uniform(-r_max, r_max)
-                y = np.random.uniform(-r_max, r_max)
-                z = np.random.uniform(-r_max, r_max)
-                r = np.sqrt(x**2 + y**2 + z**2)
+                r_max: Length = nucleus.R0 + 5 * nucleus.a
+                x: float = np.random.uniform(-r_max, r_max)
+                y: float = np.random.uniform(-r_max, r_max)
+                z: float = np.random.uniform(-r_max, r_max)
+                r: Length = np.sqrt(x**2 + y**2 + z**2)
 
                 # Rejection sampling
-                theta = np.arccos(z / (r + 1e-10))
-                rho = woods_saxon(np.array([r]), nucleus, theta)[0]
+                theta: Angle = np.arccos(z / (r + 1e-10))
+                rho: float = woods_saxon(np.array([r]), nucleus, theta)[0]
                 if np.random.random() < rho:
                     positions[event, i] = [x, y, z]
                     accepted = True
@@ -164,7 +197,7 @@ def sample_nucleon_positions(nucleus: Nucleus, n_events: int = 1) -> np.ndarray:
 
 
 def calculate_participants(
-    pos_A: np.ndarray, pos_B: np.ndarray, b: float, sigma_nn: float = 7.0
+    pos_A: FloatArray, pos_B: FloatArray, b: Length, sigma_nn: CrossSection = 7.0
 ) -> tuple[int, int]:
     """
     Calculate N_part and N_coll for a collision at impact parameter b.
@@ -186,20 +219,20 @@ def calculate_participants(
         Number of binary collisions
     """
     # Shift nucleus B by impact parameter in x-direction
-    pos_B_shifted = pos_B.copy()
+    pos_B_shifted: FloatArray = pos_B.copy()
     pos_B_shifted[:, 0] += b
 
     # Interaction radius from cross section
-    r_int = np.sqrt(sigma_nn / np.pi)
+    r_int: Length = np.sqrt(sigma_nn / np.pi)
 
-    participants_A = np.zeros(len(pos_A), dtype=bool)
-    participants_B = np.zeros(len(pos_B), dtype=bool)
-    n_coll = 0
+    participants_A: BoolArray = np.zeros(len(pos_A), dtype=bool)
+    participants_B: BoolArray = np.zeros(len(pos_B), dtype=bool)
+    n_coll: int = 0
 
     for i, pA in enumerate(pos_A):
         for j, pB in enumerate(pos_B_shifted):
             # Transverse distance
-            d_T = np.sqrt((pA[0] - pB[0]) ** 2 + (pA[1] - pB[1]) ** 2)
+            d_T: Length = np.sqrt((pA[0] - pB[0]) ** 2 + (pA[1] - pB[1]) ** 2)
             if d_T < r_int:
                 participants_A[i] = True
                 participants_B[j] = True
@@ -210,24 +243,24 @@ def calculate_participants(
 
 def glauber_centrality_scan(
     nucleus_A: Nucleus, nucleus_B: Nucleus, n_b_points: int = 20, n_events: int = 100
-) -> dict:
+) -> dict[str, FloatArray]:
     """
     Perform Glauber model scan over impact parameter.
 
     Returns dictionary with b, <N_part>, <N_coll>, centrality estimates.
     """
-    b_max = nucleus_A.R0 + nucleus_B.R0 + 2  # fm
-    b_values = np.linspace(0, b_max, n_b_points)
+    b_max: Length = nucleus_A.R0 + nucleus_B.R0 + 2  # fm
+    b_values: FloatArray = np.linspace(0, b_max, n_b_points)
 
-    npart_mean = []
-    ncoll_mean = []
+    npart_mean: list[float] = []
+    ncoll_mean: list[float] = []
 
     for b in b_values:
-        npart_list = []
-        ncoll_list = []
+        npart_list: list[int] = []
+        ncoll_list: list[int] = []
         for _ in range(n_events):
-            pos_A = sample_nucleon_positions(nucleus_A, 1)[0]
-            pos_B = sample_nucleon_positions(nucleus_B, 1)[0]
+            pos_A: FloatArray = sample_nucleon_positions(nucleus_A, 1)[0]
+            pos_B: FloatArray = sample_nucleon_positions(nucleus_B, 1)[0]
             np_, nc_ = calculate_participants(pos_A, pos_B, b)
             npart_list.append(np_)
             ncoll_list.append(nc_)
@@ -246,7 +279,7 @@ def glauber_centrality_scan(
 # =============================================================================
 
 
-def calculate_eccentricities(positions: np.ndarray) -> dict[str, float]:
+def calculate_eccentricities(positions: FloatArray) -> dict[str, float]:
     """
     Calculate spatial eccentricities ε_n from nucleon positions.
 
@@ -254,22 +287,22 @@ def calculate_eccentricities(positions: np.ndarray) -> dict[str, float]:
 
     These drive the flow harmonics v_n.
     """
-    x = positions[:, 0]
-    y = positions[:, 1]
+    x: FloatArray = positions[:, 0]
+    y: FloatArray = positions[:, 1]
 
     # Center of mass
-    x_cm = np.mean(x)
-    y_cm = np.mean(y)
+    x_cm: float = np.mean(x)
+    y_cm: float = np.mean(y)
     x = x - x_cm
     y = y - y_cm
 
-    r2 = x**2 + y**2
-    phi = np.arctan2(y, x)
+    r2: FloatArray = x**2 + y**2
+    phi: FloatArray = np.arctan2(y, x)
 
-    eccentricities = {}
+    eccentricities: dict[str, float] = {}
     for n in [2, 3, 4, 5]:
-        numerator = np.abs(np.mean(r2 * np.exp(1j * n * phi)))
-        denominator = np.mean(r2)
+        numerator: float = np.abs(np.mean(r2 * np.exp(1j * n * phi)))
+        denominator: float = np.mean(r2)
         eccentricities[f"epsilon_{n}"] = numerator / (denominator + 1e-10)
 
     # Also return participant plane angle
@@ -283,7 +316,7 @@ def calculate_eccentricities(positions: np.ndarray) -> dict[str, float]:
 # =============================================================================
 
 
-def bjorken_energy_density(dET_dy: float, A_perp: float, tau_0: float = 1.0) -> float:
+def bjorken_energy_density(dET_dy: Energy, A_perp: Area, tau_0: Time = 1.0) -> float:
     """
     Bjorken initial energy density estimate.
 
@@ -306,7 +339,7 @@ def bjorken_energy_density(dET_dy: float, A_perp: float, tau_0: float = 1.0) -> 
     return dET_dy / (tau_0 * A_perp)
 
 
-def estimate_system_parameters(nucleus: Nucleus, centrality: float = 0.05) -> dict:
+def estimate_system_parameters(nucleus: Nucleus, centrality: Centrality = 0.05) -> dict[str, float]:
     """
     Estimate collision parameters for a given system and centrality.
 
@@ -314,6 +347,9 @@ def estimate_system_parameters(nucleus: Nucleus, centrality: float = 0.05) -> di
     """
     # Approximate scaling relations (fitted to data)
     # Central collisions
+    N_part: float
+    dNch_deta: float
+    A_perp: Area
 
     if nucleus.name.startswith("Lead"):
         N_part = 383 * (1 - centrality)
@@ -338,9 +374,9 @@ def estimate_system_parameters(nucleus: Nucleus, centrality: float = 0.05) -> di
         A_perp = np.pi * nucleus.R0**2 * (1 - centrality)
 
     # Estimate dE_T/dy from dN_ch/dη (roughly 0.5-0.7 GeV per particle)
-    dET_dy = 0.6 * dNch_deta
+    dET_dy: Energy = 0.6 * dNch_deta
 
-    epsilon_Bj = bjorken_energy_density(dET_dy, A_perp)
+    epsilon_Bj: float = bjorken_energy_density(dET_dy, A_perp)
 
     return {
         "N_part": N_part,
@@ -356,7 +392,7 @@ def estimate_system_parameters(nucleus: Nucleus, centrality: float = 0.05) -> di
 # =============================================================================
 
 
-def qcd_crossover_line(mu_B: np.ndarray) -> np.ndarray:
+def qcd_crossover_line(mu_B: FloatArray) -> FloatArray:
     """
     QCD crossover temperature as function of baryon chemical potential.
 
@@ -365,27 +401,27 @@ def qcd_crossover_line(mu_B: np.ndarray) -> np.ndarray:
 
     with κ ≈ 0.013
     """
-    T_c0 = 0.156  # GeV at μ_B = 0
-    kappa = 0.013
+    T_c0: Temperature = 0.156  # GeV at μ_B = 0
+    kappa: float = 0.013
     return T_c0 * (1 - kappa * (mu_B / T_c0) ** 2)
 
 
-def qcd_phase_boundaries() -> dict[str, np.ndarray]:
+def qcd_phase_boundaries() -> dict[str, FloatArray | float]:
     """
     Generate QCD phase diagram boundaries for visualization.
     """
-    mu_B = np.linspace(0, 0.8, 100)  # GeV
+    mu_B: FloatArray = np.linspace(0, 0.8, 100)  # GeV
 
     # Crossover line (lattice QCD, valid for small μ_B)
-    T_crossover = qcd_crossover_line(mu_B)
+    T_crossover: FloatArray = qcd_crossover_line(mu_B)
 
     # Hypothetical first-order line (beyond critical point)
-    mu_B_crit = 0.4  # Estimated critical point location
-    T_crit = qcd_crossover_line(np.array([mu_B_crit]))[0]
+    mu_B_crit: ChemicalPotential = 0.4  # Estimated critical point location
+    T_crit: Temperature = qcd_crossover_line(np.array([mu_B_crit]))[0]
 
     # First-order transition (schematic, steeper than crossover)
-    mu_B_fo = np.linspace(mu_B_crit, 0.8, 50)
-    T_fo = T_crit * (1 - 0.5 * ((mu_B_fo - mu_B_crit) / (0.8 - mu_B_crit)) ** 1.5)
+    mu_B_fo: FloatArray = np.linspace(mu_B_crit, 0.8, 50)
+    T_fo: FloatArray = T_crit * (1 - 0.5 * ((mu_B_fo - mu_B_crit) / (0.8 - mu_B_crit)) ** 1.5)
 
     return {
         "mu_B_crossover": mu_B[mu_B < mu_B_crit],
@@ -403,7 +439,7 @@ def qcd_phase_boundaries() -> dict[str, np.ndarray]:
 
 
 def flow_from_eccentricity(
-    epsilon_n: float, n: int, eta_over_s: float = 0.12, system_size: float = 3.0
+    epsilon_n: float, n: int, eta_over_s: float = 0.12, system_size: Length = 3.0
 ) -> float:
     """
     Estimate v_n from initial eccentricity using hydrodynamic response.
@@ -416,19 +452,19 @@ def flow_from_eccentricity(
     """
     # Response coefficients (calibrated to 2025 LHC data)
     # Increased from original to match CMS v2 ~ 0.06 in ultracentral O-O
-    kappa = {2: 0.35, 3: 0.25, 4: 0.15, 5: 0.08}
+    kappa: dict[int, float] = {2: 0.35, 3: 0.25, 4: 0.15, 5: 0.08}
 
     # Viscous damping factor
     # Reduced damping in small systems - 2025 data shows strong flow
-    knudsen = eta_over_s / system_size  # Proxy for Knudsen number
-    damping = np.exp(-n * knudsen * 3)  # Reduced from 5 to 3
+    knudsen: float = eta_over_s / system_size  # Proxy for Knudsen number
+    damping: float = np.exp(-n * knudsen * 3)  # Reduced from 5 to 3
 
     return kappa.get(n, 0.1) * epsilon_n * damping
 
 
 def generate_flow_vs_centrality(
-    nucleus: Nucleus, centrality_bins: np.ndarray
-) -> dict[str, np.ndarray]:
+    nucleus: Nucleus, centrality_bins: FloatArray
+) -> dict[str, FloatArray]:
     """
     Generate realistic v_n vs centrality data.
 
@@ -439,12 +475,12 @@ def generate_flow_vs_centrality(
 
     Calibrated to match ALICE arXiv:2509.06428 and CMS arXiv:2510.02580.
     """
-    v2 = []
-    v3 = []
-    v4 = []
+    v2: list[float] = []
+    v3: list[float] = []
+    v4: list[float] = []
 
     # System size proxy
-    R_sys = nucleus.R0
+    R_sys: Length = nucleus.R0
 
     # Nuclear structure baseline eccentricity (survives to central collisions)
     # This is the key physics: nuclear structure creates ε₂ > 0 even at b=0
@@ -453,6 +489,9 @@ def generate_flow_vs_centrality(
     # - O-O ultracentral v2{2} ~ 0.061
     # - Ne-Ne ultracentral v2{2} ~ 0.066
     # - Ne/O ratio ~ 1.08 (ultracentral) to ~1.05 (10% centrality)
+    epsilon_2_base: float
+    epsilon_3_base: float
+
     if nucleus.name.startswith("Oxygen"):
         # Alpha clustering creates eccentricity in central collisions
         epsilon_2_base = 0.22
@@ -470,27 +509,27 @@ def generate_flow_vs_centrality(
     for cent in centrality_bins:
         # Geometric eccentricity from impact parameter
         # Peaks around 30-40% centrality for collision geometry
-        epsilon_2_geom = 0.4 * np.sin(np.pi * cent / 100) * (1 - 0.3 * cent / 100)
+        epsilon_2_geom: float = 0.4 * np.sin(np.pi * cent / 100) * (1 - 0.3 * cent / 100)
 
         # Nuclear structure contribution: strongest in central, decreases toward peripheral
         # (In peripheral collisions, geometry dominates over nuclear structure)
-        structure_weight = np.exp(-cent / 50)  # Decays with centrality
-        epsilon_2_struct = epsilon_2_base * structure_weight
+        structure_weight: float = np.exp(-cent / 50)  # Decays with centrality
+        epsilon_2_struct: float = epsilon_2_base * structure_weight
 
         # Total eccentricity (structure + geometry, not simple sum due to fluctuations)
-        epsilon_2 = np.sqrt(epsilon_2_struct**2 + epsilon_2_geom**2)
+        epsilon_2: float = np.sqrt(epsilon_2_struct**2 + epsilon_2_geom**2)
 
         # ε₃ is fluctuation-driven, roughly constant or slight increase with centrality
-        epsilon_3 = epsilon_3_base * (1 + 0.5 * cent / 100)
+        epsilon_3: float = epsilon_3_base * (1 + 0.5 * cent / 100)
 
         # ε₄ from fluctuations and nonlinear coupling
-        epsilon_4 = 0.08 * (1 + 0.3 * cent / 100)
+        epsilon_4: float = 0.08 * (1 + 0.3 * cent / 100)
 
         # Add modest deformation boost for Ne-20 (prolate shape enhances v₂)
         # Effect is small: ALICE shows Ne/O ratio only ~1.08
         if nucleus.beta2 > 0:
             # Deformation effect strongest in central collisions
-            deformation_boost = nucleus.beta2 * 0.08 * structure_weight  # Reduced from 0.5
+            deformation_boost: float = nucleus.beta2 * 0.08 * structure_weight  # Reduced from 0.5
             epsilon_2 = np.sqrt(epsilon_2**2 + deformation_boost**2)
 
         # Convert to flow
@@ -507,8 +546,8 @@ def generate_flow_vs_centrality(
 
 
 def azimuthal_distribution(
-    phi: np.ndarray, v2: float, v3: float, Psi_2: float = 0, Psi_3: float = 0
-) -> np.ndarray:
+    phi: FloatArray, v2: float, v3: float, Psi_2: Angle = 0, Psi_3: Angle = 0
+) -> FloatArray:
     """
     Generate azimuthal particle distribution.
 
@@ -522,7 +561,7 @@ def azimuthal_distribution(
 # =============================================================================
 
 
-def bdmps_energy_loss(E: float, L: float, qhat: float) -> float:
+def bdmps_energy_loss(E: Energy, L: Length, qhat: TransportCoefficient) -> Energy:
     """
     BDMPS-Z radiative energy loss.
 
@@ -542,17 +581,19 @@ def bdmps_energy_loss(E: float, L: float, qhat: float) -> float:
     Delta_E : float
         Energy loss [GeV]
     """
-    alpha_s = 0.3  # Strong coupling
+    alpha_s: float = 0.3  # Strong coupling
     # omega_c = 0.5 * qhat * L^2 is characteristic gluon energy (for reference)
 
     # Simplified BDMPS formula: Delta_E = alpha_s * qhat * L^2 / 4
-    Delta_E = alpha_s * qhat * L**2 / 4
+    Delta_E: Energy = alpha_s * qhat * L**2 / 4
 
     # Can't lose more than you have
     return min(Delta_E, 0.9 * E)
 
 
-def raa_model(pT: np.ndarray, L_eff: float, qhat: float, n_spectrum: float = 6.0) -> np.ndarray:
+def raa_model(
+    pT: FloatArray, L_eff: Length, qhat: TransportCoefficient, n_spectrum: float = 6.0
+) -> FloatArray:
     """
     Calculate R_AA based on energy loss.
 
@@ -560,11 +601,11 @@ def raa_model(pT: np.ndarray, L_eff: float, qhat: float, n_spectrum: float = 6.0
 
     where n is the power-law index of the spectrum.
     """
-    Delta_E = np.array([bdmps_energy_loss(p, L_eff, qhat) for p in pT])
+    Delta_E: FloatArray = np.array([bdmps_energy_loss(p, L_eff, qhat) for p in pT])
 
     # Shift in spectrum due to energy loss
     # This is simplified; full calculation involves fragmentation
-    R_AA = (pT / (pT + Delta_E)) ** n_spectrum
+    R_AA: FloatArray = (pT / (pT + Delta_E)) ** n_spectrum
 
     # High pT limit: R_AA → 1
     # Low pT: different physics (Cronin, shadowing)
@@ -576,8 +617,8 @@ def raa_model(pT: np.ndarray, L_eff: float, qhat: float, n_spectrum: float = 6.0
 
 
 def generate_raa_data(
-    system: str, pT_range: tuple[float, float] = (0.5, 100), n_points: int = 50
-) -> dict[str, np.ndarray]:
+    system: str, pT_range: tuple[Momentum, Momentum] = (0.5, 100), n_points: int = 50
+) -> dict[str, FloatArray]:
     """
     Generate R_AA vs p_T data for a collision system.
 
@@ -586,11 +627,11 @@ def generate_raa_data(
     - CMS: Ne–Ne R_AA min ≈ 0.65 at pT ≈ 6 GeV
     - ALICE: Pb–Pb R_AA min ≈ 0.15–0.20 at pT ≈ 7 GeV (0–10% central)
     """
-    pT = np.logspace(np.log10(pT_range[0]), np.log10(pT_range[1]), n_points)
+    pT: FloatArray = np.logspace(np.log10(pT_range[0]), np.log10(pT_range[1]), n_points)
 
     # Phenomenological R_AA parameterization calibrated to data
     # R_AA(pT) = 1 - suppression_depth * f(pT) where f peaks around pT_peak
-    params = {
+    params: dict[str, dict[str, float]] = {
         "pp": {"suppression_max": 0.0, "pT_peak": 6.0, "width": 3.0, "high_pT_recovery": 50},
         "pPb": {"suppression_max": 0.05, "pT_peak": 4.0, "width": 2.5, "high_pT_recovery": 30},
         "OO": {
@@ -614,29 +655,29 @@ def generate_raa_data(
         },  # ALICE: 0.15-0.20 min
     }
 
-    p = params.get(system, params["OO"])
+    p: dict[str, float] = params.get(system, params["OO"])
 
     # Suppression profile: peaks around pT_peak, rises at low and high pT
     # Low-pT rise (Cronin-like): exp(-(pT - pT_peak)^2 / width^2) for pT < pT_peak
     # High-pT recovery: (1 - exp(-pT / recovery_scale))
 
-    suppression_profile = np.exp(-(((pT - p["pT_peak"]) / p["width"]) ** 2))
+    suppression_profile: FloatArray = np.exp(-(((pT - p["pT_peak"]) / p["width"]) ** 2))
     # Suppress at very low pT (soft physics dominates, no suppression)
-    low_pT_cutoff = 1.0 / (1.0 + np.exp(-(pT - 1.5) / 0.5))
+    low_pT_cutoff: FloatArray = 1.0 / (1.0 + np.exp(-(pT - 1.5) / 0.5))
     # High pT recovery toward unity
-    high_pT_recovery = 1.0 - np.exp(-pT / p["high_pT_recovery"])
+    high_pT_recovery: FloatArray = 1.0 - np.exp(-pT / p["high_pT_recovery"])
 
-    suppression = (
+    suppression: FloatArray = (
         p["suppression_max"] * suppression_profile * low_pT_cutoff * (1.0 - 0.5 * high_pT_recovery)
     )
-    R_AA = 1.0 - suppression
+    R_AA: FloatArray = 1.0 - suppression
 
     # Ensure physical bounds
     R_AA = np.clip(R_AA, 0.1, 1.1)
 
     # Add realistic errors (CMS systematic: 3-6%)
-    rel_err = 0.04 + 0.02 * np.exp(-pT / 10)
-    err = np.maximum(R_AA * rel_err, 0.02)
+    rel_err: FloatArray = 0.04 + 0.02 * np.exp(-pT / 10)
+    err: FloatArray = np.maximum(R_AA * rel_err, 0.02)
 
     return {
         "pT": pT,
@@ -659,11 +700,13 @@ def canonical_suppression_factor(strangeness: int, x: float) -> float:
     where x depends on the volume and strange quark density.
     In the grand-canonical limit (x → ∞), γ_S → 1.
     """
-    S = abs(strangeness)
+    S: int = abs(strangeness)
     return bessel_i(S, x) / bessel_i(0, x)
 
 
-def strangeness_enhancement_curve(dNch_deta: np.ndarray) -> dict[str, np.ndarray]:
+def strangeness_enhancement_curve(
+    dNch_deta: FloatArray,
+) -> dict[str, FloatArray]:
     """
     Generate strangeness enhancement vs multiplicity.
 
@@ -672,22 +715,22 @@ def strangeness_enhancement_curve(dNch_deta: np.ndarray) -> dict[str, np.ndarray
     """
     # x parameter scales with volume ∝ multiplicity
     # Calibrated to match experimental data
-    x = 0.1 * dNch_deta**0.6
+    x: FloatArray = 0.1 * dNch_deta**0.6
 
     # Single strange (K, Λ)
-    enhancement_S1 = canonical_suppression_factor(1, x)
+    enhancement_S1: FloatArray = canonical_suppression_factor(1, x)
 
     # Double strange (Ξ)
-    enhancement_S2 = canonical_suppression_factor(2, x)
+    enhancement_S2: FloatArray = canonical_suppression_factor(2, x)
 
     # Triple strange (Ω)
-    enhancement_S3 = canonical_suppression_factor(3, x)
+    enhancement_S3: FloatArray = canonical_suppression_factor(3, x)
 
     # Normalize to pp baseline (low multiplicity)
-    x_pp = 0.1 * 10**0.6
-    norm_S1 = canonical_suppression_factor(1, x_pp)
-    norm_S2 = canonical_suppression_factor(2, x_pp)
-    norm_S3 = canonical_suppression_factor(3, x_pp)
+    x_pp: float = 0.1 * 10**0.6
+    norm_S1: float = canonical_suppression_factor(1, x_pp)
+    norm_S2: float = canonical_suppression_factor(2, x_pp)
+    norm_S3: float = canonical_suppression_factor(3, x_pp)
 
     return {
         "dNch_deta": dNch_deta,
@@ -703,7 +746,7 @@ def strangeness_enhancement_curve(dNch_deta: np.ndarray) -> dict[str, np.ndarray
 # =============================================================================
 
 
-def temperature_evolution(tau: np.ndarray, T_0: float, tau_0: float = 0.5) -> np.ndarray:
+def temperature_evolution(tau: FloatArray, T_0: Temperature, tau_0: Time = 0.5) -> FloatArray:
     """
     Temperature evolution in Bjorken expansion.
 
@@ -715,8 +758,12 @@ def temperature_evolution(tau: np.ndarray, T_0: float, tau_0: float = 0.5) -> np
 
 
 def energy_density_profile_2d(
-    x: np.ndarray, y: np.ndarray, nucleus_A: Nucleus, nucleus_B: Nucleus, b: float
-) -> np.ndarray:
+    x: FloatArray,
+    y: FloatArray,
+    nucleus_A: Nucleus,
+    nucleus_B: Nucleus,
+    b: Length,
+) -> FloatArray:
     """
     Initial energy density profile in transverse plane.
 
@@ -727,16 +774,16 @@ def energy_density_profile_2d(
     X, Y = np.meshgrid(x, y)
 
     # Thickness function: integral of Woods-Saxon along z
-    def thickness(xx, yy, nuc, x_shift=0):
-        r_perp = np.sqrt((xx - x_shift) ** 2 + yy**2)
+    def thickness(xx: FloatArray, yy: FloatArray, nuc: Nucleus, x_shift: Length = 0) -> FloatArray:
+        r_perp: FloatArray = np.sqrt((xx - x_shift) ** 2 + yy**2)
         # Approximate integral
         return woods_saxon(r_perp, nuc) * 2 * nuc.R0
 
-    T_A = thickness(X, Y, nucleus_A)
-    T_B = thickness(X, Y, nucleus_B, x_shift=b)
+    T_A: FloatArray = thickness(X, Y, nucleus_A)
+    T_B: FloatArray = thickness(X, Y, nucleus_B, x_shift=b)
 
     # Binary collision density
-    epsilon = T_A * T_B
+    epsilon: FloatArray = T_A * T_B
 
     # Normalize
     epsilon = epsilon / np.max(epsilon)
@@ -749,25 +796,25 @@ def energy_density_profile_2d(
 # =============================================================================
 
 
-def oxygen_alpha_cluster_positions() -> np.ndarray:
+def oxygen_alpha_cluster_positions() -> FloatArray:
     """
     Generate O-16 alpha cluster configuration (tetrahedral).
 
     Four alpha particles at vertices of a tetrahedron.
     """
     # Tetrahedron vertices (edge length ~ 3.5 fm from nuclear physics)
-    a = 1.8  # Scale factor [fm]
+    a: Length = 1.8  # Scale factor [fm]
 
-    vertices = np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]]) * a
+    vertices: FloatArray = np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]]) * a
 
     # Each alpha has 4 nucleons in a small cluster
-    nucleon_positions = []
-    alpha_size = 0.5  # fm, internal alpha size
+    nucleon_positions: list[FloatArray] = []
+    alpha_size: Length = 0.5  # fm, internal alpha size
 
     for v in vertices:
         # 4 nucleons per alpha, randomly distributed
         for _ in range(4):
-            offset = np.random.normal(0, alpha_size, 3)
+            offset: FloatArray = np.random.normal(0, alpha_size, 3)
             nucleon_positions.append(v + offset)
 
     return np.array(nucleon_positions)
@@ -778,18 +825,20 @@ def oxygen_alpha_cluster_positions() -> np.ndarray:
 # =============================================================================
 
 
-def export_for_pgfplots(data: dict, filename: str, header: str = ""):
+def export_for_pgfplots(
+    data: dict[str, FloatArray | float], filename: str, header: str = ""
+) -> None:
     """Export data dictionary to space-separated file for pgfplots."""
 
     # Get arrays and ensure same length
-    keys = list(data.keys())
-    arrays = [np.atleast_1d(data[k]) for k in keys]
+    keys: list[str] = list(data.keys())
+    arrays: list[FloatArray] = [np.atleast_1d(data[k]) for k in keys]
 
     with open(filename, "w") as f:
         f.write(f"# {header}\n")
         f.write("# " + " ".join(keys) + "\n")
         for i in range(len(arrays[0])):
-            row = [str(arr[i] if i < len(arr) else arr[-1]) for arr in arrays]
+            row: list[str] = [str(arr[i] if i < len(arr) else arr[-1]) for arr in arrays]
             f.write(" ".join(row) + "\n")
 
 
@@ -799,23 +848,23 @@ if __name__ == "__main__":
     print("=" * 50)
 
     # Test Woods-Saxon
-    r = np.linspace(0, 10, 50)
+    r: FloatArray = np.linspace(0, 10, 50)
     for name, nuc in [("O-16", NUCLEI["O"]), ("Pb-208", NUCLEI["Pb"])]:
-        rho = woods_saxon(r, nuc)
+        rho: FloatArray = woods_saxon(r, nuc)
         print(f"{name}: R_0 = {nuc.R0:.2f} fm, ρ(0) = {rho[0]:.3f}")
 
     # Test Bjorken energy density
-    params = estimate_system_parameters(NUCLEI["O"], 0.05)
+    params: dict[str, float] = estimate_system_parameters(NUCLEI["O"], 0.05)
     print(f"\nO-O central: ε_Bj = {params['epsilon_Bj']:.1f} GeV/fm³")
 
     params = estimate_system_parameters(NUCLEI["Pb"], 0.05)
     print(f"Pb-Pb central: ε_Bj = {params['epsilon_Bj']:.1f} GeV/fm³")
 
     # Test R_AA
-    raa_OO = generate_raa_data("OO")
+    raa_OO: dict[str, FloatArray] = generate_raa_data("OO")
     print(f"\nO-O R_AA at 6 GeV: {np.interp(6, raa_OO['pT'], raa_OO['R_AA']):.2f}")
 
-    raa_PbPb = generate_raa_data("PbPb")
+    raa_PbPb: dict[str, FloatArray] = generate_raa_data("PbPb")
     print(f"Pb-Pb R_AA at 6 GeV: {np.interp(6, raa_PbPb['pT'], raa_PbPb['R_AA']):.2f}")
 
     print("\nPhysics module loaded successfully!")
