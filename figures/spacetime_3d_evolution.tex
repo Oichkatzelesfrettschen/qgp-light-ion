@@ -1,0 +1,138 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+% Title
+\node[font=\large\bfseries] at (7, 11) {Energy Density Evolution: $\varepsilon(x, y, \tau)$};
+
+% Four time slices arranged in 2x2 grid
+\def\slicewidth{6cm}
+\def\sliceheight{5cm}
+
+% τ = 0.6 fm/c (Initial state)
+\begin{axis}[
+    at={(0, 5.5cm)},
+    width=\slicewidth,
+    height=\sliceheight,
+    xlabel={$x$ [fm]},
+    ylabel={$y$ [fm]},
+    title={$\tau = 0.6$ fm/$c$ (Initial)},
+    title style={font=\small\bfseries},
+    colormap={hot2}{rgb255(0cm)=(0,0,0) rgb255(0.3cm)=(230,0,0) rgb255(0.6cm)=(255,210,0) rgb255(1cm)=(255,255,255)},
+    colorbar=false,
+    view={0}{90},
+    point meta min=0, point meta max=50,
+    xmin=-8, xmax=8, ymin=-8, ymax=8,
+    xlabel style={font=\scriptsize},
+    ylabel style={font=\scriptsize},
+    tick label style={font=\tiny},
+]
+\addplot3[surf, shader=interp, mesh/rows=50, mesh/cols=50]
+    table [x index=0, y index=1, z index=2] {data/3d_spacetime/epsilon_xy_tau0.6.dat};
+\end{axis}
+
+% τ = 2.0 fm/c
+\begin{axis}[
+    at={(7cm, 5.5cm)},
+    width=\slicewidth,
+    height=\sliceheight,
+    xlabel={$x$ [fm]},
+    ylabel={$y$ [fm]},
+    title={$\tau = 2.0$ fm/$c$ (QGP)},
+    title style={font=\small\bfseries},
+    colormap={hot2}{rgb255(0cm)=(0,0,0) rgb255(0.3cm)=(230,0,0) rgb255(0.6cm)=(255,210,0) rgb255(1cm)=(255,255,255)},
+    colorbar=false,
+    view={0}{90},
+    point meta min=0, point meta max=50,
+    xmin=-8, xmax=8, ymin=-8, ymax=8,
+    xlabel style={font=\scriptsize},
+    ylabel style={font=\scriptsize},
+    tick label style={font=\tiny},
+]
+\addplot3[surf, shader=interp, mesh/rows=50, mesh/cols=50]
+    table [x index=0, y index=1, z index=2] {data/3d_spacetime/epsilon_xy_tau2.0.dat};
+\end{axis}
+
+% τ = 5.0 fm/c
+\begin{axis}[
+    at={(0, 0)},
+    width=\slicewidth,
+    height=\sliceheight,
+    xlabel={$x$ [fm]},
+    ylabel={$y$ [fm]},
+    title={$\tau = 5.0$ fm/$c$ (Expansion)},
+    title style={font=\small\bfseries},
+    colormap={hot2}{rgb255(0cm)=(0,0,0) rgb255(0.3cm)=(230,0,0) rgb255(0.6cm)=(255,210,0) rgb255(1cm)=(255,255,255)},
+    colorbar=false,
+    view={0}{90},
+    point meta min=0, point meta max=50,
+    xmin=-8, xmax=8, ymin=-8, ymax=8,
+    xlabel style={font=\scriptsize},
+    ylabel style={font=\scriptsize},
+    tick label style={font=\tiny},
+]
+\addplot3[surf, shader=interp, mesh/rows=50, mesh/cols=50]
+    table [x index=0, y index=1, z index=2] {data/3d_spacetime/epsilon_xy_tau5.0.dat};
+\end{axis}
+
+% τ = 10.0 fm/c (Freeze-out)
+\begin{axis}[
+    at={(7cm, 0)},
+    width=\slicewidth,
+    height=\sliceheight,
+    xlabel={$x$ [fm]},
+    ylabel={$y$ [fm]},
+    title={$\tau = 10.0$ fm/$c$ (Freeze-out)},
+    title style={font=\small\bfseries},
+    colormap={hot2}{rgb255(0cm)=(0,0,0) rgb255(0.3cm)=(230,0,0) rgb255(0.6cm)=(255,210,0) rgb255(1cm)=(255,255,255)},
+    colorbar,
+    colorbar style={
+        at={(1.15,0.5)},
+        anchor=west,
+        ylabel={$\varepsilon$ [GeV/fm$^3$]},
+        ylabel style={font=\scriptsize},
+    },
+    view={0}{90},
+    point meta min=0, point meta max=50,
+    xmin=-8, xmax=8, ymin=-8, ymax=8,
+    xlabel style={font=\scriptsize},
+    ylabel style={font=\scriptsize},
+    tick label style={font=\tiny},
+]
+\addplot3[surf, shader=interp, mesh/rows=50, mesh/cols=50]
+    table [x index=0, y index=1, z index=2] {data/3d_spacetime/epsilon_xy_tau10.0.dat};
+\end{axis}
+
+% Time arrow
+\draw[->, ultra thick, accentpurple] (6.2, 8.5) -- (7.8, 8.5)
+    node[midway, above, font=\small] {$\tau$};
+\draw[->, ultra thick, accentpurple] (6.2, 3) -- (7.8, 3)
+    node[midway, above, font=\small] {$\tau$};
+\draw[->, ultra thick, accentpurple] (3, 5.2) -- (3, 5.8)
+    node[midway, right, font=\small] {};
+
+% Physics annotation
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=2pt,
+      font=\scriptsize, align=left, inner sep=3pt]
+    at (13.5, 8) {%
+    \textbf{Bjorken Expansion}\\[2pt]
+    $\varepsilon(\tau) \propto \tau^{-4/3}$\\[2pt]
+    + Transverse flow\\
+    + Viscous corrections
+};
+
+\node[draw=coldphase, thick, fill=white, fill opacity=0.9, rounded corners=2pt,
+      font=\scriptsize, align=center, inner sep=3pt]
+    at (13.5, 2) {%
+    Freeze-out at\\
+    $T = 156.5$ MeV
+};
+
+\end{tikzpicture}
+\end{document}

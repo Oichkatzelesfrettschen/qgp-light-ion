@@ -1,0 +1,136 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+% Left panel: Knudsen number and response
+\begin{axis}[
+    name=leftplot,
+    at={(0, 0)},
+    width=8cm,
+    height=7cm,
+    xlabel={System Size $R$ [fm]},
+    ylabel={Knudsen Number / Response},
+    xmin=0.5, xmax=8,
+    ymin=0, ymax=0.4,
+    grid=major,
+    grid style={gridcolor},
+    legend pos=north east,
+    legend style={fill=white, fill opacity=0.9, draw=none, font=\small},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    tick label style={font=\small},
+    title={Knudsen Number Scaling},
+    title style={font=\large\bfseries},
+]
+
+% Knudsen number
+\addplot[hotphase, ultra thick, solid]
+    table [x index=0, y index=1] {data/physics_connections/knudsen_scaling.dat};
+\addlegendentry{$\mathrm{Kn} = \lambda_{\mathrm{mfp}}/R \propto (\eta/s)/(TR)$}
+
+% Response function
+\addplot[coolphase, ultra thick, dashed]
+    table [x index=0, y index=2] {data/physics_connections/knudsen_scaling.dat};
+\addlegendentry{$v_2/\varepsilon_2$ (hydro response)}
+
+% Mark specific systems
+\addplot[only marks, mark=*, mark size=5pt, primaryblue]
+    table [x index=1, y index=2] {data/physics_connections/knudsen_systems.dat};
+
+% System labels - positioned to avoid curve overlap
+\node[font=\scriptsize, primaryblue, anchor=south west] at (axis cs:1.0, 0.18) {pp};
+\node[font=\scriptsize, primaryblue, anchor=south west] at (axis cs:1.6, 0.14) {p--Pb};
+\node[font=\scriptsize, primaryblue, anchor=south west] at (axis cs:2.7, 0.08) {O--O};
+\node[font=\scriptsize, primaryblue, anchor=north] at (axis cs:6.5, 0.02) {Pb--Pb};
+
+% Hydro validity region
+\fill[coolphase, opacity=0.15] (axis cs:3, 0) rectangle (axis cs:8, 0.4);
+\node[font=\scriptsize, coolphase, anchor=north west] at (axis cs:3.2, 0.12) {Hydro valid};
+
+% Non-hydro region
+\fill[hotphase, opacity=0.15] (axis cs:0.5, 0) rectangle (axis cs:2, 0.4);
+\node[font=\scriptsize, hotphase, align=center, anchor=north] at (axis cs:1.25, 0.12) {Non-hydro};
+
+\end{axis}
+
+% Right panel: QGP signature onset
+\begin{axis}[
+    name=rightplot,
+    at={(9cm, 0)},
+    width=8cm,
+    height=7cm,
+    xlabel={$\langle dN_{\mathrm{ch}}/d\eta \rangle$},
+    ylabel={Signature Strength [normalized]},
+    xmode=log,
+    xmin=1, xmax=3000,
+    ymin=0, ymax=1.2,
+    grid=major,
+    grid style={gridcolor},
+    legend pos=south east,
+    legend style={fill=white, fill opacity=0.9, draw=none, font=\small, cells={anchor=west}},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    tick label style={font=\small},
+    title={QGP Signature Onset},
+    title style={font=\large\bfseries},
+]
+
+% Flow signature
+\addplot[primaryblue, ultra thick, solid]
+    table [x index=0, y index=1] {data/physics_connections/qgp_signature_onset.dat};
+\addlegendentry{Collective flow}
+
+% Strangeness enhancement (normalized)
+\addplot[secondaryorange, ultra thick, dashed]
+    table [x expr=\thisrowno{0}, y expr=\thisrowno{2}/5] {data/physics_connections/qgp_signature_onset.dat};
+\addlegendentry{Strangeness enh.}
+
+% Jet suppression
+\addplot[tertiarygreen, ultra thick, dotted]
+    table [x index=0, y index=3] {data/physics_connections/qgp_signature_onset.dat};
+\addlegendentry{Jet quenching}
+
+% HBT size (normalized)
+\addplot[accentpurple, ultra thick, dashdotted]
+    table [x index=0, y index=4] {data/physics_connections/qgp_signature_onset.dat};
+\addlegendentry{HBT size}
+
+% System markers
+\draw[gray, dashed, thick] (axis cs:10, 0) -- (axis cs:10, 1.2);
+\node[font=\tiny, gray, rotate=90] at (axis cs:8, 0.6) {pp};
+
+\draw[gray, dashed, thick] (axis cs:50, 0) -- (axis cs:50, 1.2);
+\node[font=\tiny, gray, rotate=90] at (axis cs:40, 0.6) {p--Pb};
+
+\draw[gray, dashed, thick] (axis cs:135, 0) -- (axis cs:135, 1.2);
+\node[font=\tiny, gray, rotate=90] at (axis cs:110, 0.6) {O--O};
+
+\draw[gray, dashed, thick] (axis cs:1940, 0) -- (axis cs:1940, 1.2);
+\node[font=\tiny, gray, rotate=90] at (axis cs:1500, 0.6) {Pb--Pb};
+
+% Threshold annotation (moved to avoid system marker overlap)
+\node[draw, fill=highlightcolor!40, rounded corners=2pt,
+      font=\scriptsize, align=center, inner sep=3pt]
+    at (axis cs:350, 1.08) {%
+    O--O: threshold for QGP signatures
+};
+
+\end{axis}
+
+% Physics interpretation box
+\node[draw=gridmajor, fill=white, rounded corners=3pt,
+      font=\footnotesize, align=left, inner sep=5pt]
+    at (8.5, -1.5) {%
+    \textbf{Interpretation:} Hydrodynamic behavior requires $\mathrm{Kn} = \lambda_{\mathrm{mfp}}/R \ll 1$.\\
+    O--O ($R \sim 3$ fm) sits near the threshold where collective signatures emerge.\\
+    \textit{Kn values are model-dependent; exact threshold is not sharply defined.}
+};
+
+\end{tikzpicture}
+\end{document}

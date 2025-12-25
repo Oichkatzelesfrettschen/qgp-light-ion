@@ -1,0 +1,68 @@
+# =============================================================================
+# ChkTeX Configuration for QGP Light-Ion Project
+# =============================================================================
+# Documentation: https://www.nongnu.org/chktex/
+#
+# Warning numbers reference: chktex -w | grep Warning
+#
+# Suppressed warnings:
+#   1: Command terminated with space - common in LaTeX plus/minus
+#   3: You should enclose parenthesis with {} - false positive in math
+#   8: Wrong length of dash - O--O/Ne--Ne intentional
+#   9: Bracket mismatch - false positive from pandoc citations {[}1{]}
+#  12: Interword spacing - handled by microtype
+#  13: Intersentence spacing - handled by microtype
+#  24: Delete space for pagerefs - too strict
+#  26: Remove spaces in front of punctuation - style choice
+#  27: Could not execute LaTeX command - expected for \input in subfigures
+#  36: Space in front of parenthesis - physics notation f(x)
+#  38: Punctuation in front of quotes - style choice
+#  44: User Regex - disabled by default
+
+CmdLine
+{
+    -n1
+    -n3
+    -n8
+    -n9
+    -n12
+    -n13
+    -n24
+    -n26
+    -n27
+    -n36
+    -n38
+    -n44
+}
+
+# Environments with raw/verbatim content
+VerbEnvir
+{
+    verbatim
+    lstlisting
+    minted
+    tikzpicture
+    axis
+}
+
+# Macros where arguments should not be checked
+WipeArg
+{
+    \includegraphics:
+    \input:
+    \bibliography:
+    \usepackage:
+    \cite:
+    \citep:
+    \citet:
+    \ref:
+    \label:
+}
+
+# Physics abbreviations
+Abbrev
+{
+    GeV MeV keV TeV eV fm mb nb pb fb
+    ALICE ATLAS CMS LHC RHIC STAR
+    QGP QCD pQCD
+}

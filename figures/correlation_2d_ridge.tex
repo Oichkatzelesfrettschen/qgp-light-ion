@@ -1,0 +1,86 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{colormaps}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+% Main 2D correlation heatmap
+\begin{axis}[
+    name=main,
+    width=12cm,
+    height=9cm,
+    xlabel={$\Delta\eta$},
+    ylabel={$\Delta\phi$ [rad]},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    colormap={plasma}{
+        rgb255(0cm)=(13,8,135)
+        rgb255(0.25cm)=(126,3,168)
+        rgb255(0.5cm)=(204,71,120)
+        rgb255(0.75cm)=(248,149,64)
+        rgb255(1cm)=(240,249,33)
+    },
+    colorbar,
+    colorbar style={
+        ylabel={$C(\Delta\eta, \Delta\phi)$},
+        ylabel style={font=\small},
+        ytick={1.0, 1.5, 2.0, 2.5, 3.0, 3.5},
+    },
+    title={Two-Particle Correlation: Central Pb--Pb at $\sqrt{s_{NN}}$ = 5.02 TeV},
+    title style={font=\large\bfseries, at={(0.5,1.02)}},
+    point meta min=0.9,
+    point meta max=3.5,
+    view={0}{90},  % Top-down view for 2D heatmap
+    xmin=-4, xmax=4,
+    ymin=-1.6, ymax=4.8,
+    ytick={0, 1.5708, 3.1416, 4.7124},
+    yticklabels={$0$, $\frac{\pi}{2}$, $\pi$, $\frac{3\pi}{2}$},
+    xtick={-4, -2, 0, 2, 4},
+]
+
+% 2D heatmap (matrix plot) - loads same data but renders as 2D
+\addplot[
+    matrix plot*,
+    mesh/rows=50,
+    mesh/cols=50,
+    point meta=explicit,
+] table [x index=0, y index=1, meta index=2] {data/2d_correlations/C2_deta_dphi_PbPb.dat};
+
+\end{axis}
+
+% Physics annotations
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=3pt,
+      font=\small, align=left, inner sep=6pt]
+    at (11.5, 6.5) {%
+    \textbf{Key Features}\\[4pt]
+    \textcolor{accentpurple}{$\bullet$} Near-side jet peak\\
+    \quad at $(\Delta\eta, \Delta\phi) \approx (0,0)$\\[3pt]
+    \textcolor{OOcolor}{$\bullet$} Long-range ridge\\
+    \quad extending across $\Delta\eta$\\[3pt]
+    \textcolor{PbPbcolor}{$\bullet$} Away-side structure\\
+    \quad at $\Delta\phi \approx \pi$
+};
+
+% Ridge explanation box
+\node[draw=PbPbcolor, thick, fill=white, fill opacity=0.95, rounded corners=3pt,
+      font=\small, align=center, inner sep=5pt]
+    at (11.5, 2) {%
+    \textbf{Collective Flow Signature}\\[3pt]
+    Ridge $\propto v_2\cos(2\Delta\phi)$\\
+    \hspace{1.2em}$+ v_3\cos(3\Delta\phi) + \ldots$
+};
+
+% Arrow pointing to ridge
+\draw[->, thick, PbPbcolor] (9.2, 4.5) -- (7.5, 4.5);
+\node[font=\footnotesize, PbPbcolor] at (8.3, 5.0) {Ridge};
+
+% Arrow pointing to jet peak
+\draw[->, thick, accentpurple] (9.2, 3.2) -- (6.2, 2.2);
+\node[font=\footnotesize, accentpurple] at (8.0, 3.5) {Jet peak};
+
+\end{tikzpicture}
+\end{document}

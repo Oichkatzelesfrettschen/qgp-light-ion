@@ -1,0 +1,83 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+\begin{axis}[
+    width=13cm,
+    height=9cm,
+    xlabel={Path Length $L$ [fm]},
+    ylabel={Energy Loss $\langle\Delta E\rangle$ [GeV]},
+    xmin=0, xmax=10,
+    ymin=0, ymax=25,
+    grid=major,
+    grid style={gridcolor},
+    legend pos=north west,
+    legend style={fill=white, fill opacity=0.9, draw=none, font=\small},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    tick label style={font=\small},
+    title={Parton Energy Loss: Radiative vs. Collisional},
+    title style={font=\large\bfseries},
+]
+
+% BDMPS-Z radiative loss (L^2)
+\addplot[hotphase, ultra thick, solid, name path=rad]
+    table [x index=0, y index=1] {data/physics_connections/energy_loss_vs_L.dat};
+\addlegendentry{Radiative: $\langle\Delta E\rangle_{\mathrm{rad}} \propto \hat{q}L^2$}
+
+% Collisional loss (L)
+\addplot[coolphase, ultra thick, dashed, name path=coll]
+    table [x index=0, y index=2] {data/physics_connections/energy_loss_vs_L.dat};
+\addlegendentry{Collisional: $\langle\Delta E\rangle_{\mathrm{coll}} \propto L$}
+
+% Total loss
+\addplot[primaryblue, ultra thick, dotted, name path=total]
+    table [x index=0, y index=3] {data/physics_connections/energy_loss_vs_L.dat};
+\addlegendentry{Total: $\langle\Delta E\rangle_{\mathrm{tot}}$}
+
+% Fill between radiative and total
+\addplot[hotphase, opacity=0.15] fill between[of=rad and coll];
+
+% System markers
+\draw[gray, dashed, thick] (axis cs:2.5, 0) -- (axis cs:2.5, 25);
+\node[font=\small, gray, rotate=90] at (axis cs:2.2, 15) {O--O};
+
+\draw[gray, dashed, thick] (axis cs:6, 0) -- (axis cs:6, 25);
+\node[font=\small, gray, rotate=90] at (axis cs:5.7, 15) {Pb--Pb};
+
+% Crossover point annotation
+\draw[accentpurple, thick, ->] (axis cs:3, 2.5) -- (axis cs:2.2, 2.5);
+\node[font=\scriptsize, accentpurple, align=center] at (axis cs:4.5, 3.5) {Collisional\\dominates\\at small $L$};
+
+\draw[accentpurple, thick, ->] (axis cs:7, 15) -- (axis cs:8, 18);
+\node[font=\scriptsize, accentpurple, align=center] at (axis cs:6, 13) {Radiative\\dominates\\at large $L$};
+
+% Physics box
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=2pt,
+      font=\scriptsize, align=left, inner sep=4pt]
+    at (axis cs:8.5, 8) {%
+    \textbf{BDMPS-Z Formalism:}\\[2pt]
+    $\omega_c = \frac{1}{2}\hat{q}L^2$\\[3pt]
+    $\hat{q} \approx 2.5$ GeV$^2$/fm\\
+    (central Pb--Pb)
+};
+
+% Small system insight
+\node[draw=secondaryorange, thick, fill=highlightcolor!30, rounded corners=2pt,
+      font=\scriptsize, align=center, inner sep=4pt]
+    at (axis cs:2.5, 22) {%
+    \textbf{O--O Threshold:}\\
+    $\langle\Delta E\rangle \sim 3$ GeV\\
+    $R_{AA}^{\min} \approx 0.7$
+};
+
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

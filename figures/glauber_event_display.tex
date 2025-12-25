@@ -1,0 +1,160 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{arrows.meta,backgrounds,patterns}
+
+% Load accessible color scheme
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[scale=1.0]
+    % Parameters
+    \def\nucleusRadius{2.5}
+    \def\impactParameter{3.5}
+    \def\nucleonSize{0.12}
+
+    % Draw overlap region (almond shape) with hatching pattern on background layer
+    \begin{scope}[on background layer]
+        \begin{scope}
+            \clip (0,0) circle (\nucleusRadius);
+            \fill[overlapcolor, opacity=0.4] (\impactParameter,0) circle (\nucleusRadius);
+            % Add hatching pattern for accessibility
+            \begin{scope}
+                \clip (0,0) circle (\nucleusRadius);
+                \clip (\impactParameter,0) circle (\nucleusRadius);
+                \draw[overlapcolor!70!black, line width=0.3pt, opacity=0.3, step=0.15cm]
+                    (-1, -3) grid (5, 3);
+            \end{scope}
+        \end{scope}
+    \end{scope}
+
+    % Draw nucleus circles (dashed outlines)
+    \draw[very thick, nucleusAcolor!70!black, dashed, opacity=0.6] (0,0) circle (\nucleusRadius);
+    \draw[very thick, nucleusBcolor!70!black, dashed, opacity=0.6] (\impactParameter,0) circle (\nucleusRadius);
+
+    % ========== NUCLEUS A NUCLEONS ==========
+    % Spectators (outside overlap region - left side) - use circles with border
+    \foreach \x/\y in {
+        -1.8/1.5, -2.0/0.8, -2.1/0.0, -2.0/-0.9, -1.7/-1.6,
+        -1.2/1.9, -1.5/1.2, -1.8/-0.3, -1.4/-1.2, -1.0/-2.0,
+        -0.6/2.2, -0.9/1.6, -0.4/-2.1, -0.8/-1.5, -1.1/0.5,
+        -1.6/0.3, -1.3/-0.6, -0.7/2.0, -1.9/-1.2, -2.2/0.4
+    } {
+        \fill[spectatorcolor!50!white, opacity=0.6] (\x, \y) circle (\nucleonSize);
+        \draw[spectatorcolor!70!black, line width=0.3pt] (\x, \y) circle (\nucleonSize);
+    }
+
+    % Participants (inside overlap region from Nucleus A) - use filled triangles
+    \foreach \x/\y in {
+        0.8/1.0, 0.5/0.3, 0.9/-0.5, 0.3/-1.1, 0.6/1.6,
+        0.2/0.8, 0.7/-0.2, 0.4/-0.8, 1.0/0.1, 0.1/-0.3,
+        0.5/1.3, 0.8/-1.0, 0.3/0.0, 0.6/-0.6, 0.9/0.7,
+        0.2/-1.4, 0.7/0.5, 0.4/1.1, 1.1/-0.4, 0.1/0.6,
+        0.0/1.5, -0.2/1.0, 0.0/-1.6, -0.3/-0.9, -0.1/0.2,
+        -0.4/0.6, -0.2/-0.4, -0.5/1.4, -0.3/0.0, -0.6/-1.1
+    } {
+        \fill[participantcolor] (\x, \y) -- ++(0, \nucleonSize*1.4) -- ++(\nucleonSize*1.2, -\nucleonSize*2.1) -- cycle;
+    }
+
+    % ========== NUCLEUS B NUCLEONS ==========
+    % Spectators (outside overlap region - right side) - use circles with border
+    \foreach \x/\y in {
+        5.3/1.5, 5.5/0.8, 5.6/0.0, 5.5/-0.9, 5.2/-1.6,
+        4.7/1.9, 5.0/1.2, 5.3/-0.3, 4.9/-1.2, 4.5/-2.0,
+        4.1/2.2, 4.4/1.6, 3.9/-2.1, 4.3/-1.5, 4.6/0.5,
+        5.1/0.3, 4.8/-0.6, 4.2/2.0, 5.4/-1.2, 5.7/0.4
+    } {
+        \fill[spectatorcolor!50!white, opacity=0.6] (\x, \y) circle (\nucleonSize);
+        \draw[spectatorcolor!70!black, line width=0.3pt] (\x, \y) circle (\nucleonSize);
+    }
+
+    % Participants (inside overlap region from Nucleus B) - use filled triangles
+    \foreach \x/\y in {
+        2.7/1.0, 3.0/0.3, 2.6/-0.5, 3.2/-1.1, 2.9/1.6,
+        3.3/0.8, 2.8/-0.2, 3.1/-0.8, 2.5/0.1, 3.4/-0.3,
+        3.0/1.3, 2.7/-1.0, 3.2/0.0, 2.9/-0.6, 2.6/0.7,
+        3.3/-1.4, 2.8/0.5, 3.1/1.1, 2.4/-0.4, 3.4/0.6,
+        3.5/1.2, 3.6/0.5, 3.5/-1.3, 3.7/-0.6, 3.4/0.2
+    } {
+        \fill[participantcolor] (\x, \y) -- ++(0, \nucleonSize*1.4) -- ++(\nucleonSize*1.2, -\nucleonSize*2.1) -- cycle;
+    }
+
+    % Draw impact parameter arrow
+    \draw[-{Stealth[length=3mm]}, very thick, textdark]
+        (0, -\nucleusRadius-0.8) -- (\impactParameter, -\nucleusRadius-0.8)
+        node[midway, below, font=\large] {$b$};
+
+    % Add labels for nuclei
+    \node[font=\Large\bfseries, nucleusAcolor!70!black] at (0, \nucleusRadius+0.7) {Nucleus A};
+    \node[font=\Large\bfseries, nucleusBcolor!70!black] at (\impactParameter, \nucleusRadius+0.7) {Nucleus B};
+
+    % Add axis labels
+    \draw[-{Stealth[length=2.5mm]}, thick, textlight]
+        (-\nucleusRadius-0.5, -\nucleusRadius-2.0) -- (-\nucleusRadius-0.5+1.5, -\nucleusRadius-2.0)
+        node[right, font=\footnotesize] {$x$};
+    \draw[-{Stealth[length=2.5mm]}, thick, textlight]
+        (-\nucleusRadius-0.5, -\nucleusRadius-2.0) -- (-\nucleusRadius-0.5, -\nucleusRadius-2.0+1.5)
+        node[above, font=\footnotesize] {$y$};
+
+    % Legend with N_part and N_coll values (moved further right to avoid edge)
+    \begin{scope}[shift={(\impactParameter+\nucleusRadius+1.0, \nucleusRadius-0.5)}]
+        % Participant triangle
+        \fill[participantcolor] (0, 0.05) -- ++(0, 0.16) -- ++(0.14, -0.24) -- cycle;
+        \node[right=0.25cm, font=\small, anchor=west] at (0.14, 0) {Participant};
+
+        % Spectator circle
+        \fill[spectatorcolor!50!white, opacity=0.6] (0, -0.6) circle (0.12);
+        \draw[spectatorcolor!70!black, line width=0.3pt] (0, -0.6) circle (0.12);
+        \node[right=0.25cm, font=\small, anchor=west] at (0.12, -0.6) {Spectator};
+
+        % Overlap region with hatching
+        \fill[overlapcolor, opacity=0.4] (-0.2, -1.2) rectangle (0.2, -1.6);
+        \draw[overlapcolor!70!black, line width=0.3pt, opacity=0.3, step=0.08cm]
+            (-0.2, -1.2) grid (0.2, -1.6);
+        \node[right=0.45cm, font=\small, anchor=west] at (0.2, -1.4) {Overlap};
+
+        % Glauber quantities
+        \node[font=\small, anchor=west] at (-0.2, -2.2) {$N_{\mathrm{part}} \approx 55$};
+        \node[font=\small, anchor=west] at (-0.2, -2.7) {$N_{\mathrm{coll}} \approx 150$};
+        \node[font=\footnotesize, textlight, anchor=west, text width=2.8cm] at (-0.2, -3.4)
+            {(semi-central collision)};
+    \end{scope}
+
+    % Physics mechanism annotation box (repositioned to lower left)
+    \begin{scope}[shift={(-\nucleusRadius-3.2, -\nucleusRadius-0.5)}]
+        \node[draw=annotationborder, fill=annotationbg, rounded corners, font=\scriptsize,
+              text width=3.8cm, align=left, inner sep=4pt, anchor=north west] at (0, 0) {
+            \textbf{Glauber Model:}\\[2pt]
+            $N_{\mathrm{coll}} = \int T_A T_B \sigma_{NN}^{\mathrm{inel}} d^2s$\\[2pt]
+            Binary collisions scale hard processes (jets, heavy quarks).
+        };
+    \end{scope}
+
+    % Inset: Side view (3D perspective) - moved to upper left with clearance
+    \begin{scope}[shift={(-\nucleusRadius-3.2, \nucleusRadius+0.5)}, scale=0.4]
+        % Background box for inset
+        \fill[annotationbg, opacity=0.95] (-2.2, -2.2) rectangle (5.2, 2.8);
+        \draw[thick, annotationborder] (-2.2, -2.2) rectangle (5.2, 2.8);
+
+        % Side view label
+        \node[font=\small\bfseries, anchor=north, textdark] at (1.5, 2.5) {Side View};
+
+        % Nucleus A (left, viewed from side - ellipse)
+        \draw[very thick, nucleusAcolor!70!black, fill=nucleusAcolor!20, opacity=0.7]
+            (-0.5, 0) ellipse (0.8 and 1.8);
+
+        % Nucleus B (right, slightly overlapping)
+        \draw[very thick, nucleusBcolor!70!black, fill=nucleusBcolor!20, opacity=0.7]
+            (2.0, 0) ellipse (0.8 and 1.8);
+
+        % Beam direction arrow
+        \draw[-{Stealth[length=2.5mm]}, thick, textmid]
+            (-1.5, -1.5) -- (0.5, -1.5) node[right, font=\scriptsize] {$z$ (beam)};
+    \end{scope}
+
+    % Title/Caption area
+    \node[font=\small, text width=10cm, align=center, textdark] at (\impactParameter/2, -\nucleusRadius-2.2)
+        {Glauber Monte Carlo Event Display (Transverse Plane)};
+
+\end{tikzpicture}
+\end{document}

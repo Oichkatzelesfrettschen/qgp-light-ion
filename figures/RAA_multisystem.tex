@@ -1,0 +1,193 @@
+% RAA_multisystem.tex
+%
+% Multi-system comparison of nuclear modification factor R_AA
+% Shows progression from no suppression (pp, p-Pb) to strong suppression (Pb-Pb)
+% O-O represents the threshold where jet quenching becomes observable
+%
+% DATA CLASSIFICATION:
+%   MEASURED: CMS O-O minimum-bias (HIN-25-008), ALICE Pb-Pb 0-10% central (JHEP 11 2018 013)
+%   PREDICTED: Model curves for Ne-Ne, Xe-Xe (BDMPS-Z + Glauber)
+%   NOTE: CMS O-O data is minimum-bias, NOT centrality-differential
+%
+% REFACTORED: Uses precomputed data from data/figure_curves/raa_*.dat
+
+\documentclass[border=3mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{amsmath}
+\pgfplotsset{compat=1.18}
+\input{accessible_colors.tex}
+
+% Define line styles for accessibility
+\pgfplotsset{
+    every axis plot/.append style={thick},
+}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{axis}[
+    title={\textbf{Nuclear Modification Factor: System Size Dependence}},
+    xlabel={$p_T$ (GeV/$c$)},
+    ylabel={$R_{AA}$},
+    xmin=0, xmax=50,
+    ymin=0, ymax=1.4,
+    width=15cm,
+    height=10cm,
+    legend pos=south east,
+    legend style={
+        font=\small,
+        cells={anchor=west},
+        row sep=2pt,
+        fill=bgcream,
+        draw=annotationborder,
+    },
+    grid=both,
+    grid style={line width=0.1pt, draw=gridcolor},
+    major grid style={line width=0.2pt, draw=gridmajor},
+]
+
+% Reference line at R_AA = 1
+\addplot[textdark, dashed, thin, domain=0:50] {1};
+\node[anchor=south west, font=\footnotesize, textdark] at (axis cs:40, 1.02) {No modification};
+
+% pp reference (R_AA = 1 by definition) - precomputed
+\addplot[ppcolor, thick, dotted]
+    table [x index=0, y index=1] {data/figure_curves/raa_pp.dat};
+\addlegendentry{pp (reference)}
+
+% p-Pb (R_pPb ~ 1, slight Cronin enhancement) - precomputed
+\addplot[pPbcolor, thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/raa_pPb.dat};
+\addlegendentry{p--Pb ($R_{pA} \approx 1$)}
+
+% O-O model curve (PREDICTED) - precomputed
+\addplot[OOcolor, thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/raa_OO_model.dat};
+\addlegendentry{O--O model (pred.)}
+
+% O-O data points with error bars - CMS HIN-25-008 (MEASURED)
+\addplot[
+    only marks,
+    mark=*,
+    mark size=3.5pt,
+    color=OOcolor,
+    error bars/.cd,
+    y dir=both,
+    y explicit,
+] table [x index=0, y index=1, y error index=2] {data/figure_curves/raa_OO_data.dat};
+\addlegendentry{O--O CMS (min-bias)}
+
+% Ne-Ne minimum-bias (slightly more suppression than O-O) - precomputed
+\addplot[NeNecolor, thick, dashdotted]
+    table [x index=0, y index=1] {data/figure_curves/raa_NeNe_model.dat};
+\addlegendentry{Ne--Ne model (pred.)}
+
+% Xe-Xe (intermediate) - precomputed
+\addplot[XeXecolor, thick, densely dotted]
+    table [x index=0, y index=1] {data/figure_curves/raa_XeXe_model.dat};
+\addlegendentry{Xe--Xe central}
+
+% Pb-Pb model curve (PREDICTED) - precomputed
+\addplot[PbPbcolor, thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/raa_PbPb_model.dat};
+\addlegendentry{Pb--Pb model (pred.)}
+
+% Pb-Pb data points with error bars - ALICE (MEASURED)
+\addplot[
+    only marks,
+    mark=square*,
+    mark size=3.5pt,
+    color=PbPbcolor,
+    error bars/.cd,
+    y dir=both,
+    y explicit,
+] table [x index=0, y index=1, y error index=2] {data/figure_curves/raa_PbPb_data.dat};
+\addlegendentry{Pb--Pb ALICE data}
+
+% Annotations for minima - measured values (repositioned to avoid data overlap)
+\node[OOcolor, font=\tiny, anchor=south west] at (axis cs:12, 0.72) {$R_{AA}^{\min} \approx 0.69$ (CMS)};
+\draw[OOcolor, thin, ->] (axis cs:11.5, 0.71) -- (axis cs:7, 0.69);
+\node[PbPbcolor, font=\tiny, anchor=north west] at (axis cs:14, 0.20) {$R_{AA}^{\min} \approx 0.15$ (ALICE)};
+\draw[PbPbcolor, thin, ->] (axis cs:13.5, 0.19) -- (axis cs:8, 0.15);
+
+% Cronin enhancement label
+\node[pPbcolor, font=\tiny, anchor=south, fill=bgcream, fill opacity=0.9, text opacity=1, inner sep=1pt]
+    at (axis cs:2.5, 1.12) {Cronin};
+
+% Medium region highlight (maximum sensitivity to q-hat) - with pattern for accessibility
+\fill[highlightcolor, opacity=0.25] (axis cs:5, 0) rectangle (axis cs:15, 1.4);
+\draw[highlightcolor, opacity=0.4, densely dotted] (axis cs:5, 0) grid[xstep=0.5, ystep=0.2] (axis cs:15, 1.4);
+\node[font=\scriptsize, textmid, anchor=north, align=center]
+    at (axis cs:10, 0.02) {Max. sensitivity\\to $\hat{q}$};
+
+% System size arrow - positioned at left edge with enough margin
+\draw[->, ultra thick, textmid] (axis cs:2.5, 0.25) -- (axis cs:2.5, 0.55);
+\node[font=\small, textmid, anchor=south, align=center] at (axis cs:2.5, 0.58) {Increasing\\$L$, $\hat{q}$};
+
+% Physics annotation box - with JET Collaboration q-hat values (moved to center-top)
+\node[
+    anchor=north west,
+    font=\footnotesize,
+    text width=3.8cm,
+    fill=annotationbg,
+    draw=annotationborder,
+    rounded corners,
+    inner sep=3pt,
+] at (axis cs:20, 1.38) {
+    \textbf{Energy Loss (BDMPS-Z)}\\[1pt]
+    $\Delta E \propto \hat{q} L^2$\\[2pt]
+    \textbf{JET Collab.:}\\
+    $\hat{q} \approx 1.5$--$4.5$ GeV$^2$/fm
+};
+
+% High-pT physics annotation box - repositioned to avoid legend overlap
+\node[
+    anchor=south east,
+    font=\footnotesize,
+    text width=3.6cm,
+    fill=annotationbg,
+    draw=PbPbcolor!30,
+    rounded corners,
+    inner sep=3pt,
+] at (axis cs:49, 0.48) {
+    \textbf{High-$p_T$ convergence}\\[1pt]
+    Surface bias: jets escape\\
+    from near-surface regions
+};
+
+% O-O implication annotation - repositioned to clear area
+\node[
+    OOcolor,
+    font=\footnotesize,
+    anchor=west,
+    fill=bgcream,
+    fill opacity=0.95,
+    text opacity=1,
+    draw=OOcolor,
+    rounded corners,
+    inner sep=2pt,
+    text width=3.2cm,
+] at (axis cs:30, 0.92) {
+    First jet quenching in $A<50$ system
+};
+
+% Data sources annotation (bottom left, outside sensitive region)
+\node[
+    anchor=south west,
+    font=\tiny,
+    text width=6cm,
+    fill=annotationbg,
+    draw=gridmajor,
+    rounded corners,
+    inner sep=2pt,
+    align=left,
+] at (axis cs:0.5, 0.02) {
+    \textbf{Data:} O--O: CMS HIN-25-008 (min-bias); Pb--Pb: ALICE JHEP 11 (2018) 013 (0--10\%)\\
+    \textbf{Models:} BDMPS-Z energy loss ($\hat{q}$ scaled by $L$). Filled markers = data; dashed = model.
+};
+
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

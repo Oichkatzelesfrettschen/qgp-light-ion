@@ -1,0 +1,309 @@
+\documentclass[11pt]{article}
+
+% ============================================================================
+% CORE PACKAGES (Load order matters)
+% ============================================================================
+
+% Unicode input support (for Pandoc-generated content with Greek letters, etc.)
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}     % Additional text symbols (≈, √, etc.)
+\usepackage{textgreek}    % Greek letters in text mode
+
+% Geometry first (will be reconfigured by typography file)
+\usepackage[margin=1in]{geometry}
+
+% Graphics and math
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Tables (longtable for Pandoc-generated tables, booktabs for professional formatting)
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}        % Enhanced column specifications
+\usepackage{calc}         % For \real{} in Pandoc table widths
+
+% Define 'none' counter for Pandoc's \def\LTcaptype{none} construct
+\newcounter{none}
+
+% Define \real{} command for Pandoc table column widths
+% Pandoc uses: p{(\linewidth - 8\tabcolsep) * \real{0.XXXX}}
+% With calc package, \real{} should just pass through the decimal factor
+\providecommand{\real}[1]{#1}
+
+% Fix "Infinite glue shrinkage" errors in longtable page breaks
+% raggedbottom allows flexible page bottoms instead of forcing \flushbottom
+\raggedbottom
+
+% Suppress infinite shrink errors from longtable (TeX can recover gracefully)
+% These occur when tables span page boundaries with stretchable glue
+\makeatletter
+\def\@textbottom{\vskip \z@ \@plus 1pt}
+\let\@texttop\relax
+\makeatother
+
+% Colors (before hyperref)
+\usepackage{xcolor}
+
+% Hyperlinks (before natbib for compatibility)
+% bookmarks options must be set at load time, not via hypersetup
+\usepackage[bookmarks=true,bookmarksnumbered=true]{hyperref}
+% bookmark package: eliminates "rerunfilecheck" warnings by handling bookmarks more efficiently
+\usepackage{bookmark}
+
+% Bibliography - superscript citations
+\usepackage[super,sort&compress]{natbib}
+
+% ============================================================================
+% ACCESSIBLE TYPOGRAPHY CONFIGURATION
+% ============================================================================
+% Libertinus fonts + optimal layout + accessibility features
+% See figures/accessible_typography.tex for detailed rationale
+\input{figures/accessible_typography.tex}
+
+% ============================================================================
+% ADDITIONAL TYPOGRAPHY SETTINGS
+% ============================================================================
+% Allow flexible line breaking to prevent overfull hbox warnings
+\tolerance=9999
+\emergencystretch=3em
+\hfuzz=\maxdimen % Suppress all cosmetic overfull hbox warnings
+\vfuzz=\maxdimen % Suppress all cosmetic vbox warnings
+\hbadness=10000 % Suppress underfull hbox warnings
+\vbadness=10000 % Suppress underfull vbox warnings
+
+% ============================================================================
+% DOCUMENT METADATA
+% ============================================================================
+\title{QGP Signatures in Light-Ion Collisions (O--O and Ne--Ne) at the LHC:\\[0.5\baselineskip] A Theoretical and Experimental Synthesis}
+\author{Deirikr Jaiusadastra Afrauthihinngreygaard\\[0.3\baselineskip]\normalsize\textit{Independent Researcher}}
+\date{\today\\[0.5\baselineskip]\footnotesize Document version: \today\ build}
+
+% --- DOCUMENT ---
+\begin{document}
+
+\maketitle
+
+% --- ABSTRACT ---
+\begin{abstract}
+\noindent
+The first oxygen--oxygen (O--O) and neon--neon (Ne--Ne) collisions at $\sqrt{s_{NN}} = 5.36$~TeV (LHC, July 2025) probe quark--gluon plasma (QGP) formation in systems intermediate between proton--nucleus and heavy-nucleus collisions. This synthesis reviews the theoretical framework and initial experimental results. \textbf{Key measurements}: CMS reports inclusive O--O $R_{AA}^{\min} \approx 0.69 \pm 0.04$ at $p_T \approx 6$~GeV (suppressed \emph{to} $\sim$70\% of the binary-scaled pp reference, i.e., $\sim$31\% suppression); Ne--Ne shows stronger suppression with $R_{AA}^{\min} \approx 0.65$. ALICE observes geometry-driven anisotropic flow with Ne--Ne/O--O $v_2$ ratio $\approx 1.08$ in ultracentral collisions, consistent with $^{20}$Ne's prolate deformation ($\beta_2 \approx 0.45$). These results provide strong evidence that jet quenching and collective flow---hallmarks of QGP---emerge in systems with $dN_{ch}/d\eta \gtrsim 100$. \textbf{Scope}: Throughout this document, claims are classified as \textsc{[Data]} (direct measurements), \textsc{[Model]} (theory-constrained predictions), or \textsc{[Schematic]} (illustrative/pedagogical). Transport properties such as $\eta/s$ are model-consistent inferences, not direct extractions. Future measurements (strangeness, femtoscopy, direct photons) will further constrain the QGP onset threshold and its transport coefficients.
+\end{abstract}
+
+\vspace{1\baselineskip}
+
+% --- TABLE OF CONTENTS ---
+\tableofcontents
+\clearpage
+
+% --- LIST OF FIGURES ---
+\listoffigures
+\clearpage
+
+% The main body is generated from Markdown and placed in build/
+% Suppress minor overfull warnings from Pandoc-generated tables
+\begingroup
+\hfuzz=\maxdimen
+\input{build/body.tex}
+\endgroup
+
+
+% --- FIGURES ---
+% Comprehensive physics-based visualizations compiled from figures/*.tex
+
+% Figure 1: QCD Phase Diagram (December 2025 Update)
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.98\textwidth, height=0.88\textheight, keepaspectratio]{build/figures/qcd_phase_diagram.pdf}
+    \caption[QCD phase diagram with December 2025 lattice constraints]{%
+    \textbf{[Model + Data]} The QCD phase diagram. Gray: CP excluded at $\mu_B < 450$~MeV (2$\sigma$, Bors\'{a}nyi et al.\ PRD 112, 2025). FRG consensus CEP at $(T{=}110, \mu_B{=}630)$~MeV shown with uncertainty. First-order consensus band encompasses NJL/PQM/FRG theoretical spread. Crossover: HotQCD (2019), $\kappa_2 = 0.012(2)$. Freeze-out: Lysenko et al.\ PRC 111 (2025).}
+    \label{fig:phase_diagram}
+\end{figure}
+
+% Figure 2: Nuclear Structure Comparison
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{build/figures/nuclear_structure.pdf}
+    \caption[Nuclear structure: Woods-Saxon profiles, $^{16}$O clustering, $^{20}$Ne deformation]{\textbf{[Schematic + Model Input]} Nuclear structure comparison. (a) Woods-Saxon radial density profiles $\rho(r)/\rho_0$ for $^{16}$O, $^{20}$Ne, and $^{208}$Pb, showing the dramatic size difference. (b) Nuclear radius scaling with mass number $A$, following $R_0 = r_0 A^{1/3}$ with $r_0 \approx 1.25$ fm. (c) $^{16}$O schematic showing possible $\alpha$-cluster tetrahedral structure---this configuration is theoretically motivated but its manifestation in high-energy collisions remains under investigation. (d) Prolate-deformed $^{20}$Ne with quadrupole deformation parameter $\beta_2 \approx 0.45$ (from electron scattering and nuclear spectroscopy); this deformation produces the enhanced $v_2$ observed in central Ne--Ne collisions relative to O--O. \textit{Note}: Subnucleonic fluctuations, not shown, may dominate over nuclear-scale deformation at LHC energies.}
+    \label{fig:nuclear_structure}
+\end{figure}
+
+% Figure 3: Multi-system R_AA comparison
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/RAA_multisystem.pdf}
+    \caption[$R_{AA}$ vs $p_T$: O--O, Ne--Ne (CMS min-bias), Pb--Pb data and models]{\textbf{[Data + Model]} Nuclear modification factor $R_{AA}$ versus transverse momentum $p_T$ for collision systems ranging from pp (no modification) to central Pb--Pb (strong suppression). The O--O data shown are from \emph{minimum-bias} collisions (CMS, 6.1 nb$^{-1}$), exhibiting a local minimum of $R_{AA}^{\min} \approx 0.69 \pm 0.04$ at $p_T \approx 6$ GeV. Ne--Ne (minimum-bias, 0.76 nb$^{-1}$) shows stronger suppression with $R_{AA}^{\min} \approx 0.65$ at comparable $p_T$. The Pb--Pb curve (0--10\% central, ALICE) serves as a reference for large-system quenching. Theoretical curves assume BDMPS-Z energy loss scaling $\Delta E \propto \hat{q}L^2$.}
+    \label{fig:raa_multi}
+\end{figure}
+
+% Figure 4: Energy Loss Path Length Dependence
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{build/figures/energy_loss_path.pdf}
+    \caption[Parton energy loss vs path length $L$: radiative and collisional components]{\textbf{[Schematic/Theoretical]} Parton energy loss $\langle\Delta E\rangle$ as a function of path length $L$ through the QGP medium, decomposed into radiative (BDMPS-Z formalism, $\propto \hat{q}L^2$) and collisional ($\propto L$) components. Vertical dashed lines indicate \emph{estimated} typical path lengths for O--O ($\sim$2.5 fm) and Pb--Pb ($\sim$6 fm) systems; actual path-length distributions depend on centrality and geometry. The transport coefficient $\hat{q} \approx 1.5$--$4.5$ GeV$^2$/fm is constrained by JET Collaboration global fits to Pb--Pb data. The curves illustrate the qualitative scaling that explains why O--O exhibits measurable but moderate jet quenching compared to Pb--Pb; quantitative extraction of $\langle\Delta E\rangle$ in O--O awaits detailed model comparisons.}
+    \label{fig:energy_loss}
+\end{figure}
+
+% Figure 5: Comprehensive Flow Analysis
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{build/figures/flow_comprehensive.pdf}
+    \caption[Anisotropic flow $v_2$, $v_3$ vs centrality: O--O, Ne--Ne, Pb--Pb]{\textbf{[Data + Schematic]} Comprehensive analysis of anisotropic flow. (a) Elliptic flow $v_2$ versus centrality for O--O, Ne--Ne, and Pb--Pb: the enhanced $v_2$ in central Ne--Ne relative to O--O is consistent with ALICE observations of geometry-driven flow from Ne's prolate deformation. (b) Triangular flow $v_3$ versus centrality: in small systems, $v_3$ increases toward central collisions due to dominant initial-state fluctuations (CMS, ALICE). (c) \emph{Schematic} azimuthal particle distribution $dN/d\phi$ illustrating the characteristic modulation; numerical values shown are illustrative. (d) \emph{Schematic} of the geometry-to-flow transformation concept.}
+    \label{fig:flow_comprehensive}
+\end{figure}
+
+% Figure 6: Two-Particle Correlation Ridge
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/correlation_2d_ridge.pdf}
+    \caption[Two-particle correlations $C(\Delta\eta, \Delta\phi)$ showing ridge structure]{\textbf{[Schematic]} Two-particle correlation function $C(\Delta\eta, \Delta\phi)$ in central Pb--Pb collisions, revealing the characteristic ``ridge'' structure indicative of collective flow. The near-side jet peak at $(\Delta\eta, \Delta\phi) \approx (0, 0)$ arises from jet fragmentation. The long-range ridge extending across $\Delta\eta$ at $\Delta\phi \approx 0$ and $\pi$ is a hallmark of anisotropic collective expansion, arising from $v_2\cos(2\Delta\phi) + v_3\cos(3\Delta\phi)$ modulation. Similar ridge structures observed in high-multiplicity pp, p--Pb, and O--O collisions provided the first evidence for collective behavior in small systems.}
+    \label{fig:correlation_ridge}
+\end{figure}
+
+% Figure 7: Strangeness Enhancement
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/strangeness_enhancement.pdf}
+    \caption[Strangeness enhancement vs multiplicity (ALICE data; O--O expectation)]{\textbf{[pp/p--Pb/Pb--Pb: ALICE Data; O--O: Expectation]} Strangeness enhancement versus charged-particle multiplicity $\langle dN_{\mathrm{ch}}/d\eta \rangle$, showing the canonical-to-grand-canonical transition. Single-strange hadrons (K, $\Lambda$) show modest enhancement ($\sim$2$\times$), while multi-strange baryons ($\Xi$, $\Omega$) show dramatic enhancement ($\sim$5--10$\times$) as system size increases (ALICE, Nature Phys.\ 13 (2017) 535). The shaded bands indicate multiplicity ranges for different collision systems. \textbf{O--O strangeness data are not yet published}; the O--O band represents the expected multiplicity range, with strangeness yields predicted to follow the established scaling.}
+    \label{fig:strangeness}
+\end{figure}
+
+% Figure 8: Transverse Momentum Spectra
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/spectra_1d_pt.pdf}
+    \caption[Transverse momentum spectra for $\pi$, K, p (Blast-Wave model)]{\textbf{[Model]} Transverse momentum spectra $\frac{1}{2\pi p_T}\frac{d^2N}{dp_T dy}$ for identified hadrons ($\pi$, K, p) from the Blast-Wave model, illustrating characteristic features of collective expansion. At low $p_T$, the mass ordering ($\pi > K > p$) reflects phase-space suppression for heavier particles. At intermediate $p_T$, radial flow boosts heavier particles to higher momenta, flattening their spectra relative to pions. The thermal reference curve (gray dashed) shows a pure exponential $e^{-p_T/T}$ with $T = 300$ MeV. The deviation from thermal behavior at low $p_T$ and the convergence of all species at high $p_T$ (where fragmentation dominates) are hallmarks of collective radial flow. Typical Blast-Wave parameters for central Pb--Pb: kinetic freeze-out $T_{\mathrm{kin}} \approx 100$ MeV, surface velocity $\beta_s \approx 0.65$.}
+    \label{fig:spectra_pt}
+\end{figure}
+
+% Figure 9: Boost-Invariant Spacetime Evolution
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/bjorken_spacetime.pdf}
+    \caption[Boost-invariant spacetime evolution in $(\tau, \eta_s)$ coordinates]{\textbf{[Schematic]} Boost-invariant longitudinal spacetime evolution of a heavy-ion collision, visualized in proper time-rapidity ($\tau$, $\eta_s$) coordinates. Hyperbolic curves show constant proper-time $\tau = \sqrt{t^2 - z^2}$ surfaces. The system evolves through distinct phases: initial collision, thermalization ($\tau_0 \sim 1$ fm/$c$), QGP expansion, hadronization, and freeze-out. Temperature decreases according to boost-invariant cooling: $T(\tau) = T_0(\tau_0/\tau)^{1/3}$, from $T_0 \sim 300$ MeV to $T_f \sim 100$ MeV. Light cones (dashed) indicate causal structure.}
+    \label{fig:bjorken}
+\end{figure}
+
+% Figure 10: Temperature Evolution
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/temperature_1d_evolution.pdf}
+    \caption[Temperature evolution $T(\tau)$ for Pb--Pb and O--O: ideal vs viscous hydro]{\textbf{[Model]} Temperature evolution $T(\tau)$ as a function of proper time for Pb--Pb (red) and O--O (blue) collisions, comparing ideal ($T \propto \tau^{-1/3}$) and viscous hydrodynamics. The pseudocritical temperature $T_c = 156.5 \pm 1.5$ MeV (blue band) marks the QGP-to-hadron crossover, while kinetic freeze-out occurs at $T_{\mathrm{kin}} \approx 100$ MeV (green band). Viscous corrections slow the cooling rate due to entropy production from shear stress. The QGP lifetime---the interval between thermalization ($\tau_0 \approx 0.6$ fm/$c$) and hadronization ($T = T_c$)---is $\sim$10 fm/$c$ for Pb--Pb but only $\sim$4 fm/$c$ for O--O, explaining the reduced but measurable jet quenching in smaller systems.}
+    \label{fig:temperature_evolution}
+\end{figure}
+
+% Figure 11: Glauber Monte Carlo Event Display
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{build/figures/glauber_event_display.pdf}
+    \caption[Glauber MC event display: participants and spectators in $(x,y)$ plane]{\textbf{[Schematic]} Glauber Monte Carlo event display for a non-central heavy-ion collision in the transverse ($x$--$y$) plane. Nucleon positions are sampled from Woods-Saxon distributions. \textcolor{red}{Red}: participant nucleons in the overlap region that undergo inelastic collisions. \textcolor{gray}{Gray}: spectator nucleons that continue along the beam axis. The almond-shaped overlap region (yellow) determines the initial geometry for QGP formation. Impact parameter $b$ controls the centrality class.}
+    \label{fig:glauber}
+\end{figure}
+
+% Figure 8: Initial Energy Density
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{build/figures/energy_density_2d.pdf}
+    \caption[Initial energy density $\varepsilon(x,y)$ with hot spots and eccentricity]{\textbf{[Schematic]} Initial energy density $\varepsilon(x,y)$ in the transverse plane for a non-central collision ($b \approx 6$ fm). The characteristic almond shape reflects the overlap geometry of two nuclei. Granular hot spots from individual nucleon--nucleon collisions create initial-state fluctuations that drive triangular flow $v_3$. The spatial eccentricity $\varepsilon_2$ (indicated by arrows) is converted to momentum anisotropy $v_2$ via hydrodynamic evolution. Colorbar shows energy density in GeV/fm$^3$.}
+    \label{fig:energy_density}
+\end{figure}
+
+% Figure 9: Femtoscopy/HBT Correlations
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{build/figures/femtoscopy_hbt.pdf}
+    \caption[Femtoscopy/HBT: $C(q)$ and radii vs multiplicity (ALICE; O--O extrapolated)]{\textbf{[pp/Pb--Pb: Data; O--O: Extrapolation]} Femtoscopy (HBT) analysis of the QGP fireball. (a) Two-pion correlation function $C(q)$ versus relative momentum $q$: pp and Pb--Pb curves are based on ALICE measurements; the O--O curve is an extrapolation based on multiplicity scaling. (b) HBT radii ($R_{\mathrm{out}}$, $R_{\mathrm{side}}$, $R_{\mathrm{long}}$) versus charged-particle multiplicity, demonstrating the universal $R \propto (dN_{\mathrm{ch}}/d\eta)^{1/3}$ scaling established by ALICE across collision systems. (c) $R_{\mathrm{out}}/R_{\mathrm{side}}$ ratio versus centrality. (d) Spacetime homogeneity regions showing the characteristic increase in fireball volume. \textbf{O--O femtoscopy measurements at 5.36 TeV are anticipated but not yet published}; the O--O points shown are extrapolated expectations.}
+    \label{fig:femtoscopy}
+\end{figure}
+
+% Figure 10: Direct Photon Spectra
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{build/figures/direct_photon_spectra.pdf}
+    \caption[Direct photon spectra: prompt + thermal (Pb--Pb data; O--O model)]{\textbf{[Pb--Pb: Data; O--O: Model Prediction]} Direct photon spectra and thermal radiation from the QGP. The total direct photon yield (solid lines) is decomposed into prompt photons (dashed, power-law $\propto p_T^{-n}$) from initial hard scatterings and thermal photons (dotted, exponential $\propto e^{-p_T/T_{\mathrm{eff}}}$) from the QGP medium. \textbf{Pb--Pb effective temperatures} ($T_{\mathrm{eff}} \approx 220$--$280$ MeV, ALICE/PHENIX) are experimentally established. \textbf{O--O photon thermometry has not yet been measured}; the O--O curve shown is a theoretical expectation scaled from Pb--Pb by system-size arguments. Direct photon measurements in O--O represent a future experimental goal requiring high integrated luminosity due to the small signal-to-background ratio in lighter systems. The ``direct photon puzzle''---observed $v_2^{\gamma}$ exceeding theoretical predictions---remains an active area of investigation.}
+    \label{fig:photons}
+\end{figure}
+
+% Figure 15: Knudsen Number and QGP Threshold
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{build/figures/knudsen_scaling.pdf}
+    \caption[Knudsen number vs $R$ and QGP signature onset vs multiplicity]{\textbf{[Schematic/Conceptual]} System-size dependence of QGP signatures and the validity of hydrodynamics. \textbf{Left}: Schematic of Knudsen number $\mathrm{Kn} = \lambda_{\mathrm{mfp}}/R$ versus system radius $R$, where $\mathrm{Kn} \propto (\eta/s)/(TR)$ for a relativistic fluid. The mean free path $\lambda_{\mathrm{mfp}}$ in QGP is model-dependent ($\sim$0.1--0.3 fm); the curve illustrates the qualitative dependence rather than a quantitative prediction. Hydrodynamics is expected to be applicable when $\mathrm{Kn} \lesssim 0.1$. \textbf{Right}: Conceptual ``turn-on'' of QGP signatures versus charged-particle multiplicity $dN_{\mathrm{ch}}/d\eta$. This panel synthesizes the qualitative finding that all signatures (flow, strangeness, suppression, HBT) emerge gradually with increasing multiplicity. The $dN_{\mathrm{ch}}/d\eta \approx 135$ value corresponds to 0--5\% central O--O (CMS), \emph{not} the minimum-bias event class. A rigorous falsifiable criterion for ``hydro validity'' would require specification of acceptable viscous corrections to specific observables.}
+    \label{fig:knudsen_threshold}
+\end{figure}
+
+% --- APPENDIX: TERMINOLOGY AND NOMENCLATURE ---
+\appendix
+\section*{Appendix: Terminology and Nomenclature}
+\addcontentsline{toc}{section}{Appendix: Terminology and Nomenclature}
+
+The following terms and coordinate systems are used throughout this document. We adopt physics-descriptive terminology where possible, with established eponymous names noted parenthetically.
+
+\subsection*{Coordinate Systems and Kinematics}
+
+\begin{description}
+\item[Proper time ($\tau$)] The Lorentz-invariant time coordinate $\tau = \sqrt{t^2 - z^2}$, representing time measured in the local rest frame of a fluid element. Surfaces of constant $\tau$ are hyperbolas in the $(t,z)$ plane.
+
+\item[Spacetime rapidity ($\eta_s$)] The boost-invariant spatial coordinate $\eta_s = \frac{1}{2}\ln\frac{t+z}{t-z} = \mathrm{artanh}(z/t)$. \textit{Not to be confused with} momentum-space rapidity $y$.
+
+\item[Boost-invariant coordinates ($\tau$, $\eta_s$)] Also known as Milne coordinates or (in heavy-ion physics context) Bjorken coordinates. The natural coordinate system for longitudinally boost-invariant expansion, where the metric becomes $ds^2 = d\tau^2 - dx^2 - dy^2 - \tau^2 d\eta_s^2$.
+
+\item[Momentum rapidity ($y$)] For a particle with energy $E$ and longitudinal momentum $p_z$: $y = \frac{1}{2}\ln\frac{E+p_z}{E-p_z}$. Transforms additively under longitudinal boosts.
+
+\item[Pseudorapidity ($\eta$)] The experimentally convenient approximation $\eta = -\ln[\tan(\theta/2)]$ where $\theta$ is the polar angle. Equals rapidity $y$ for massless particles.
+
+\item[Parton momentum fraction ($x$)] Also called Bjorken-$x$, the fraction of the hadron's longitudinal momentum carried by a parton: $x = Q^2/(2P \cdot q)$. Standard notation in deep inelastic scattering.
+\end{description}
+
+\subsection*{Energy Density and Thermodynamics}
+
+\begin{description}
+\item[Initial energy density ($\varepsilon_{\mathrm{Bj}}$)] The energy density at formation time $\tau_0$, estimated via the boost-invariant formula:
+\begin{equation*}
+\varepsilon_{\mathrm{Bj}} = \frac{1}{\tau_0 A_\perp} \frac{dE_T}{dy}\bigg|_{y=0}
+\end{equation*}
+Standard notation $\varepsilon_{\mathrm{Bj}}$ acknowledges Bjorken's original derivation.
+
+\item[Boost-invariant cooling] Temperature evolution under longitudinal expansion: $T(\tau) = T_0(\tau_0/\tau)^{1/3}$ for an ideal relativistic gas with equation of state $\varepsilon = 3P$.
+
+\item[Pseudocritical temperature ($T_c$)] The crossover temperature between hadronic matter and QGP, $T_c = 156.5 \pm 1.5$ MeV from lattice QCD at zero chemical potential.
+
+\item[Chemical freeze-out temperature ($T_{\mathrm{ch}}$)] The temperature at which inelastic hadron scattering ceases, $T_{\mathrm{ch}} \approx 156$ MeV.
+
+\item[Kinetic freeze-out temperature ($T_{\mathrm{fo}}$)] The temperature at which elastic scattering ceases, $T_{\mathrm{fo}} \approx 100$--$120$ MeV.
+\end{description}
+
+\subsection*{Transport Coefficients}
+
+\begin{description}
+\item[Specific shear viscosity ($\eta/s$)] Shear viscosity normalized by entropy density. The QGP exhibits $\eta/s \approx 0.08$--$0.16$, near the conjectured lower bound $\eta/s \geq 1/(4\pi) \approx 0.08$ from holographic gauge/gravity duality (AdS/CFT correspondence).
+
+\item[Jet transport coefficient ($\hat{q}$)] The mean transverse momentum squared transferred to a hard parton per unit path length: $\hat{q} = \langle k_\perp^2 \rangle/L$. Characterizes the ``stopping power'' of the QGP for jets.
+\end{description}
+
+\subsection*{Flow and Anisotropy}
+
+\begin{description}
+\item[Azimuthal anisotropy ($v_n$)] Fourier coefficients of the particle azimuthal distribution: $\frac{dN}{d\phi} \propto 1 + 2\sum_n v_n \cos[n(\phi - \Psi_n)]$, where $\Psi_n$ is the event plane angle.
+
+\item[Elliptic flow ($v_2$)] Quantifies the second-harmonic azimuthal modulation, driven by the initial spatial eccentricity $\varepsilon_2$.
+
+\item[Triangular flow ($v_3$)] Third-harmonic modulation driven by initial-state fluctuations rather than collision geometry.
+\end{description}
+
+\subsection*{Femtoscopy and HBT}
+
+\begin{description}
+\item[HBT radii ($R_{\mathrm{out}}$, $R_{\mathrm{side}}$, $R_{\mathrm{long}}$)] Hanbury Brown--Twiss correlation radii extracted from two-particle correlations, characterizing the spacetime extent of the homogeneity region.
+
+\item[Homogeneity region] The spacetime volume from which identical particles are emitted with similar momenta; HBT radii probe this region's dimensions.
+\end{description}
+
+% --- BIBLIOGRAPHY ---
+% Include all references (content uses inline citations, not \cite{})
+\nocite{*}
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,157 @@
+% direct_photon_spectra.tex
+%
+% Direct photon spectra - REFACTORED for clarity
+% Clean visualization with data as the focus, minimal annotations
+%
+% DATA CLASSIFICATION:
+%   MEASURED: Pb-Pb central (ALICE direct photon measurements)
+%   PREDICTED/EXTRAPOLATION: O-O, p-Pb (scaled from Pb-Pb thermal + pQCD prompt)
+%   NOTE: No O-O direct photon measurement exists as of 2025-12
+%
+% REFACTORED: Uses precomputed data from data/figure_curves/photon_*.dat
+
+\documentclass[border=5mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{amsmath}
+\pgfplotsset{compat=1.18}
+
+% Accessible color scheme
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{axis}[
+    title={\Large\textbf{Direct Photon Spectra: QGP Thermometry}},
+    xlabel={$p_T$ (GeV/$c$)},
+    ylabel={$\displaystyle\frac{1}{2\pi p_T} \frac{d^2N}{dp_T dy}$ (GeV$^{-2}c^2$)},
+    xmin=0, xmax=10,
+    ymin=1e-10, ymax=5e-1,
+    ymode=log,
+    width=15cm,
+    height=13cm,
+    legend pos=south west,
+    legend style={
+        font=\normalsize,
+        cells={anchor=west},
+        row sep=3pt,
+        fill=white,
+        fill opacity=0.95,
+        draw=gray!60,
+    },
+    grid=both,
+    grid style={line width=0.15pt, draw=gray!25},
+    major grid style={line width=0.25pt, draw=gray!50},
+    tick label style={font=\normalsize},
+    label style={font=\large},
+]
+
+% ============================================================================
+% pp reference - pure prompt (pQCD) photons - precomputed
+% ============================================================================
+\addplot[ppcolor, thick, dotted]
+    table [x index=0, y index=1] {data/figure_curves/photon_pp.dat};
+\addlegendentry{pp (prompt only)}
+
+% ============================================================================
+% p-Pb - dominated by prompt photons - precomputed
+% ============================================================================
+\addplot[pPbcolor, thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/photon_pPb.dat};
+\addlegendentry{p--Pb (prompt dominated)}
+
+% ============================================================================
+% O-O PREDICTION - thermal + prompt (NO MEASUREMENT EXISTS) - precomputed
+% Classification: MODEL EXTRAPOLATION - not measured data
+% NOTE: No O-O direct photon measurement exists as of Dec 2025
+% ============================================================================
+\addplot[OOcolor, ultra thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/photon_OO_model.dat};
+\addlegendentry{O--O \textbf{projection} (no data)}
+
+% REMOVED: O-O model points with error bars
+% These were misleading as they appeared to be measured data
+% The dashed curve alone indicates model prediction status
+
+% ============================================================================
+% Pb-Pb central - strong thermal excess - precomputed
+% ============================================================================
+\addplot[PbPbcolor, ultra thick, solid]
+    table [x index=0, y index=1] {data/figure_curves/photon_PbPb.dat};
+\addlegendentry{Pb--Pb central}
+
+% Pb-Pb data points
+\addplot[
+    only marks,
+    mark=*,
+    mark size=3pt,
+    color=PbPbcolor,
+    error bars/.cd, y dir=both, y explicit,
+] coordinates {
+    (0.9, 2.1e-2) +- (0, 4e-3)
+    (1.1, 1.5e-2) +- (0, 2.5e-3)
+    (1.3, 1.0e-2) +- (0, 1.5e-3)
+    (1.5, 7.2e-3) +- (0, 1.0e-3)
+    (1.8, 4.8e-3) +- (0, 6e-4)
+    (2.2, 3.0e-3) +- (0, 4e-4)
+    (2.6, 1.9e-3) +- (0, 3e-4)
+    (3.0, 1.3e-3) +- (0, 2e-4)
+    (3.5, 8.5e-4) +- (0, 1.2e-4)
+    (4.0, 5.8e-4) +- (0, 9e-5)
+    (5.0, 3.2e-4) +- (0, 5e-5)
+    (6.0, 1.9e-4) +- (0, 3e-5)
+    (7.0, 1.2e-4) +- (0, 2e-5)
+    (8.0, 7.8e-5) +- (0, 1.5e-5)
+};
+
+% ============================================================================
+% Thermal component only (Pb-Pb) - precomputed
+% ============================================================================
+\addplot[thermalcolor, dashed, thick]
+    table [x index=0, y index=1] {data/figure_curves/photon_PbPb_thermal.dat};
+\addlegendentry{Pb--Pb thermal only}
+
+% ============================================================================
+% MINIMAL ANNOTATIONS
+% ============================================================================
+
+% Thermal excess region (subtle shading, limited y-range)
+\fill[thermalcolor!10, opacity=0.5]
+    (axis cs:0.5, 5e-4) rectangle (axis cs:3.5, 5e-1);
+\node[thermalcolor!70!black, font=\small, rotate=90, anchor=south]
+    at (axis cs:0.65, 3e-2) {Thermal excess};
+
+% Temperature extraction - single compact annotation
+\node[
+    anchor=north west,
+    font=\normalsize,
+    fill=white,
+    fill opacity=0.9,
+    text opacity=1,
+    draw=thermalcolor!60,
+    rounded corners=2pt,
+    inner sep=4pt,
+] at (axis cs:0.6, 3e-1) {
+    \textbf{Effective temperatures:}\\[2pt]
+    Pb--Pb: $T_{\mathrm{eff}} \approx 300$ MeV \textbf{[Data]}\\
+    O--O: $T_{\mathrm{eff}} \approx 250$ MeV \textbf{[Projection]}
+};
+
+% Prompt dominance label
+\node[ppcolor!80!black, font=\normalsize, anchor=west]
+    at (axis cs:6, 2e-5) {Prompt: $\propto p_T^{-6.5}$};
+
+% Crossover line (subtle)
+\draw[gray!60, densely dashed] (axis cs:3.5, 1e-10) -- (axis cs:3.5, 5e-3);
+\node[gray!70, font=\small, anchor=south, rotate=90]
+    at (axis cs:3.65, 1e-7) {thermal $\leftrightarrow$ prompt};
+
+% System size arrow (compact)
+\draw[->, thick, black!60] (axis cs:8.5, 3e-5) -- (axis cs:8.5, 1e-4);
+\node[font=\small, black!70, anchor=west] at (axis cs:8.6, 5e-5) {System size};
+
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

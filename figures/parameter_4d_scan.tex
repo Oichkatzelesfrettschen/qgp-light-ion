@@ -1,0 +1,160 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{colorbrewer}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+% Main title
+\node[font=\large\bfseries] at (7.5, 10.5) {Multi-Parameter Space: $v_2(\eta/s, \mathrm{centrality}, \mathrm{system})$};
+
+% Left panel: η/s scan for Pb-Pb
+\begin{axis}[
+    name=leftplot,
+    at={(0, 4.5cm)},
+    width=7.5cm,
+    height=6cm,
+    xlabel={Centrality [\%]},
+    ylabel={$\eta/s$},
+    title={Pb--Pb: $v_2$ vs ($\eta/s$, centrality)},
+    title style={font=\small\bfseries},
+    view={0}{90},
+    colormap={viridis}{
+        rgb255(0cm)=(68,1,84)
+        rgb255(0.25cm)=(59,82,139)
+        rgb255(0.5cm)=(33,145,140)
+        rgb255(0.75cm)=(94,201,98)
+        rgb255(1cm)=(253,231,37)
+    },
+    colorbar,
+    colorbar style={
+        ylabel={$v_2$},
+        ylabel style={font=\scriptsize},
+        at={(1.02,0.5)},
+        anchor=west,
+    },
+    point meta min=0, point meta max=0.12,
+    xlabel style={font=\small},
+    ylabel style={font=\small},
+    tick label style={font=\tiny},
+]
+\addplot3[
+    only marks,
+    mark=square*,
+    mark size=3pt,
+    scatter,
+    scatter src=explicit,
+] table [x index=1, y index=0, meta index=2] {data/4d_parameters/v2_etaS_cent_Pb.dat};
+
+% KSS bound line
+\addplot[accentpurple, ultra thick, dashed, domain=0:60] (x, 0.08);
+
+\end{axis}
+
+% Right panel: η/s scan for O-O
+\begin{axis}[
+    name=rightplot,
+    at={(7.5cm, 4.5cm)},
+    width=7.5cm,
+    height=6cm,
+    xlabel={Centrality [\%]},
+    ylabel={$\eta/s$},
+    title={O--O: $v_2$ vs ($\eta/s$, centrality)},
+    title style={font=\small\bfseries},
+    view={0}{90},
+    colormap={viridis}{
+        rgb255(0cm)=(68,1,84)
+        rgb255(0.25cm)=(59,82,139)
+        rgb255(0.5cm)=(33,145,140)
+        rgb255(0.75cm)=(94,201,98)
+        rgb255(1cm)=(253,231,37)
+    },
+    colorbar,
+    colorbar style={
+        ylabel={$v_2$},
+        ylabel style={font=\scriptsize},
+        at={(1.02,0.5)},
+        anchor=west,
+    },
+    point meta min=0, point meta max=0.12,
+    xlabel style={font=\small},
+    ylabel style={font=\small},
+    tick label style={font=\tiny},
+]
+\addplot3[
+    only marks,
+    mark=square*,
+    mark size=3pt,
+    scatter,
+    scatter src=explicit,
+] table [x index=1, y index=0, meta index=2] {data/4d_parameters/v2_etaS_cent_O.dat};
+
+% KSS bound line
+\addplot[accentpurple, ultra thick, dashed, domain=0:60] (x, 0.08);
+
+\end{axis}
+
+% Bottom panel: PCA projection
+\begin{axis}[
+    name=bottomplot,
+    at={(3.75cm, -0.5cm)},
+    width=8cm,
+    height=5cm,
+    xlabel={Principal Component 1},
+    ylabel={Principal Component 2},
+    title={PCA of 6-Observable Space},
+    title style={font=\small\bfseries},
+    grid=major,
+    grid style={gridcolor},
+    xlabel style={font=\small},
+    ylabel style={font=\small},
+    tick label style={font=\tiny},
+    xmin=-4, xmax=4,
+    ymin=-3, ymax=3,
+]
+
+\addplot[
+    only marks,
+    mark=*,
+    mark size=0.8pt,
+    primaryblue,
+    opacity=0.5,
+] table [x index=0, y index=1] {data/4d_parameters/pca_projection.dat};
+
+% Add loading vectors (scaled)
+\draw[->, ultra thick, hotphase] (0,0) -- (1.5, 0.5) node[right, font=\tiny] {$dN_{\mathrm{ch}}/d\eta$};
+\draw[->, ultra thick, warmphase] (0,0) -- (0.8, -0.9) node[below, font=\tiny] {$\langle p_T \rangle$};
+\draw[->, ultra thick, coolphase] (0,0) -- (1.2, 0.8) node[above, font=\tiny] {$v_2$};
+\draw[->, ultra thick, coldphase] (0,0) -- (-1.0, 0.3) node[left, font=\tiny] {$R_{AA}$};
+
+\end{axis}
+
+% Annotations
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=2pt,
+      font=\scriptsize, align=left, inner sep=4pt]
+    at (14, 7) {%
+    \textbf{4D Parameter Space}\\[2pt]
+    Dimensions:\\
+    1. $\eta/s$ (viscosity)\\
+    2. Centrality\\
+    3. System size\\
+    4. $v_2$ (observable)\\[4pt]
+    \textcolor{accentpurple}{\textbf{---}} KSS bound\\
+    $\eta/s \geq 1/4\pi$
+};
+
+\node[draw, fill=highlightcolor!30, rounded corners=2pt,
+      font=\scriptsize, align=left, inner sep=4pt]
+    at (14, 2) {%
+    \textbf{Key Insight:}\\[2pt]
+    Small systems (O--O)\\
+    more sensitive to\\
+    $\eta/s$ due to larger\\
+    Knudsen number
+};
+
+\end{tikzpicture}
+\end{document}

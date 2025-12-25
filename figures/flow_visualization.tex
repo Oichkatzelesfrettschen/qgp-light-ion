@@ -1,0 +1,63 @@
+% flow_visualization.tex
+%
+% Defines the PGFPlot for the anisotropic flow coefficients (v_n) vs. collision centrality.
+% This visualization illustrates how the initial geometry of the collision system
+% (e.g., O-O vs. Ne-Ne) and event-by-event fluctuations are translated into
+% momentum-space anisotropies of the final-state particles.
+
+\documentclass{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\begin{document}
+\begin{tikzpicture}
+    % The 'axis' environment. Note the 'x dir=reverse' option, which is a standard
+    % convention in heavy-ion physics to place the most central (0%) collisions
+    % on the right-hand side of the x-axis.
+    \begin{axis}[
+        title={Anisotropic Flow ($v_n$) vs. Centrality},
+        xlabel={Centrality \%},
+        ylabel={$v_n$ coefficients},
+        xmin=-2, xmax=82,
+        ymin=0, ymax=0.09,
+        x dir=reverse,
+        legend pos=north west,
+        grid=both,
+        grid style={line width=.1pt, draw=gray!30},
+        major grid style={line width=.2pt,draw=gray!50},
+        minor tick num=1,
+        width=15cm,
+        height=9cm,
+        % Use the same cycle list as other plots for a consistent, professional theme.
+        cycle list name=exotic,
+    ]
+
+    % Plot 1: v2 for O-O collisions. This is the elliptic flow, primarily driven
+    % by the almond-shaped overlap geometry in non-central collisions.
+    \addplot[
+        thick,
+        mark=square*,
+    ] table[x index=0, y index=1] {data/flow_v2_OO.dat};
+    \addlegendentry{$v_2$ (O--O)}
+
+    % Plot 2: v3 for O-O collisions. This is the triangular flow, primarily driven
+    % by event-by-event fluctuations in the initial nucleon positions.
+    \addplot[
+        thick,
+        mark=triangle*,
+    ] table[x index=0, y index=1] {data/flow_v3_OO.dat};
+    \addlegendentry{$v_3$ (O--O)}
+    
+    % Plot 3: v2 for Ne-Ne. This is plotted with a dashed line to indicate a comparison
+    % to the primary O-O system. The higher value at low centrality demonstrates the
+    % effect of Neon's intrinsic prolate deformation on the initial geometry.
+    \addplot[
+        dashed, % Dashed line for comparison/systematic variation.
+        thick,
+        mark=diamond*,
+    ] table[x index=0, y index=1] {data/flow_v2_NeNe.dat};
+    \addlegendentry{$v_2$ (Ne--Ne, prolate)}
+
+    \end{axis}
+\end{tikzpicture}
+\end{document}

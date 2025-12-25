@@ -1,0 +1,124 @@
+% strangeness_enhancement.tex
+%
+% Strangeness enhancement vs charged particle multiplicity
+% Shows canonical suppression being lifted as system size increases
+% Key observables: K/pi, Lambda/pi, Xi/pi, Omega/pi ratios
+%
+% DATA CLASSIFICATION:
+%   PHYSICS: Canonical ensemble suppression model
+%   Precomputed data from: data/figure_curves/strangeness_*.dat
+%
+% REFACTORED: Uses precomputed data
+
+\documentclass[border=3mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{patterns}
+\pgfplotsset{compat=1.18}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{semilogxaxis}[
+    title={\textbf{Strangeness Enhancement vs. Multiplicity}},
+    xlabel={$\langle dN_{\mathrm{ch}}/d\eta \rangle$},
+    ylabel={Enhancement factor (relative to low-mult. pp)},
+    xmin=3, xmax=3500,
+    ymin=0.8, ymax=12,
+    width=14cm,
+    height=10cm,
+    legend pos=north west,
+    legend style={font=\small, cells={anchor=west}},
+    grid=both,
+    grid style={line width=0.1pt, draw=gridcolor},
+    major grid style={line width=0.2pt, draw=gridmajor},
+    xtick={10, 100, 1000},
+    xticklabels={10, 100, 1000},
+    minor xtick={3,5,7,20,30,50,70,200,300,500,700,2000},
+    clip=false,
+]
+
+% System markers with vertical bands - simplified for clarity
+% Use lighter fills without heavy patterns for accessibility
+% pp
+\fill[ppcolor!15] (axis cs:5, 0.8) rectangle (axis cs:12, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, ppcolor] at (axis cs:8, 2.5) {pp};
+
+% p-Pb
+\fill[pPbcolor!12] (axis cs:30, 0.8) rectangle (axis cs:60, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, pPbcolor] at (axis cs:42, 2.5) {p--Pb};
+
+% O-O
+\fill[OOcolor!12] (axis cs:90, 0.8) rectangle (axis cs:140, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, OOcolor] at (axis cs:112, 2.5) {O--O};
+
+% Ne-Ne
+\fill[NeNecolor!12] (axis cs:150, 0.8) rectangle (axis cs:200, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, NeNecolor] at (axis cs:172, 2.5) {Ne--Ne};
+
+% Peripheral Pb-Pb
+\fill[PbPbcolor!8] (axis cs:250, 0.8) rectangle (axis cs:500, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, PbPbcolor!70] at (axis cs:350, 2.5) {Pb--Pb periph.};
+
+% Central Pb-Pb
+\fill[PbPbcolor!15] (axis cs:1200, 0.8) rectangle (axis cs:2000, 12);
+\node[font=\scriptsize, rotate=90, anchor=south, PbPbcolor] at (axis cs:1550, 2.5) {Pb--Pb central};
+
+% Arrow showing trend
+\draw[->, thick, textlight] (axis cs:15, 1.8) -- (axis cs:800, 1.8);
+\node[font=\scriptsize, color=textlight, anchor=north] at (axis cs:120, 1.75) {Increasing system size};
+
+% K/pi enhancement (|S|=1) - precomputed
+\addplot[Kcolor, ultra thick, solid, mark=square*, mark repeat=15, mark size=2pt]
+    table [x index=0, y index=1] {data/figure_curves/strangeness_K.dat};
+\addlegendentry{$K/\pi$ (single strange)}
+
+% Lambda/pi enhancement (|S|=1, but baryon) - precomputed
+\addplot[Lambdacolor, ultra thick, dashed, mark=triangle*, mark repeat=15, mark size=2.5pt]
+    table [x index=0, y index=1] {data/figure_curves/strangeness_Lambda.dat};
+\addlegendentry{$\Lambda/\pi$ (single strange baryon)}
+
+% Xi/pi enhancement (|S|=2) - precomputed
+\addplot[Xicolor, ultra thick, dotted, mark=diamond*, mark repeat=15, mark size=2.5pt]
+    table [x index=0, y index=1] {data/figure_curves/strangeness_Xi.dat};
+\addlegendentry{$\Xi/\pi$ (double strange)}
+
+% Omega/pi enhancement (|S|=3) - precomputed
+\addplot[Omegacolor, ultra thick, dashdotted, mark=pentagon*, mark repeat=15, mark size=2.5pt]
+    table [x index=0, y index=1] {data/figure_curves/strangeness_Omega.dat};
+\addlegendentry{$\Omega/\pi$ (triple strange)}
+
+% Grand-canonical limit lines (labels on left side to avoid physics box)
+\addplot[textlight, dashed, thin] coordinates {(3, 9.5) (3500, 9.5)};
+\node[anchor=east, font=\scriptsize, color=textlight] at (axis cs:3.5, 9.7) {GCE ($\Omega$)};
+
+\addplot[textlight, dotted, thin] coordinates {(3, 4.8) (3500, 4.8)};
+\node[anchor=east, font=\scriptsize, color=textlight] at (axis cs:3.5, 5.0) {GCE ($\Xi$)};
+
+\addplot[textlight, dotted, thin] coordinates {(3, 2.3) (3500, 2.3)};
+\node[anchor=east, font=\scriptsize, color=textlight] at (axis cs:3.5, 2.5) {GCE ($\Lambda$)};
+
+% Physics annotation box (condensed to avoid GCE overlap)
+\node[
+    anchor=north east,
+    font=\scriptsize,
+    text width=4.5cm,
+    fill=annotationbg,
+    draw=annotationborder,
+    rounded corners,
+    inner sep=4pt,
+    align=left,
+] at (axis cs:3400, 11.8) {
+    \textbf{Canonical Suppression}\\[2pt]
+    $\gamma_S^{|S|} \approx I_{|S|}(x)/I_0(x)$\\
+    where $x \propto V_C \cdot n_s(T)$\\[2pt]
+    Multi-strange baryons ($\Xi$, $\Omega$)\\
+    probe QGP volume most sensitively.
+};
+
+\end{semilogxaxis}
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,70 @@
+% geometry_visualization.tex
+%
+% This file uses the tikz-3dplot package to generate a 3D visualization
+% of the initial geometry of a non-central nucleus-nucleus collision.
+% It depicts two spherical nuclei, their offset (impact parameter b),
+% and the resulting lenticular overlap region where the QGP is formed.
+
+\documentclass[tikz, border=3mm]{standalone}
+\usepackage{tikz-3dplot} % Provides macros for 3D coordinate transformations.
+
+\begin{document}
+
+% Set the viewing angles for the 3D projection.
+% \tdplotsetmaincoords{theta}{phi}
+% theta: rotation around the x-axis (70 degrees).
+% phi:   rotation around the z-axis (110 degrees).
+% These values provide a clear, trimetric view of the overlap region.
+\tdplotsetmaincoords{70}{110}
+
+\begin{tikzpicture}[
+    tdplot_main_coords, % Apply the global viewing angles.
+    scale=3             % Increase the overall size of the drawing.
+]
+    
+    % --- Define collision parameters ---
+    \def\nucleusRadius{1.5}  % Radius of the nuclei (in arbitrary units).
+    \def\impact_b{1.2}       % The impact parameter 'b' in the y-direction.
+    \def\nucleusOneX{-0.7}   % x-coordinate of the first nucleus's center.
+    \def\nucleusTwoX{0.7}    % x-coordinate of the second nucleus's center.
+
+    % --- Draw Nuclei using shaded spheres ---
+    % 'ball color' provides a radial shading that simulates a light source.
+    % Opacity is set to < 1 to make the objects transparent, allowing the
+    % internal overlap region to be visible.
+    \shade[ball color=blue!50!white, opacity=0.3] (\nucleusOneX, 0, 0) circle (\nucleusRadius);
+    \shade[ball color=green!50!white, opacity=0.3] (\nucleusTwoX, \impact_b, 0) circle (\nucleusRadius);
+
+    % --- Render the overlap region using clipping paths ---
+    % This is a vector graphics technique to render a complex intersection
+    % without calculating the boundary explicitly.
+    \begin{scope}
+        % The \clip command discards any part of the drawing outside this path.
+        % Here, we clip to the boundary of the second nucleus.
+        \clip (\nucleusTwoX, \impact_b, 0) circle (\nucleusRadius);
+        % Within this clipped region, we redraw the first nucleus with a
+        % different style (hot, opaque color) to represent the dense QGP.
+        \shade[ball color=red!80!yellow, opacity=0.7] (\nucleusOneX, 0, 0) circle (\nucleusRadius);
+    \end{scope}
+    % A second, reversed scope is used to ensure shading is correct from both perspectives.
+    \begin{scope}
+        \clip (\nucleusOneX, 0, 0) circle (\nucleusRadius);
+        \shade[ball color=red!80!yellow, opacity=0.7] (\nucleusTwoX, \impact_b, 0) circle (\nucleusRadius);
+    \end{scope}
+
+    % --- Add annotations for clarity ---
+    % Redraw the outlines of the nuclei for definition.
+    \draw[black] (\nucleusOneX, 0, 0) circle (\nucleusRadius);
+    \draw[black] (\nucleusTwoX, \impact_b, 0) circle (\nucleusRadius);
+    
+    % Place labels using the 3D coordinate system.
+    \node[anchor=east] at (\nucleusOneX - \nucleusRadius, 0, 0.8) {Nucleus 1};
+    \node[anchor=west] at (\nucleusTwoX + \nucleusRadius, \impact_b, 0.8) {Nucleus 2};
+    \node[anchor=center, font=\bfseries] at (0, 0.5, -1.8) {Overlap Region};
+    
+    % Draw a dimension line for the impact parameter 'b'.
+    \draw[<->, thick] (\nucleusOneX, -0.2, 0) -- node[midway, fill=white, inner sep=1pt, font=\itshape] {b} (\nucleusTwoX, \impact_b-0.2, 0);
+
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,314 @@
+% accessible_typography.tex
+%
+% ACCESSIBLE TYPOGRAPHY CONFIGURATION FOR QGP LIGHT-ION PROJECT
+% Optimized for:
+%   - Readability across visual abilities (dyslexia, low vision)
+%   - Scientific document conventions
+%   - Alignment with accessible_colors.tex color scheme
+%   - Print and screen compatibility
+%
+% Based on: Libertinus font family + typographic research best practices
+%
+% USAGE: \input{figures/accessible_typography.tex} in preamble AFTER geometry
+%
+% ============================================================================
+% TYPOGRAPHIC RATIONALE
+% ============================================================================
+%
+% LINE LENGTH (Measure):
+%   - Optimal: 60-75 characters per line (research consensus)
+%   - At 11pt Libertinus, ~66 chars ≈ 5.0 inches text width
+%   - Wider margins improve focus and allow marginal notes
+%
+% LINE HEIGHT (Leading):
+%   - Body text: 1.35× (130-140% recommended for accessibility)
+%   - Captions: 1.25× (tighter for shorter text blocks)
+%   - Code/tables: 1.15× (dense information)
+%
+% FONT SIZE HIERARCHY:
+%   - Body: 11pt (standard academic, good for extended reading)
+%   - Captions: 10pt (0.9× body)
+%   - Footnotes: 9pt (0.8× body)
+%   - Section headings: 14pt bold (1.27× body)
+%   - Subsection: 12pt bold (1.09× body)
+%
+% LETTER SPACING:
+%   - Slight positive tracking improves readability for dyslexia
+%   - Headings: +20 units (microtype)
+%   - Body: default (Libertinus is well-spaced)
+%
+% ============================================================================
+
+% --- FONT PACKAGES ---
+% Libertinus: professional serif with complete math support
+% Fork of Linux Libertine with OpenType math, maintained actively
+\usepackage{libertinus-type1}  % For pdfLaTeX (Type 1 fonts)
+
+% Alternative for LuaLaTeX/XeLaTeX (uncomment if using those):
+% \usepackage{libertinus-otf}
+
+% Inconsolata for monospace (clean, accessible coding font)
+\usepackage{inconsolata}
+
+% ============================================================================
+% PAGE GEOMETRY (Optimal Placement)
+% ============================================================================
+% Calculated for US Letter (8.5" × 11") with golden ratio principles
+%
+% Text block dimensions:
+%   - Width: 5.25 inches (≈66 chars at 11pt Libertinus)
+%   - Height: 8.0 inches (leaves room for headers/footers)
+%
+% Margin distribution (traditional "canonical" proportions):
+%   - Inner margin: 1.0 inch (binding edge)
+%   - Outer margin: 1.25 inch (thumb space + visual balance)
+%   - Top margin: 1.0 inch
+%   - Bottom margin: 2.0 inch (footer + page number space)
+%
+% Note: geometry package should be loaded BEFORE this file
+% These settings override the basic 1in margins
+
+\geometry{
+    letterpaper,
+    % Specify margins only; let geometry calculate text dimensions
+    % This avoids over-specification warnings
+    inner=1.0in,
+    outer=1.25in,
+    top=1.0in,
+    bottom=1.5in,
+    marginparwidth=0.75in,
+    marginparsep=0.125in,
+    headheight=24pt,          % Increased for Libertinus font height
+    headsep=0.25in,
+    footskip=0.5in
+}
+
+% ============================================================================
+% LINE SPACING
+% ============================================================================
+\usepackage{setspace}
+\setstretch{1.35}  % 135% line height for body text
+
+% ============================================================================
+% PARAGRAPH FORMATTING
+% ============================================================================
+% No paragraph indentation (block style) with vertical space between paragraphs
+% This is more accessible for readers with tracking difficulties
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6\baselineskip plus 0.1\baselineskip minus 0.1\baselineskip}
+
+% ============================================================================
+% HEADING STYLES
+% ============================================================================
+\usepackage{titlesec}
+
+% Section: Large, bold, with generous spacing
+% Sans-serif for better visibility at larger sizes
+\titleformat{\section}
+    {\Large\bfseries\sffamily}  % Sans-serif bold
+    {\thesection}
+    {1em}
+    {}
+\titlespacing*{\section}
+    {0pt}                        % Left margin
+    {2\baselineskip plus 0.5\baselineskip}  % Before
+    {1\baselineskip}             % After
+
+% Subsection: Medium, bold
+\titleformat{\subsection}
+    {\large\bfseries\sffamily}
+    {\thesubsection}
+    {1em}
+    {}
+\titlespacing*{\subsection}
+    {0pt}
+    {1.5\baselineskip plus 0.3\baselineskip}
+    {0.75\baselineskip}
+
+% Subsubsection: Normal size, bold
+\titleformat{\subsubsection}
+    {\normalsize\bfseries\sffamily}
+    {\thesubsubsection}
+    {1em}
+    {}
+\titlespacing*{\subsubsection}
+    {0pt}
+    {1\baselineskip plus 0.2\baselineskip}
+    {0.5\baselineskip}
+
+% ============================================================================
+% CAPTION STYLING
+% ============================================================================
+\usepackage[
+    font={small,stretch=1.1},     % 10pt, slightly tighter than body
+    labelfont={bf,sf},            % Bold sans-serif labels
+    labelsep=period,              % "Figure 1. Caption text"
+    justification=justified,
+    singlelinecheck=false,
+    margin=0.5in,                 % Indent captions from text margins
+    format=hang,                  % Hanging indent for multi-line
+    skip=0.75\baselineskip        % Space between figure and caption
+]{caption}
+
+% ============================================================================
+% TABLE STYLING
+% ============================================================================
+\usepackage{booktabs}  % Professional table rules
+\usepackage{array}     % Enhanced column types
+
+% Increased row spacing in tables
+\renewcommand{\arraystretch}{1.3}
+
+% ============================================================================
+% LIST FORMATTING
+% ============================================================================
+\usepackage{enumitem}
+
+% Tighter lists with accessible spacing
+\setlist{
+    topsep=0.5\baselineskip,
+    itemsep=0.25\baselineskip,
+    parsep=0pt,
+    leftmargin=1.5em
+}
+
+% Description lists (used in Appendix)
+\setlist[description]{
+    style=nextline,           % Label on its own line
+    leftmargin=1em,           % Positive margin to avoid warning
+    labelindent=0pt,
+    itemsep=0.75\baselineskip,
+    font=\bfseries\sffamily   % Bold sans-serif terms
+}
+
+% ============================================================================
+% MATH TYPOGRAPHY
+% ============================================================================
+% Libertinus Math integrates seamlessly with Libertinus text
+
+% Slightly larger math for readability
+\DeclareMathSizes{11}{11}{8}{6}    % text, display, script, scriptscript
+
+% ============================================================================
+% MICROTYPE (Fine Typography)
+% ============================================================================
+\usepackage[
+    activate={true,nocompatibility},
+    final,
+    tracking=true,
+    factor=1100,
+    stretch=10,
+    shrink=10,
+    nopatch=footnote  % Avoid conflict with footmisc package
+]{microtype}
+
+% Slight letter spacing for small caps (used in some abbreviations)
+\SetTracking{encoding={*}, shape=sc}{40}
+
+% ============================================================================
+% HYPERLINK STYLING
+% ============================================================================
+% Accessible colors for links (from accessible_colors.tex palette)
+\hypersetup{
+    colorlinks=true,
+    linkcolor={rgb:red,0;green,0.447;blue,0.698},    % PbPbcolor (deep blue)
+    citecolor={rgb:red,0;green,0.447;blue,0.698},    % Same blue for citations
+    urlcolor={rgb:red,0.835;green,0.369;blue,0},     % theorycolor (vermillion)
+    filecolor={rgb:red,0;green,0.620;blue,0.451},    % NeNecolor (teal)
+    % Note: bookmarks options moved to \usepackage[...]{hyperref} in main document
+    pdfstartview=FitH
+}
+
+% ============================================================================
+% HEADERS AND FOOTERS
+% ============================================================================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}  % Clear defaults
+
+% Header: Short title (left), page number (right)
+% Note: Using fixed short title instead of \leftmark to avoid overly long headers
+\fancyhead[L]{\small\sffamily Light-Ion QGP: O--O \& Ne--Ne}
+\fancyhead[R]{\small\sffamily\thepage}
+
+% Footer: Empty (clean look)
+\fancyfoot{}
+
+% Line under header
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Plain style for chapter/section opening pages
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\small\sffamily\thepage}
+    \renewcommand{\headrulewidth}{0pt}
+}
+
+% ============================================================================
+% TITLE PAGE STYLING
+% ============================================================================
+% Custom title format for accessibility
+
+\makeatletter
+\renewcommand{\maketitle}{%
+    \begin{center}
+        \vspace*{1in}
+        {\LARGE\bfseries\sffamily \@title \par}
+        \vspace{1.5\baselineskip}
+        {\large \@author \par}
+        \vspace{0.5\baselineskip}
+        {\normalsize \@date \par}
+        \vspace{2\baselineskip}
+    \end{center}
+    \thispagestyle{empty}
+}
+\makeatother
+
+% ============================================================================
+% FOOTNOTE STYLING
+% ============================================================================
+\usepackage[bottom,hang]{footmisc}
+\setlength{\footnotemargin}{0.5em}
+\renewcommand{\footnotelayout}{\small}
+
+% ============================================================================
+% BLOCK QUOTE STYLING
+% ============================================================================
+\usepackage{quoting}
+\quotingsetup{
+    leftmargin=1.5em,
+    rightmargin=1.5em,
+    vskip=0.5\baselineskip,
+    font={small,itshape}
+}
+
+% ============================================================================
+% ACCESSIBILITY NOTES
+% ============================================================================
+%
+% FONT CHOICE RATIONALE:
+%   - Libertinus is a high-quality open-source serif with:
+%     * Clear letterforms with good x-height
+%     * Distinct character shapes (reduces confusion: l/1/I, O/0)
+%     * Complete math support (Libertinus Math)
+%     * Active maintenance and bug fixes
+%
+% SANS-SERIF FOR HEADINGS:
+%   - Research shows sans-serif is clearer at larger sizes
+%   - Libertinus Sans matches Libertinus Serif metrics
+%   - Creates clear visual hierarchy
+%
+% LINE SPACING RATIONALE:
+%   - 1.35× (135%) exceeds minimum 1.5× recommended by some guidelines
+%   - but 1.5× was found excessive for academic text
+%   - 1.35× balances readability with page economy
+%
+% AVOIDING PROBLEMATIC ELEMENTS:
+%   - No justified text with hyphenation (causes "rivers")
+%   - No pure black text on pure white (too high contrast)
+%   - Minimal italics (hard for dyslexic readers)
+%   - No all-caps headings (reduces recognition)
+%
+% ============================================================================

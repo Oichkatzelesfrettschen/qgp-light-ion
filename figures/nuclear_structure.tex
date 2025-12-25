@@ -1,0 +1,199 @@
+% nuclear_structure.tex
+%
+% Multi-panel comparison of nuclear structure:
+% - Woods-Saxon density profiles for O, Ne, Pb
+% - Visualization of deformation (Ne prolate)
+% - System size comparison
+%
+% REFACTORED: Uses precomputed data, fixed coordinate systems
+
+\documentclass[border=3mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{groupplot}[
+    group style={
+        group size=2 by 2,
+        horizontal sep=2cm,
+        vertical sep=2cm,
+    },
+    width=8cm,
+    height=6cm,
+]
+
+% Panel (a): Woods-Saxon radial profiles (precomputed)
+\nextgroupplot[
+    title={\textbf{(a) Nuclear Density Profiles}},
+    xlabel={$r$ (fm)},
+    ylabel={$\rho(r)/\rho_0$},
+    xmin=0, xmax=12,
+    ymin=0, ymax=1.15,
+    legend pos=north east,
+    legend style={font=\footnotesize},
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% O-16 (precomputed) - OOcolor (orange) for oxygen
+\addplot[OOcolor, ultra thick, solid]
+    table [x index=0, y index=1] {data/figure_curves/woods_saxon_O16.dat};
+\addlegendentry{$^{16}$O}
+
+% Ne-20 (precomputed) - NeNecolor (teal) for neon
+\addplot[NeNecolor, ultra thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/woods_saxon_Ne20.dat};
+\addlegendentry{$^{20}$Ne}
+
+% Pb-208 (precomputed) - PbPbcolor (blue) for lead
+\addplot[PbPbcolor, ultra thick, dotted]
+    table [x index=0, y index=1] {data/figure_curves/woods_saxon_Pb208.dat};
+\addlegendentry{$^{208}$Pb}
+
+% Half-density radius markers (matching curve colors)
+\addplot[OOcolor, dashed, thin] coordinates {(2.608, 0) (2.608, 0.5)};
+\addplot[NeNecolor, dashed, thin] coordinates {(2.791, 0) (2.791, 0.5)};
+\addplot[PbPbcolor, dashed, thin] coordinates {(6.62, 0) (6.62, 0.5)};
+\addplot[gray, dotted] coordinates {(0, 0.5) (12, 0.5)};
+\node[font=\tiny, gray] at (axis cs:10, 0.55) {$\rho = \rho_0/2$};
+
+
+% Panel (b): Nuclear radii comparison (precomputed)
+\nextgroupplot[
+    title={\textbf{(b) Nuclear Radius Scaling}},
+    xlabel={Mass Number $A$},
+    ylabel={$R_0$ (fm)},
+    xmin=0, xmax=220,
+    ymin=0, ymax=8,
+    legend pos=south east,
+    legend style={font=\footnotesize},
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% R = r_0 * A^(1/3) scaling (precomputed)
+\addplot[gray, thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/nuclear_radius_scaling.dat};
+\addlegendentry{$R_0 = r_0 A^{1/3}$}
+
+% Actual nuclei markers (colors match panel a)
+\addplot[only marks, mark=*, mark size=5pt, OOcolor] coordinates {(16, 2.608)};
+\addplot[only marks, mark=*, mark size=5pt, NeNecolor] coordinates {(20, 2.791)};
+\addplot[only marks, mark=*, mark size=5pt, gray] coordinates {(40, 3.427)};
+\addplot[only marks, mark=*, mark size=5pt, gray] coordinates {(129, 5.36)};
+\addplot[only marks, mark=*, mark size=5pt, PbPbcolor] coordinates {(208, 6.62)};
+
+% Labels (colors match markers)
+\node[font=\footnotesize, OOcolor, anchor=south, xshift=-3pt] at (axis cs:16, 2.75) {O};
+\node[font=\footnotesize, NeNecolor, anchor=south, xshift=3pt] at (axis cs:20, 3.0) {Ne};
+\node[font=\footnotesize, gray, anchor=south] at (axis cs:40, 3.6) {Ar};
+\node[font=\footnotesize, gray, anchor=south] at (axis cs:129, 5.55) {Xe};
+\node[font=\footnotesize, PbPbcolor, anchor=south] at (axis cs:208, 6.8) {Pb};
+
+
+% Panel (c): O-16 with alpha-cluster structure
+\nextgroupplot[
+    title={\textbf{(c) $^{16}$O ($\alpha$-cluster)}},
+    xlabel={$x$ (fm)},
+    ylabel={$y$ (fm)},
+    xmin=-5, xmax=5,
+    ymin=-5, ymax=5,
+    axis equal,
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% Woods-Saxon density contours (now in correct axis cs units)
+\draw[PbPbcolor!30, fill=PbPbcolor!5, line width=1.5pt] (axis cs:0,0) circle [radius=3.5];
+\draw[PbPbcolor!45, fill=PbPbcolor!10, line width=1.5pt] (axis cs:0,0) circle [radius=2.6];
+\draw[PbPbcolor!60, fill=PbPbcolor!20, line width=2pt] (axis cs:0,0) circle [radius=1.8];
+
+% Alpha-cluster tetrahedral structure (4 alpha particles)
+% Cluster positions for tetrahedral symmetry in 2D projection
+% Alpha cluster 1 (top)
+\addplot[only marks, mark=*, mark size=4pt, color=theorycolor, fill=theorycolor]
+    coordinates {(0, 1.5)};
+\addplot[only marks, mark=o, mark size=3pt, color=theorycolor, line width=1pt]
+    coordinates {(-0.35, 1.85) (0.35, 1.85) (-0.35, 1.15) (0.35, 1.15)};
+
+% Alpha cluster 2 (bottom-left)
+\addplot[only marks, mark=*, mark size=4pt, color=theorycolor, fill=theorycolor]
+    coordinates {(-1.3, -0.75)};
+\addplot[only marks, mark=o, mark size=3pt, color=theorycolor, line width=1pt]
+    coordinates {(-1.65, -0.40) (-0.95, -0.40) (-1.65, -1.10) (-0.95, -1.10)};
+
+% Alpha cluster 3 (bottom-right)
+\addplot[only marks, mark=*, mark size=4pt, color=theorycolor, fill=theorycolor]
+    coordinates {(1.3, -0.75)};
+\addplot[only marks, mark=o, mark size=3pt, color=theorycolor, line width=1pt]
+    coordinates {(0.95, -0.40) (1.65, -0.40) (0.95, -1.10) (1.65, -1.10)};
+
+% Alpha cluster 4 (center/back - smaller to show depth)
+\addplot[only marks, mark=*, mark size=3.5pt, color=PbPbcolor, fill=PbPbcolor, opacity=0.8]
+    coordinates {(0, -0.25)};
+\addplot[only marks, mark=o, mark size=2.5pt, color=PbPbcolor, opacity=0.8, line width=1pt]
+    coordinates {(-0.12, -0.13) (0.12, -0.13) (-0.12, -0.37) (0.12, -0.37)};
+
+% Connecting lines to show tetrahedral structure
+\draw[PbPbcolor, dashed, thick] (axis cs:0, 1.5) -- (axis cs:-1.3, -0.75);
+\draw[PbPbcolor, dashed, thick] (axis cs:0, 1.5) -- (axis cs:1.3, -0.75);
+\draw[PbPbcolor, dashed, thick] (axis cs:-1.3, -0.75) -- (axis cs:1.3, -0.75);
+
+\node[font=\footnotesize] at (axis cs:0, -4.2) {4 $\alpha$ clusters (tetrahedral)};
+
+
+% Panel (d): Prolate Ne-20
+\nextgroupplot[
+    title={\textbf{(d) $^{20}$Ne (prolate, $\beta_2 = 0.45$)}},
+    xlabel={$x$ (fm)},
+    ylabel={$y$ (fm)},
+    xmin=-5, xmax=5,
+    ymin=-5, ymax=5,
+    axis equal,
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% Woods-Saxon density contours - prolate ellipses (correct axis cs units)
+% Semi-major axis along y, semi-minor along x (beta_2 > 0 prolate)
+\draw[OOcolor!25, fill=OOcolor!5, line width=1pt] (axis cs:0,0) ellipse [x radius=2.8, y radius=4.0];
+\draw[OOcolor!35, fill=OOcolor!10, line width=1pt] (axis cs:0,0) ellipse [x radius=2.0, y radius=3.0];
+\draw[OOcolor!50, fill=OOcolor!15, line width=1.5pt] (axis cs:0,0) ellipse [x radius=1.3, y radius=2.0];
+
+% Nucleon positions - elongated pattern along y-axis
+% Protons (filled circles)
+\addplot[only marks, mark=*, mark size=4pt, color=theorycolor, fill=theorycolor]
+    coordinates {
+        (0.0, 2.3) (-0.4, 2.0) (0.5, 1.8) (-0.6, 1.5)
+        (0.3, 1.3) (0.7, 1.0) (-0.8, 0.8) (0.0, 0.5)
+        (0.2, -0.5) (-0.5, -1.0) (0.6, -1.3) (-0.3, -1.6)
+        (0.4, -1.9) (-0.7, -2.2) (0.1, -2.5)
+    };
+
+% Neutrons (open circles)
+\addplot[only marks, mark=o, mark size=3.5pt, color=OOcolor, line width=1.5pt]
+    coordinates {
+        (0.8, 2.1) (-0.9, 1.7) (0.2, 1.6) (-0.2, 1.1)
+        (0.9, 0.7) (-0.1, 0.2)
+        (-0.4, -0.8) (0.7, -1.1) (-0.8, -1.5)
+        (0.5, -1.7) (-0.2, -2.0) (0.3, -2.3) (-0.6, -2.6)
+    };
+
+\node[font=\footnotesize] at (axis cs:0, -4.2) {$\beta_2 = 0.45$ (prolate elongation)};
+
+% Arrows showing elongation direction
+\draw[->, very thick, OOcolor] (axis cs:3.5, 0) -- (axis cs:3.5, 2.5);
+\draw[->, very thick, OOcolor] (axis cs:3.5, 0) -- (axis cs:3.5, -2.5);
+\node[font=\tiny, OOcolor] at (axis cs:4.2, 1.2) {elongation};
+\node[font=\tiny, OOcolor] at (axis cs:4.2, -1.2) {axis};
+
+\end{groupplot}
+
+\end{tikzpicture}
+\end{document}

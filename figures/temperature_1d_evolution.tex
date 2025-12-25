@@ -1,0 +1,81 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+\begin{axis}[
+    width=14cm,
+    height=9cm,
+    xlabel={Proper Time $\tau$ [fm/$c$]},
+    ylabel={Temperature $T$ [MeV]},
+    xmin=0, xmax=15,
+    ymin=50, ymax=450,
+    grid=major,
+    grid style={gridcolor},
+    legend pos=north east,
+    legend style={fill=white, fill opacity=0.9, draw=none, font=\small},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    tick label style={font=\small},
+    title={Temperature Evolution: Ideal vs. Viscous Hydrodynamics},
+    title style={font=\large\bfseries},
+]
+
+% Critical temperature band
+\fill[coolphase, opacity=0.2] (axis cs:0, 150) rectangle (axis cs:15, 165);
+\node[coolphase, font=\scriptsize] at (axis cs:12, 158) {$T_c = 156.5 \pm 1.5$ MeV};
+
+% Kinetic freeze-out band
+\fill[coldphase, opacity=0.2] (axis cs:0, 90) rectangle (axis cs:15, 110);
+\node[coldphase, font=\scriptsize] at (axis cs:12, 100) {$T_{\mathrm{kin}} \approx 100$ MeV};
+
+% Pb-Pb ideal
+\addplot[hotphase, ultra thick, solid]
+    table [x index=0, y index=1] {data/1d_spectra/temperature_evolution_PbPb.dat};
+\addlegendentry{Pb--Pb ideal: $T \propto \tau^{-1/3}$}
+
+% Pb-Pb viscous
+\addplot[hotphase, ultra thick, dashed]
+    table [x index=0, y index=2] {data/1d_spectra/temperature_evolution_PbPb.dat};
+\addlegendentry{Pb--Pb viscous ($\eta/s = 0.12$)}
+
+% O-O ideal
+\addplot[primaryblue, ultra thick, solid]
+    table [x index=0, y index=1] {data/1d_spectra/temperature_evolution_OO.dat};
+\addlegendentry{O--O ideal}
+
+% O-O viscous
+\addplot[primaryblue, ultra thick, dashed]
+    table [x index=0, y index=2] {data/1d_spectra/temperature_evolution_OO.dat};
+\addlegendentry{O--O viscous}
+
+% Annotation: thermalization
+\draw[->, thick, textdark] (axis cs:1, 380) -- (axis cs:0.6, 350);
+\node[font=\scriptsize, align=center] at (axis cs:1.8, 400) {Thermalization\\$\tau_0 \approx 0.6$ fm/$c$};
+
+% Annotation: QGP lifetime
+\draw[<->, thick, warmphase] (axis cs:0.6, 180) -- (axis cs:10, 180);
+\node[warmphase, font=\scriptsize] at (axis cs:5.3, 195) {QGP lifetime $\sim 10$ fm/$c$ (Pb--Pb)};
+
+\draw[<->, thick, primaryblue] (axis cs:0.8, 130) -- (axis cs:4, 130);
+\node[primaryblue, font=\scriptsize] at (axis cs:2.4, 145) {$\sim 4$ fm/$c$ (O--O)};
+
+% Viscous heating annotation
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=2pt,
+      font=\scriptsize, align=left, inner sep=4pt]
+    at (axis cs:10, 300) {%
+    \textbf{Viscous Effect:}\\[2pt]
+    $\dot{T}_{\mathrm{visc}} \propto \eta/s \cdot T/\tau$\\[2pt]
+    Slower cooling due to\\
+    viscous heat generation
+};
+
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

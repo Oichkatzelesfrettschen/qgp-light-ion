@@ -1,0 +1,74 @@
+# Build output
+build/
+
+# Generated data (entire directory is regenerable)
+data/
+
+# Symlink to data from figures directory
+figures/data
+
+# LaTeX auxiliary files (when in root, not in build/)
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# Generated data duplicates in root (canonical location: data/)
+/RAA_*.dat
+/flow_*.dat
+
+# Generated visualization files in root (canonical location: build/)
+/RAA_visualization.pdf
+/RAA_visualization.png
+/flow_visualization.pdf
+/flow_visualization.png
+/geometry_visualization.pdf
+/geometry_visualization.png
+
+# Temporary/utility files
+full_content.txt
+read_full_file.py
+*.pyc
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*~
+.vscode/
+.idea/
+
+# Empty directories
+js/
+
+# Reference text extracts (regenerable from PDFs)
+references/*.txt
+
+# Playwright MCP (local browser automation state)
+.playwright-mcp/
+
+# Large PDF references (download from arXiv)
+references/*.pdf
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Mypy cache
+.mypy_cache/
+
+# Pytest cache
+.pytest_cache/

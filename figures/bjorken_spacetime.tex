@@ -1,0 +1,206 @@
+% bjorken_spacetime.tex
+%
+% Boost-invariant spacetime diagram showing:
+% - Constant proper-time hyperbolas
+% - Evolution phases: thermalization, QGP, hadronization, freeze-out
+% - Temperature scales and physics annotations
+%
+% DATA CLASSIFICATION:
+%   PHYSICS: Proper time definitions from relativistic kinematics
+%   EXPERIMENTAL: T_c from lattice QCD, T_0 from ALICE
+%   Precomputed data from: data/figure_curves/hyperbola_*.dat
+%
+% REFACTORED: Uses precomputed data, fixed nested tikz issue
+
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{patterns,decorations.pathreplacing,arrows.meta}
+
+% Load accessible color scheme
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    >=Stealth
+]
+
+\begin{axis}[
+    width=12cm,
+    height=11cm,
+    xlabel={$z$ (fm)},
+    ylabel={$t$ (fm/$c$)},
+    xmin=-8, xmax=8,
+    ymin=-2.8, ymax=13.5,
+    axis lines=middle,
+    xlabel style={at={(axis description cs:1.02,0.12)}},
+    ylabel style={at={(axis description cs:0.52,1.02)}, anchor=south},
+    title={\textbf{Boost-Invariant Spacetime Evolution of Heavy-Ion Collision}},
+    title style={at={(0.5,1.08)}, anchor=south},
+    xtick={-6,-4,-2,0,2,4,6},
+    ytick={0,2,4,6,8,10,12},
+    grid=major,
+    grid style={gridcolor},
+    clip=false,
+]
+
+% Background shading regions with patterns for accessibility
+% Thermalization phase (0-2 fm/c)
+\fill[hotphase, opacity=0.15] (axis cs:-8,0) rectangle (axis cs:8,2);
+\fill[pattern=north east lines, pattern color=hotphase!30, opacity=0.3]
+    (axis cs:-8,0) rectangle (axis cs:8,2);
+
+% QGP phase (2-5 fm/c)
+\fill[warmphase, opacity=0.12] (axis cs:-8,2) rectangle (axis cs:8,5);
+\fill[pattern=dots, pattern color=warmphase!40, opacity=0.3]
+    (axis cs:-8,2) rectangle (axis cs:8,5);
+
+% Hadronization phase (5-8 fm/c)
+\fill[coolphase, opacity=0.10] (axis cs:-8,5) rectangle (axis cs:8,8);
+\fill[pattern=horizontal lines, pattern color=coolphase!40, opacity=0.3]
+    (axis cs:-8,5) rectangle (axis cs:8,8);
+
+% Freeze-out phase (8-12 fm/c)
+\fill[coldphase, opacity=0.08] (axis cs:-8,8) rectangle (axis cs:8,12);
+\fill[pattern=grid, pattern color=coldphase!30, opacity=0.3]
+    (axis cs:-8,8) rectangle (axis cs:8,12);
+
+% Light cones from origin (precomputed)
+\addplot[gray, dashed, thick] table [x index=0, y index=1] {data/figure_curves/light_cone_right.dat};
+\addplot[gray, dashed, thick] table [x index=0, y index=1] {data/figure_curves/light_cone_left.dat};
+\node[gray, font=\footnotesize] at (axis cs:7, 7.5) {$t=z$};
+\node[gray, font=\footnotesize] at (axis cs:-7, 7.5) {$t=-z$};
+
+% Beam remnants (spectator nucleons) at large |z|
+\draw[gray!60, thick, dashed] (axis cs:-7.5,0.5) -- (axis cs:-7.5,1.5);
+\draw[gray!60, thick, dashed] (axis cs:-7.5,2.5) -- (axis cs:-7.5,3.5);
+\draw[gray!60, thick, dashed] (axis cs:-7.5,4.5) -- (axis cs:-7.5,5.5);
+\draw[gray!60, thick, dashed] (axis cs:-7.5,6.5) -- (axis cs:-7.5,7.5);
+\draw[gray!60, thick, dashed] (axis cs:-7.5,8.5) -- (axis cs:-7.5,9.5);
+\draw[gray!60, thick, dashed] (axis cs:-7.5,10.5) -- (axis cs:-7.5,11.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,0.5) -- (axis cs:7.5,1.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,2.5) -- (axis cs:7.5,3.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,4.5) -- (axis cs:7.5,5.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,6.5) -- (axis cs:7.5,7.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,8.5) -- (axis cs:7.5,9.5);
+\draw[gray!60, thick, dashed] (axis cs:7.5,10.5) -- (axis cs:7.5,11.5);
+\node[gray!70, font=\tiny, align=center, rotate=90] at (axis cs:-7.8, 6)
+    {Beam remnants};
+\node[gray!70, font=\tiny, align=center, rotate=90] at (axis cs:7.8, 6)
+    {Beam remnants};
+
+% Hyperbolic constant-tau surfaces (precomputed)
+% tau_0 = 1 fm/c (thermalization) - SOLID line
+\addplot[hotphase, ultra thick, solid, restrict x to domain=-4:4]
+    table [x index=0, y index=1] {data/figure_curves/hyperbola_tau1.dat};
+\node[hotphase, fill=white, font=\small\bfseries, inner sep=2pt]
+    at (axis cs:5, 2.2) {$\tau_0 \approx 0.6$--$1.0$ fm/$c$};
+
+% Thermalization physics annotation (moved to avoid hyperbola)
+\node[hotphase, font=\tiny, align=left, fill=white, fill opacity=0.85,
+      text opacity=1, inner sep=2pt, rounded corners=1pt]
+    at (axis cs:-6, 0.6)
+    {Thermalization via\\gluon saturation};
+
+% Energy density annotation at tau_0 - ALICE Pb-Pb result
+\node[hotphase, font=\tiny, align=left, fill=white, fill opacity=0.85,
+      text opacity=1, inner sep=2pt, rounded corners=1pt]
+    at (axis cs:4.5, 0.7)
+    {$\varepsilon_{\mathrm{Bj}} \approx 12$--$14$ GeV/fm$^3$\\(ALICE, 0--5\%)};
+
+% tau = 3 fm/c (QGP) - DASHED line (precomputed)
+\addplot[warmphase, ultra thick, dashed, restrict x to domain=-6:6]
+    table [x index=0, y index=1] {data/figure_curves/hyperbola_tau3.dat};
+\node[warmphase, fill=white, font=\small, inner sep=2pt]
+    at (axis cs:-6.5, 4.5) {$\tau = 3$ fm/$c$};
+
+% tau = 6 fm/c (hadronization) - DOTTED line (precomputed)
+\addplot[coolphase, ultra thick, dotted, restrict x to domain=-7:7]
+    table [x index=0, y index=1] {data/figure_curves/hyperbola_tau6.dat};
+\node[coolphase, fill=white, font=\small, inner sep=2pt]
+    at (axis cs:7.2, 7.5) {$\tau = 6$ fm/$c$};
+
+% tau = 10 fm/c (freeze-out) - DASH-DOT line (precomputed)
+\addplot[coldphase, ultra thick, dashdotted, restrict x to domain=-7.5:7.5]
+    table [x index=0, y index=1] {data/figure_curves/hyperbola_tau10.dat};
+\node[coldphase, fill=white, font=\small\bfseries, inner sep=2pt]
+    at (axis cs:-7.5, 11.3) {$\tau_f \approx 10$--$12$ fm/$c$};
+
+% Particle emission arrows from freeze-out hyperbola
+\draw[->, coldphase!80, thick] (axis cs:-6,11.66) -- (axis cs:-6.41,12.35);
+\draw[->, coldphase!80, thick] (axis cs:-4,10.77) -- (axis cs:-4.30,11.51);
+\draw[->, coldphase!80, thick] (axis cs:-2,10.20) -- (axis cs:-2.16,10.98);
+\draw[->, coldphase!80, thick] (axis cs:0,10.0) -- (axis cs:0,10.80);
+\draw[->, coldphase!80, thick] (axis cs:2,10.20) -- (axis cs:2.16,10.98);
+\draw[->, coldphase!80, thick] (axis cs:4,10.77) -- (axis cs:4.30,11.51);
+\draw[->, coldphase!80, thick] (axis cs:6,11.66) -- (axis cs:6.41,12.35);
+\node[coldphase!80, font=\tiny, align=center] at (axis cs:4.5, 11.8)
+    {Hadron\\emission};
+
+% Initial collision point
+\addplot[only marks, mark=*, mark size=3pt, black] coordinates {(0,0)};
+\node[below, font=\footnotesize\bfseries] at (axis cs:0, -0.3) {Collision};
+
+% Stage labels (repositioned to avoid overlap)
+\node[hotphase, font=\small\bfseries, align=center, fill=white,
+      fill opacity=0.9, text opacity=1, inner sep=2pt, draw=hotphase, thick]
+    at (axis cs:0.5, 1.0)
+    {Thermalization};
+\node[warmphase, font=\small\bfseries, align=center, fill=white,
+      fill opacity=0.9, text opacity=1, inner sep=2pt, draw=warmphase, thick]
+    at (axis cs:0.5, 3.5)
+    {QGP};
+\node[coolphase, font=\small\bfseries, align=center, fill=white,
+      fill opacity=0.9, text opacity=1, inner sep=2pt, draw=coolphase, thick]
+    at (axis cs:0.5, 6.5)
+    {Hadronization};
+\node[coldphase, font=\small\bfseries, align=center, fill=white,
+      fill opacity=0.9, text opacity=1, inner sep=2pt, draw=coldphase, thick]
+    at (axis cs:0.5, 9.5)
+    {Freeze-out};
+
+% Temperature scale (repositioned to upper left corner, outside axis)
+\node[draw, thick, fill=white, align=left, rounded corners=2pt,
+      font=\scriptsize, inner sep=4pt, anchor=north west] at (axis cs:-7.8, 13)
+{%
+    \textbf{Temperature (Pb--Pb)}\\[2pt]
+    \textcolor{hotphase}{$\blacksquare$} $T_0 \approx 300$--$400$ MeV\\
+    \textcolor{warmphase}{$\blacksquare$} $T \sim 200$ MeV\\
+    \textcolor{coolphase}{$\blacksquare$} $T_c = 156.5$ MeV\\
+    \textcolor{coldphase}{$\blacksquare$} $T_{\mathrm{fo}} \approx 100$ MeV
+};
+
+% Boost-invariant cooling formula box
+\node[draw, thick, fill=white, align=center, rounded corners=2pt,
+      font=\small, inner sep=5pt] at (axis cs:0, -2.2)
+{%
+    \textbf{Boost-Invariant Cooling:} \quad
+    $\displaystyle T(\tau) = T_0 \left(\frac{\tau_0}{\tau}\right)^{\!1/3}$
+    \quad where \quad $\tau = \sqrt{t^2 - z^2}$
+};
+
+% Transverse expansion note (moved to right side)
+\node[draw, thick, fill=highlightcolor!20, align=left, rounded corners=2pt,
+      font=\scriptsize, inner sep=3pt, anchor=south west] at (axis cs:4.5, -2.6)
+{%
+    \textbf{Note:} Longitudinal evolution shown.\\
+    Transverse expansion also occurs.
+};
+
+% Line style legend for accessibility (moved to upper right)
+\node[draw, thick, fill=white, align=left, rounded corners=2pt,
+      font=\scriptsize, inner sep=4pt, anchor=north east] at (axis cs:7.8, 13)
+{%
+    \textbf{Hyperbola Styles:}\\[1pt]
+    {\color{hotphase}\rule[0.5ex]{0.5cm}{2pt}} $\tau_0$ (therm.)\\[1pt]
+    {\color{warmphase}\rule[0.5ex]{0.15cm}{2pt}\hspace{1pt}\rule[0.5ex]{0.15cm}{2pt}\hspace{1pt}\rule[0.5ex]{0.15cm}{2pt}} $\tau=3$ fm/$c$\\[1pt]
+    {\color{coolphase}\rule[0.5ex]{1.5pt}{2pt}\hspace{1.5pt}\rule[0.5ex]{1.5pt}{2pt}\hspace{1.5pt}\rule[0.5ex]{1.5pt}{2pt}\hspace{1.5pt}\rule[0.5ex]{1.5pt}{2pt}\hspace{1.5pt}\rule[0.5ex]{1.5pt}{2pt}} $\tau=6$ fm/$c$\\[1pt]
+    {\color{coldphase}\rule[0.5ex]{0.2cm}{2pt}\hspace{1pt}\rule[0.5ex]{1.5pt}{2pt}\hspace{1pt}\rule[0.5ex]{0.2cm}{2pt}} $\tau_f$ (freeze-out)
+};
+
+\end{axis}
+\end{tikzpicture}
+\end{document}

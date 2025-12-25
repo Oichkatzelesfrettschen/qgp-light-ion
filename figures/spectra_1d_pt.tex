@@ -1,0 +1,77 @@
+\documentclass[tikz,border=3mm]{standalone}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+\begin{axis}[
+    width=14cm,
+    height=10cm,
+    xlabel={$p_T$ [GeV/$c$]},
+    ylabel={$\frac{1}{2\pi p_T}\frac{d^2N}{dp_T dy}$ [arb. units]},
+    xmode=log,
+    ymode=log,
+    xmin=0.1, xmax=20,
+    ymin=1e-6, ymax=2,
+    grid=major,
+    grid style={gridcolor},
+    legend pos=north east,
+    legend style={fill=white, fill opacity=0.9, draw=none, font=\small},
+    xlabel style={font=\large},
+    ylabel style={font=\large},
+    tick label style={font=\small},
+    title={Transverse Momentum Spectra: Blast-Wave Model},
+    title style={font=\large\bfseries},
+]
+
+% Pion spectrum
+\addplot[primaryblue, ultra thick, solid]
+    table [x index=0, y index=1] {data/1d_spectra/pt_spectrum_pion.dat};
+\addlegendentry{$\pi^{\pm}$ ($m = 140$ MeV)}
+
+% Kaon spectrum
+\addplot[secondaryorange, ultra thick, dashed]
+    table [x index=0, y index=1] {data/1d_spectra/pt_spectrum_kaon.dat};
+\addlegendentry{$K^{\pm}$ ($m = 494$ MeV)}
+
+% Proton spectrum
+\addplot[tertiarygreen, ultra thick, dotted]
+    table [x index=0, y index=1] {data/1d_spectra/pt_spectrum_proton.dat};
+\addlegendentry{$p/\bar{p}$ ($m = 938$ MeV)}
+
+% Thermal exponential reference
+\addplot[gray, thin, dashed, domain=0.5:10, samples=50]
+    {0.3*exp(-x/0.3)};
+\addlegendentry{Thermal: $e^{-p_T/T}$, $T=300$ MeV}
+
+% Mass ordering annotation - positioned at bottom left to avoid legend
+\node[draw, fill=white, fill opacity=0.95, text opacity=1, rounded corners=2pt,
+      font=\footnotesize, align=left, inner sep=4pt]
+    at (axis cs:0.2, 1e-3) {%
+    \textbf{Mass Ordering}\\[2pt]
+    At low $p_T$: $\pi > K > p$\\
+    (phase space)\\[2pt]
+    At high $p_T$: $\pi \approx K \approx p$\\
+    (partonic fragmentation)
+};
+
+% Radial flow annotation
+\draw[->, thick, accentpurple] (axis cs:0.8, 0.001) -- (axis cs:2, 0.001)
+    node[midway, above, font=\footnotesize] {Radial flow boost};
+
+% Kinetic freeze-out annotation
+\node[draw=annotationborder, fill=highlightcolor!30, rounded corners=2pt,
+      font=\scriptsize, align=center, inner sep=3pt]
+    at (axis cs:0.2, 1e-5) {%
+    $T_{\mathrm{kin}} \approx 100$ MeV\\
+    $\beta_s \approx 0.65$
+};
+
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

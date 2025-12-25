@@ -1,0 +1,286 @@
+% qcd_phase_diagram.tex
+%
+% QCD Phase Diagram - SINGLE INTEGRATED FIGURE
+%
+% DECEMBER 2025 UPDATE - REVISION 3 (Full page, elegant layout):
+%   PHYSICS (December 2025):
+%   - CP at μ_B < 450 MeV EXCLUDED at 2σ (Borsányi et al. PRD 112, L111505)
+%   - FRG consensus CEP: (T=110, μ_B=630) MeV ±10% (Fu et al. arXiv:2510.11270)
+%   - Freeze-out: Lysenko et al. PRC 111, 054903 (2025); data: Andronic compilation
+%   - κ_2 = 0.012(2) curvature (HotQCD 2019)
+%   LAYOUT:
+%   - Expanded to 20cm × 15cm (~0.95\textwidth)
+%   - Extended μ_B axis to 900 MeV for proper bounds
+%   - Leader lines for collision markers (decongest freeze-out zone)
+%   - All fonts ≥ \small (~9pt at source)
+
+\documentclass[border=2mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{patterns}
+\input{accessible_colors.tex}
+
+% === COLORS ===
+\definecolor{cpcolor}{HTML}{006666}          % Teal for FRG CP
+\definecolor{excludedcolor}{HTML}{E0E0E0}    % Slightly darker gray for visibility
+\definecolor{excludedborder}{HTML}{666666}   % Darker border
+\definecolor{cosmoscolor}{HTML}{4B0082}      % Indigo for universe
+\definecolor{firstorderband}{HTML}{AA77AA}   % DARKER purple for visibility
+\definecolor{nscolor}{HTML}{555588}          % Darker steel blue
+
+\begin{document}
+\begin{tikzpicture}
+
+% =============================================================================
+% MAIN PHASE DIAGRAM - 20cm × 15cm (~0.95\textwidth, full page utilization)
+% =============================================================================
+
+\begin{axis}[
+    width=20cm,
+    height=15cm,
+    xmin=0, xmax=900,
+    ymin=0, ymax=320,
+    xlabel={Baryon Chemical Potential $\mu_{\mathrm{B}}$ (MeV)},
+    ylabel={Temperature $T$ (MeV)},
+    xlabel style={font=\Large, at={(0.5,-0.03)}},
+    ylabel style={font=\Large},
+    tick label style={font=\large},
+    xtick={0, 100, 200, 300, 450, 500, 600, 700, 800, 900},
+    xticklabels={0, 100, 200, 300, \textbf{450}, 500, 600, 700, 800, 900},
+    ytick={0, 50, 100, 150, 200, 250, 300},
+    yticklabels={0, 50, 100, 150, 200, 250, 300},
+    minor xtick={50, 150, 250, 350, 400, 550, 650, 750, 850},
+    minor ytick={25, 75, 125, 175, 225, 275},
+    grid=both,
+    major grid style={line width=0.3pt, draw=gridcolor!40},
+    minor grid style={line width=0.15pt, draw=gridcolor!15},
+    clip=false,
+    axis on top=false,
+]
+
+% =========================================================================
+% LAYER 1: EXCLUSION REGION (μ_B < 450 MeV, CP excluded at 2σ)
+% =========================================================================
+
+\fill[excludedcolor] (axis cs:0,0) rectangle (axis cs:450,320);
+
+% Exclusion boundary
+\draw[excludedborder, line width=2pt, densely dashed]
+    (axis cs:450,0) -- (axis cs:450,320);
+
+% Exclusion label - HORIZONTAL within gray region (more readable)
+\node[font=\normalsize\bfseries, color=excludedborder!95!black, anchor=center,
+    fill=white, fill opacity=0.85, text opacity=1, inner sep=3pt]
+    at (axis cs:225,280) {CP Excluded ($2\sigma$)};
+
+% =========================================================================
+% LAYER 2: PHASE REGION FILLS
+% =========================================================================
+
+% QGP region fill
+\addplot[name path=top, draw=none, forget plot] coordinates {(0,320) (900,320)};
+\addplot[name path=crossbg, draw=none, forget plot]
+    table [x index=0, y index=1] {data/figure_curves/qcd_qgp_boundary.dat};
+\addplot[qgpcolor!25, forget plot] fill between[of=top and crossbg];
+
+% Hadron region fill
+\addplot[name path=bottom, draw=none, forget plot] coordinates {(0,0) (900,0)};
+\addplot[name path=fobg, draw=none, forget plot]
+    table [x index=0, y index=1] {data/figure_curves/qcd_freezeout_curve.dat};
+\addplot[hadroncolor!35, forget plot] fill between[of=fobg and bottom];
+
+% =========================================================================
+% LAYER 3: PHASE BOUNDARIES
+% =========================================================================
+
+% Crossover uncertainty band
+\addplot[name path=cu, draw=none, forget plot]
+    table [x index=0, y index=2] {data/figure_curves/qcd_hadronization_band.dat};
+\addplot[name path=cl, draw=none, forget plot]
+    table [x index=0, y index=3] {data/figure_curves/qcd_hadronization_band.dat};
+\addplot[crossovercolor!25, forget plot] fill between[of=cu and cl];
+
+% CROSSOVER LINE (2.5pt solid)
+\addplot[crossovercolor, line width=2.5pt]
+    table [x index=0, y index=1] {data/figure_curves/qcd_crossover_line.dat};
+
+% CHEMICAL FREEZE-OUT (1.5pt dotted)
+\addplot[freezeoutcolor, line width=1.5pt, densely dotted]
+    table [x index=0, y index=1] {data/figure_curves/qcd_freezeout_curve.dat};
+
+% =========================================================================
+% LAYER 4: FIRST-ORDER CONSENSUS BAND (INCREASED VISIBILITY)
+% =========================================================================
+
+\addplot[name path=fo_upper, draw=none, forget plot]
+    table [x index=0, y index=1] {data/figure_curves/qcd_firstorder_consensus_band.dat};
+\addplot[name path=fo_lower, draw=none, forget plot]
+    table [x index=0, y index=2] {data/figure_curves/qcd_firstorder_consensus_band.dat};
+
+% Band fill - INCREASED opacity to 60%
+\addplot[firstorderband!60, forget plot] fill between[of=fo_upper and fo_lower];
+
+% Central first-order line
+\addplot[crossovercolor!70!black, line width=1.5pt, dashed]
+    table [x index=0, y index=1] {data/figure_curves/qcd_firstorder_frg.dat};
+
+% =========================================================================
+% LAYER 5: CRITICAL POINT (FRG CONSENSUS)
+% =========================================================================
+
+% CP uncertainty ellipse
+\addplot[cpcolor!60, fill=cpcolor!35, line width=1.5pt, dashed]
+    table [x index=0, y index=1] {data/figure_curves/qcd_critical_ellipse.dat} -- cycle;
+
+% CP marker
+\addplot[only marks, mark=*, mark size=9pt, color=cpcolor, mark options={fill=cpcolor}]
+    coordinates {(630, 110)};
+
+% CP annotation - properly formatted with axis labels
+\node[font=\large\bfseries, color=cpcolor!90!black, anchor=west]
+    at (axis cs:668, 120) {CEP};
+\node[font=\small, color=cpcolor!85!black, anchor=north west]
+    at (axis cs:668, 108) {$T{=}110$, $\mu_B{=}630$ MeV};
+
+% =========================================================================
+% LAYER 6: FREEZE-OUT DATA
+% =========================================================================
+
+\addplot[
+    only marks, mark=*, mark size=3pt, color=freezeoutcolor!80!black,
+    error bars/.cd, x dir=both, x explicit, y dir=both, y explicit,
+    error bar style={line width=0.5pt, color=freezeoutcolor!50},
+]
+    table [x index=0, y index=1, x error index=2, y error index=3]
+    {data/figure_curves/qcd_freezeout_data.dat};
+
+% =========================================================================
+% LAYER 7: COLLISION MARKERS WITH LEADER LINES (decongested)
+% =========================================================================
+
+% LHC Pb-Pb - marker with leader line to external label
+\addplot[only marks, mark=square*, mark size=7pt, color=PbPbcolor]
+    coordinates {(1, 156.5)};
+\draw[PbPbcolor!60, line width=0.6pt] (axis cs:1, 156.5) -- (axis cs:45, 230);
+\node[font=\small, color=PbPbcolor!90!black, anchor=south west,
+    fill=white, fill opacity=0.8, text opacity=1, inner sep=2pt]
+    at (axis cs:48, 232) {LHC Pb-Pb (5.02 TeV)};
+
+% RHIC 200 GeV - marker with leader line
+\addplot[only marks, mark=diamond*, mark size=7pt, color=NeNecolor]
+    coordinates {(25, 166)};
+\draw[NeNecolor!60, line width=0.6pt] (axis cs:25, 166) -- (axis cs:80, 215);
+\node[font=\small, color=NeNecolor!90!black, anchor=south west,
+    fill=white, fill opacity=0.8, text opacity=1, inner sep=2pt]
+    at (axis cs:83, 217) {RHIC Au-Au (200 GeV)};
+
+% SPS 17.3 GeV - marker with leader line
+\addplot[only marks, mark=pentagon*, mark size=6pt, color=accentpurple]
+    coordinates {(220, 158)};
+\draw[accentpurple!60, line width=0.6pt] (axis cs:220, 158) -- (axis cs:280, 220);
+\node[font=\small, color=accentpurple!90!black, anchor=south west,
+    fill=white, fill opacity=0.8, text opacity=1, inner sep=2pt]
+    at (axis cs:283, 222) {SPS (17.3 GeV)};
+
+% AGS 4.85 GeV - positioned RIGHT of exclusion boundary
+\addplot[only marks, mark=star, mark size=7pt, color=accentred]
+    coordinates {(475, 120)};
+\node[font=\small, color=accentred!90!black, anchor=west]
+    at (axis cs:490, 120) {AGS (4.85 GeV)};
+
+% =========================================================================
+% LAYER 8: EARLY UNIVERSE - REPOSITIONED
+% =========================================================================
+
+\addplot[cosmoscolor, line width=2.5pt, -{Stealth[length=6pt]}, forget plot]
+    coordinates {(15, 310) (15, 165)};
+\node[font=\small\bfseries, color=cosmoscolor, anchor=west]
+    at (axis cs:22, 295) {Early universe};
+\node[font=\footnotesize, color=cosmoscolor!80!black, anchor=west]
+    at (axis cs:22, 278) {$t \sim 10^{-5}$ s};
+
+% =========================================================================
+% LAYER 9: NEUTRON STAR - positioned within bounds
+% =========================================================================
+
+\node[font=\normalsize\bfseries, color=nscolor!90!black, anchor=center]
+    at (axis cs:850, 25) {NS cores $\rightarrow$};
+\node[font=\small, color=nscolor!75!black, anchor=center]
+    at (axis cs:850, 10) {$\mu_B \sim 1$--$1.5$ GeV};
+
+% =========================================================================
+% LAYER 10: PHASE LABELS - more prominent placement
+% =========================================================================
+
+\node[font=\Huge\bfseries, color=qgpcolor!70!black] at (axis cs:700, 260) {QGP};
+\node[font=\Large\bfseries, color=hadroncolor!55!black] at (axis cs:700, 50) {HADRON GAS};
+
+% =========================================================================
+% LAYER 11: TRANSITION LABELS - SINGLE LINES, REPOSITIONED
+% =========================================================================
+
+% Crossover label - positioned near crossover line
+\node[anchor=west, font=\small, color=crossovercolor!90!black,
+    fill=white, fill opacity=0.85, text opacity=1, inner sep=2pt]
+    at (axis cs:260, 175) {Crossover: $T_c = 156.5 \pm 1.5$ MeV, $\kappa_2 = 0.012(2)$};
+
+% First-order label - dark text with white background for visibility
+\node[font=\small, color=black!80, anchor=north,
+    fill=white, fill opacity=0.85, text opacity=1, inner sep=2pt]
+    at (axis cs:720, 78) {1st order (theory)};
+
+% =========================================================================
+% LAYER 12: FACILITY REGIONS
+% =========================================================================
+
+% RHIC BES-II - label INSIDE box
+\draw[NeNecolor!50, line width=1pt, dashed]
+    (axis cs:150, 128) rectangle (axis cs:420, 170);
+\node[font=\footnotesize\bfseries, color=NeNecolor!70!black, anchor=north east]
+    at (axis cs:415, 167) {BES-II};
+
+% FAIR/CBM - extended for wider axis
+\draw[accentpurple!50, line width=1pt, dotted]
+    (axis cs:500, 45) rectangle (axis cs:850, 135);
+\node[font=\footnotesize\bfseries, color=accentpurple!60!black, anchor=south west]
+    at (axis cs:505, 48) {FAIR/CBM};
+
+\end{axis}
+
+% =============================================================================
+% LEGEND - centered for 20cm figure
+% =============================================================================
+
+\node[anchor=north, font=\normalsize] at (10, -1.0) {%
+\begin{tikzpicture}[baseline]
+    % Crossover
+    \draw[crossovercolor, line width=3pt] (0,0) -- (0.9,0);
+    \node[anchor=west, font=\small] at (1.0,0) {Crossover};
+    % Freeze-out
+    \draw[freezeoutcolor, line width=2pt, densely dotted] (3.5,0) -- (4.4,0);
+    \node[anchor=west, font=\small] at (4.5,0) {Freeze-out};
+    % First-order band
+    \fill[firstorderband!60] (7.4,-0.14) rectangle (8.2,0.14);
+    \node[anchor=west, font=\small] at (8.3,0) {1st order};
+    % CP
+    \fill[cpcolor] (11.0,0) circle (5pt);
+    \node[anchor=west, font=\small] at (11.3,0) {CEP (FRG)};
+    % Excluded
+    \fill[excludedcolor] (14.2,-0.14) rectangle (14.9,0.14);
+    \node[anchor=west, font=\small] at (15.0,0) {Excluded};
+\end{tikzpicture}
+};
+
+% =============================================================================
+% DATA SOURCES - December 2025 (minimum 8pt)
+% =============================================================================
+
+\node[font=\small, color=textmid, anchor=north] at (10, -1.9) {%
+Crossover: HotQCD PLB 795 (2019), $\kappa_2$: Bazavov et al.\ (2020);
+Freeze-out: Lysenko et al.\ PRC 111 (2025); Exclusion: Borsányi et al.\ PRD 112 (2025); CEP: Fu et al.\ (2025)};
+
+\end{tikzpicture}
+\end{document}

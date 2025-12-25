@@ -1,0 +1,102 @@
+\documentclass[tikz,border=5mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+\pgfplotsset{compat=1.18}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}
+    \begin{axis}[
+        width=10cm,
+        height=10cm,
+        xlabel={$x$ [fm]},
+        ylabel={$y$ [fm]},
+        xlabel style={font=\large,color=textdark},
+        ylabel style={font=\large,color=textdark},
+        xmin=-5, xmax=5,
+        ymin=-5, ymax=5,
+        axis equal image,
+        colormap={accessible}{rgb255(0cm)=(255,255,229); rgb255(0.2cm)=(255,247,188); rgb255(0.4cm)=(254,227,145); rgb255(0.6cm)=(254,196,79); rgb255(0.8cm)=(251,154,41); rgb255(1cm)=(217,95,14)},
+        colorbar,
+        colorbar style={
+            ylabel={$\varepsilon$ [GeV/fm$^3$]},
+            ylabel style={font=\large,color=textdark},
+            ytick={0,20,40,60,80,100},
+            yticklabel style={font=\small,color=textdark},
+        },
+        point meta min=0,
+        point meta max=100,
+        view={0}{90},
+        tick label style={font=\small,color=textdark},
+    ]
+
+    % Read precomputed energy density data from Python-generated file
+    % Using 75x75 resolution (TeX memory limits prevent higher)
+    \addplot3[
+        matrix plot*,
+        point meta=explicit,
+        mesh/cols=75,
+        mesh/rows=75,
+    ] table [x index=0, y index=1, meta index=2] {data/energy_density_2d_75.dat};
+
+    % Add reaction plane axis (Psi_2 = 0 in this orientation)
+    % The almond is oriented along x-axis
+    \draw[->,thick,textdark,line width=1.5pt]
+        (axis cs:-4.5,0) -- (axis cs:4.5,0)
+        node[pos=0.95,above,font=\large,color=textdark] {$\Psi_2$};
+
+    % Add arrows indicating PRESSURE GRADIENT direction (outward from center)
+    % These show how anisotropic pressure drives elliptic flow
+    \draw[->,thick,white,line width=1.5pt]
+        (axis cs:0,-1.5) -- (axis cs:0,-3.5);
+    \draw[->,thick,white,line width=1.5pt]
+        (axis cs:0,1.5) -- (axis cs:0,3.5);
+    \node[font=\scriptsize,white,fill=black!60,fill opacity=0.7,text opacity=1,rounded corners,inner sep=2pt]
+        at (axis cs:0.8,2.5) {$\nabla P$};
+
+    % Add eccentricity annotation
+    \node[font=\large,color=textdark,fill=white,fill opacity=0.9,text opacity=1,
+          rounded corners,inner sep=3pt]
+        at (axis cs:3.5,4.2) {$\varepsilon_2 \approx 0.45$};
+
+    % Add text annotation for collision type
+    \node[font=\large,color=textdark,fill=white,fill opacity=0.9,text opacity=1,
+          rounded corners,inner sep=3pt,align=center]
+        at (axis cs:-3.5,4.2) {Non-central\\collision};
+
+    % Add coordinate system origin marker
+    \fill[textdark] (axis cs:0,0) circle (1.5pt);
+
+    % Draw circles indicating the approximate extent of each nucleus
+    % before collision (dashed, semi-transparent)
+    \draw[textdark,dashed,thick,opacity=0.6]
+        (axis cs:-1.5,0) circle [radius=3.5];
+    \draw[textdark,dashed,thick,opacity=0.6]
+        (axis cs:1.5,0) circle [radius=3.5];
+
+    % Add impact parameter indicator
+    \draw[<->,thick,textdark,line width=1pt]
+        (axis cs:-1.5,-4.2) -- (axis cs:1.5,-4.2)
+        node[midway,above,font=\large,color=textdark] {$b \approx 6$ fm};
+
+    % Hot spot mechanism annotation - moved up to avoid axis overlap
+    \node[font=\footnotesize,color=textdark,fill=white,fill opacity=0.95,text opacity=1,
+          draw=annotationborder,rounded corners,inner sep=4pt,align=left,text width=3.5cm]
+        at (axis cs:3.5,-3.0) {
+        \textbf{Hot spots} arise from\\
+        fluctuating nucleon\\
+        positions $\rightarrow$ drive $v_3$
+    };
+
+    % Mechanism: eccentricity to flow - moved up to avoid axis overlap
+    \node[font=\footnotesize,color=textdark,fill=white,fill opacity=0.95,text opacity=1,
+          draw=annotationborder,rounded corners,inner sep=4pt,align=left,text width=3.5cm]
+        at (axis cs:-3.2,-3.0) {
+        \textbf{Mechanism:}\\
+        $\varepsilon_n \xrightarrow{\eta/s} v_n$\\
+        (spatial $\rightarrow$ momentum)
+    };
+
+    \end{axis}
+\end{tikzpicture}
+\end{document}

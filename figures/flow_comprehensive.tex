@@ -1,0 +1,211 @@
+% flow_comprehensive.tex
+%
+% Comprehensive flow visualization showing:
+% - v_n vs centrality comparison (O-O, Ne-Ne, Pb-Pb)
+% - Azimuthal distribution dN/dphi demonstrating anisotropy
+% - Nuclear geometry -> eccentricity -> flow connection
+%
+% DATA CLASSIFICATION:
+%   PREDICTED: Model curves from (2+1)D viscous hydrodynamics
+%   Constrained by: CMS-HIN-25-009 (O-O/Ne-Ne v2, v3)
+%   Reference: CMS-HIN-25-009 (HEPData: ins3062822)
+%
+% REFACTORED: Uses precomputed data from data/figure_curves/
+
+\documentclass[border=3mm]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+\input{accessible_colors.tex}
+
+\begin{document}
+\begin{tikzpicture}
+
+\begin{groupplot}[
+    group style={
+        group size=2 by 2,
+        horizontal sep=2.5cm,
+        vertical sep=2.5cm,
+    },
+]
+
+% Panel (a): v2 vs centrality
+\nextgroupplot[
+    title={\textbf{(a) Elliptic Flow $v_2$ vs. Centrality}},
+    xlabel={Centrality (\%)},
+    ylabel={$v_2$},
+    xmin=0, xmax=80,
+    ymin=0, ymax=0.12,
+    x dir=reverse,
+    width=8cm,
+    height=6cm,
+    legend pos=north east,
+    legend style={font=\footnotesize},
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% Pb-Pb v2 (precomputed)
+\addplot[PbPbcolor, ultra thick, solid, mark=o, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v2_vs_cent_PbPb.dat};
+\addlegendentry{Pb--Pb}
+
+% O-O v2 (precomputed)
+\addplot[OOcolor, ultra thick, dashed, mark=square*, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v2_vs_cent_OO.dat};
+\addlegendentry{O--O}
+
+% Ne-Ne v2 (precomputed)
+\addplot[NeNecolor, ultra thick, dotted, mark=triangle*, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v2_vs_cent_NeNe.dat};
+\addlegendentry{Ne--Ne (prolate)}
+
+% Annotation: Ne > O in central
+\draw[NeNecolor, ->] (axis cs:8, 0.09) -- (axis cs:3, 0.078);
+\node[NeNecolor, font=\tiny, anchor=south] at (axis cs:12, 0.092) {Deformation effect};
+
+% Annotation: Geometry-driven mechanism
+\node[black!70, font=\scriptsize, anchor=west] at (axis cs:35, 0.075) {Geometry-driven};
+
+% Annotation: eta/s from Bayesian extraction (reformatted)
+\node[black, font=\scriptsize, align=left, anchor=north east, text width=2.2cm] at (axis cs:78, 0.045)
+    {$(\eta/s) \approx 0.08$--$0.16$\\(1--2$\times$ KSS bound)};
+
+
+% Panel (b): v3 vs centrality
+\nextgroupplot[
+    title={\textbf{(b) Triangular Flow $v_3$ vs. Centrality}},
+    xlabel={Centrality (\%)},
+    ylabel={$v_3$},
+    xmin=0, xmax=80,
+    ymin=0, ymax=0.05,
+    x dir=reverse,
+    width=8cm,
+    height=6cm,
+    legend pos=south west,
+    legend style={font=\footnotesize},
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+    ytick={0, 0.01, 0.02, 0.03, 0.04, 0.05},
+    scaled y ticks=false,
+]
+
+% Pb-Pb v3 (precomputed)
+\addplot[PbPbcolor, ultra thick, solid, mark=o, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v3_vs_cent_PbPb.dat};
+\addlegendentry{Pb--Pb}
+
+% O-O v3 (precomputed)
+\addplot[OOcolor, ultra thick, dashed, mark=square*, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v3_vs_cent_OO.dat};
+\addlegendentry{O--O}
+
+% Ne-Ne v3 (precomputed)
+\addplot[NeNecolor, ultra thick, dotted, mark=triangle*, mark size=2pt, mark repeat=5]
+    table [x index=0, y index=1] {data/figure_curves/v3_vs_cent_NeNe.dat};
+\addlegendentry{Ne--Ne}
+
+% Annotation: v3 increases centrally in small systems
+\draw[gray, ->] (axis cs:50, 0.042) -- (axis cs:12, 0.040);
+\node[gray, font=\tiny, anchor=south west, text width=3cm, align=left] at (axis cs:48, 0.043)
+    {Fluctuations dominate\\in central collisions};
+
+% Annotation: Fluctuation-driven mechanism
+\node[black!70, font=\scriptsize, anchor=west] at (axis cs:52, 0.015) {Fluctuation-driven};
+
+
+% Panel (c): Azimuthal distribution (Cartesian, showing modulation)
+\nextgroupplot[
+    title={\textbf{(c) Azimuthal Modulation}},
+    xlabel={$\phi$ (rad)},
+    ylabel={$dN/d\phi$ (arb. units)},
+    xmin=0, xmax=6.283,
+    ymin=0.7, ymax=1.3,
+    width=8cm,
+    height=6cm,
+    legend pos=south west,
+    legend style={font=\footnotesize, fill=white, fill opacity=0.9, text opacity=1},
+    xtick={0, 1.571, 3.142, 4.712, 6.283},
+    xticklabels={0, $\pi/2$, $\pi$, $3\pi/2$, $2\pi$},
+    grid=major,
+    grid style={line width=0.1pt, draw=gray!30},
+]
+
+% Isotropic (precomputed)
+\addplot[gray, thick, dotted]
+    table [x index=0, y index=1] {data/figure_curves/azimuthal_isotropic.dat};
+\addlegendentry{Isotropic}
+
+% Central collision (precomputed)
+\addplot[OOcolor, ultra thick, dashed]
+    table [x index=0, y index=1] {data/figure_curves/azimuthal_central.dat};
+\addlegendentry{Central ($v_2$=0.02, $v_3$=0.025)}
+
+% Mid-central collision (precomputed)
+\addplot[PbPbcolor, ultra thick, solid]
+    table [x index=0, y index=1] {data/figure_curves/azimuthal_midcentral.dat};
+\addlegendentry{Mid-central ($v_2$=0.08, $v_3$=0.02)}
+
+% Mark the reaction plane
+\draw[black, dashed, thick] (axis cs:0, 0.7) -- (axis cs:0, 1.3);
+\draw[black, dashed, thick] (axis cs:3.142, 0.7) -- (axis cs:3.142, 1.3);
+\node[black, font=\scriptsize, anchor=south] at (axis cs:0, 1.3) {$\Psi_2$ (reaction plane)};
+\node[black, font=\scriptsize, anchor=south] at (axis cs:3.142, 1.3) {$\Psi_2$};
+
+
+% Panel (d): Geometry -> Flow schematic
+\nextgroupplot[
+    title={\textbf{(d) Geometry $\rightarrow$ Flow Transformation}},
+    xlabel={},
+    ylabel={},
+    xmin=-3, xmax=3,
+    ymin=-3, ymax=3,
+    width=8cm,
+    height=6cm,
+    axis equal,
+    ticks=none,
+    axis lines=none,
+]
+
+% Left side: Initial geometry (almond shape)
+% Almond overlap region
+\fill[PbPbcolor!20] (-2.2,0) ellipse [x radius=0.6, y radius=1.2];
+\draw[PbPbcolor, ultra thick] (-2.2,0) ellipse [x radius=0.6, y radius=1.2];
+
+% Nucleus outlines (overlapping circles forming almond)
+\draw[gray!60, thick, dashed] (-2.8,0) circle [radius=1.0];
+\draw[gray!60, thick, dashed] (-1.6,0) circle [radius=1.0];
+
+% Pressure gradient arrows
+\draw[->, theorycolor, very thick] (-2.2,0) -- (-1.4,0);
+\draw[->, theorycolor, thick] (-2.2,0.3) -- (-1.5,0.3);
+\draw[->, theorycolor, thick] (-2.2,-0.3) -- (-1.5,-0.3);
+\draw[->, theorycolor, thin] (-2.2,0) -- (-2.2,0.6);
+\draw[->, theorycolor, thin] (-2.2,0) -- (-2.2,-0.6);
+
+\node[font=\footnotesize] at (-2.2, -2) {Initial $\varepsilon_2$};
+\node[font=\tiny, theorycolor] at (-1.2, 0.5) {$\nabla P$};
+
+% Arrow showing transformation
+\draw[->, ultra thick, gray] (-0.8, 0) -- (0.8, 0);
+\node[font=\footnotesize, gray] at (0, 0.3) {Hydro};
+
+% Right side: Final momentum anisotropy (precomputed v2-modulated curve)
+\addplot[PbPbcolor, ultra thick]
+    table [x index=1, y index=2] {data/figure_curves/v2_modulated_curve.dat};
+
+% Particle markers (precomputed positions with v2-weighted density)
+\addplot[only marks, mark=*, mark size=1.5pt, PbPbcolor]
+    table [x index=0, y index=1] {data/figure_curves/v2_particle_positions.dat};
+
+\node[font=\footnotesize] at (2.2, -1.8) {Final $v_2$};
+
+% Labels
+\node[font=\small, anchor=north] at (-2.2, -2.4) {\textbf{Coordinate space}};
+\node[font=\small, anchor=north] at (2.2, -2.4) {\textbf{Momentum space}};
+
+\end{groupplot}
+
+\end{tikzpicture}
+\end{document}
