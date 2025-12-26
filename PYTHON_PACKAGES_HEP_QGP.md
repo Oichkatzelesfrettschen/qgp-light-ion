@@ -321,12 +321,24 @@ pip install boost-histogram
 
 **Example:**
 ```python
+## Common plotting style (Recommended)
+
+```python
+from cern_analysis_common.plotting import set_hep_style, add_experiment_label
+import matplotlib.pyplot as plt
+
+set_hep_style("ALICE")
+plt.plot([1, 2, 3], [1, 4, 9])
+add_experiment_label("ALICE", data=True)
+plt.show()
+```
+
+## Manual Style
 import mplhep as hep
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Use ALICE style
 plt.style.use(hep.style.ALICE)
+
 
 # Plot R_AA with ALICE style
 fig, ax = plt.subplots()
