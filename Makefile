@@ -116,7 +116,8 @@ FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
 
 .PHONY: all clean figures data data-only test lint help advanced strict \
         lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-build \
-        fmt test-quick test-physics verify-data distclean
+        fmt test-quick test-physics verify-data distclean bootstrap check-env \
+        complexity security profile coverage type-check docs
 
 # Default: build everything
 all: $(FINAL_PDF)
@@ -477,3 +478,125 @@ help:
 	@echo "  Advanced:   $(words $(FIG_ADVANCED)) figures (optional)"
 	@echo ""
 	@echo "Output: $(FINAL_PDF)"
+
+# -----------------------------------------------------------------------------
+# Development & Analysis Tools
+# -----------------------------------------------------------------------------
+
+# Bootstrap development environment
+bootstrap:
+	@echo "=== Setting up development environment ==="
+	@chmod +x scripts/bootstrap.sh
+	@./scripts/bootstrap.sh
+
+# Check environment dependencies
+check-env:
+	@echo "=== Checking environment ==="
+	@command -v python3 >/dev/null || (echo "❌ Python 3 not found" && exit 1)
+	@command -v pandoc >/dev/null || (echo "⚠️  Pandoc not found (optional)" && exit 0)
+	@command -v pdflatex >/dev/null || (echo "⚠️  LaTeX not found (optional)" && exit 0)
+	@command -v make >/dev/null || (echo "❌ Make not found" && exit 1)
+	@python3 -c "import numpy, scipy" 2>/dev/null || \
+		(echo "❌ Python dependencies missing. Run: pip install -r requirements-dev.txt" && exit 1)
+	@echo "✅ Environment check passed"
+
+# Type checking with mypy
+type-check:
+	@echo "=== MyPy Type Checking ==="
+	@if command -v mypy >/dev/null 2>&1; then \
+		mypy src tests --ignore-missing-imports --check-untyped-defs || true; \
+	else \
+		echo "  [SKIP] mypy not installed (pip install mypy)"; \
+	fi
+
+# Code complexity analysis
+complexity:
+	@echo "=== Code Complexity Analysis ==="
+	@if command -v radon >/dev/null 2>&1; then \
+		echo "Cyclomatic Complexity:"; \
+		radon cc src -s -n C || true; \
+		echo ""; \
+		echo "Maintainability Index:"; \
+		radon mi src -s -n B || true; \
+	else \
+		echo "  [SKIP] radon not installed (pip install radon)"; \
+	fi
+
+# Security vulnerability scanning
+security:
+	@echo "=== Security Vulnerability Scan ==="
+	@if command -v bandit >/dev/null 2>&1; then \
+		echo "Bandit Security Scanner:"; \
+		bandit -r src -c pyproject.toml || true; \
+	else \
+		echo "  [SKIP] bandit not installed (pip install bandit[toml])"; \
+	fi
+	@if command -v safety >/dev/null 2>&1; then \
+		echo ""; \
+		echo "Safety Dependency Check:"; \
+		safety check || true; \
+	else \
+		echo "  [SKIP] safety not installed (pip install safety)"; \
+	fi
+
+# Code coverage report
+coverage: $(DATA_STAMP)
+	@echo "=== Test Coverage Analysis ==="
+	@if command -v pytest >/dev/null 2>&1; then \
+		pytest --cov=src --cov-report=html --cov-report=term-missing; \
+		echo ""; \
+		echo "Coverage report generated: htmlcov/index.html"; \
+	else \
+		echo "  [SKIP] pytest not installed (pip install pytest pytest-cov)"; \
+	fi
+
+# Performance profiling
+profile:
+	@echo "=== Performance Profiling ==="
+	@if command -v py-spy >/dev/null 2>&1; then \
+		echo "Profiling data generation with py-spy..."; \
+		py-spy record -o profile.svg --native -- python3 $(DATA_SCRIPT); \
+		echo "Profile saved to: profile.svg"; \
+	else \
+		echo "  [SKIP] py-spy not installed (pip install py-spy)"; \
+		echo "  Alternative: Use python -m cProfile"; \
+	fi
+
+# Documentation generation (placeholder for Sphinx)
+docs:
+	@echo "=== Documentation Generation ==="
+	@echo "TODO: Sphinx documentation not yet configured"
+	@echo "Run: sphinx-quickstart docs"
+	@echo "See: docs/CONTRIBUTING.md for setup instructions"
+
+# Dead code detection
+dead-code:
+	@echo "=== Dead Code Detection ==="
+	@if command -v vulture >/dev/null 2>&1; then \
+		vulture src tests --min-confidence 80 || true; \
+	else \
+		echo "  [SKIP] vulture not installed (pip install vulture)"; \
+	fi
+
+# Docstring coverage
+docstring-coverage:
+	@echo "=== Docstring Coverage ==="
+	@if command -v interrogate >/dev/null 2>&1; then \
+		interrogate src -vv --fail-under 60 || true; \
+	else \
+		echo "  [SKIP] interrogate not installed (pip install interrogate)"; \
+	fi
+
+# Full quality check (all linters + tests)
+quality: lint type-check complexity security test
+	@echo ""
+	@echo "========================================"
+	@echo "Full quality check complete"
+	@echo "========================================"
+
+# CI simulation (run what CI runs)
+ci: check-env quality coverage
+	@echo ""
+	@echo "========================================"
+	@echo "CI simulation complete"
+	@echo "========================================"
