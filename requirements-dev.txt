@@ -1,0 +1,132 @@
+# =============================================================================
+# Development Dependencies for QGP Light-Ion Project
+# =============================================================================
+# Install with: pip install -r requirements-dev.txt
+#
+# Categories:
+# - Linting & Formatting
+# - Type Checking
+# - Testing
+# - Security
+# - Documentation
+# - Profiling & Performance
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Linting & Formatting
+# -----------------------------------------------------------------------------
+ruff>=0.8.0                    # Fast Python linter and formatter
+pylint>=3.0.0                  # Comprehensive Python linter
+black>=24.0.0                  # Code formatter (backup to ruff)
+isort>=5.13.0                  # Import sorting (integrated in ruff)
+flake8>=7.0.0                  # Style guide enforcement
+pydocstyle>=6.3.0              # Docstring style checker
+
+# -----------------------------------------------------------------------------
+# Type Checking
+# -----------------------------------------------------------------------------
+mypy>=1.8.0                    # Static type checker
+types-all>=1.0.0               # Type stubs for standard library
+pyright>=1.1.350               # Alternative type checker (Microsoft)
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+pytest>=7.4.0                  # Testing framework
+pytest-cov>=4.1.0              # Coverage plugin
+pytest-xdist>=3.5.0            # Parallel test execution
+pytest-benchmark>=4.0.0        # Performance benchmarking
+pytest-timeout>=2.2.0          # Test timeout handling
+pytest-mock>=3.12.0            # Mocking utilities
+hypothesis>=6.92.0             # Property-based testing
+faker>=22.0.0                  # Test data generation
+coverage[toml]>=7.4.0          # Coverage measurement
+
+# -----------------------------------------------------------------------------
+# Security
+# -----------------------------------------------------------------------------
+bandit[toml]>=1.7.6            # Security vulnerability scanner
+safety>=2.3.5                  # Dependency vulnerability checker
+pip-audit>=2.6.0               # PyPI security advisory checker
+semgrep>=1.50.0                # Static analysis for security patterns
+
+# -----------------------------------------------------------------------------
+# Code Quality & Metrics
+# -----------------------------------------------------------------------------
+vulture>=2.10                  # Dead code detection
+radon>=6.0.0                   # Complexity metrics
+xenon>=0.9.0                   # Complexity monitoring
+interrogate>=1.5.0             # Docstring coverage
+doc8>=1.1.1                    # reStructuredText style checker
+pyroma>=4.2                    # Package quality checker
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+sphinx>=7.2.0                  # Documentation generator
+sphinx-rtd-theme>=2.0.0        # Read the Docs theme
+sphinx-autodoc-typehints>=1.25.0  # Type hint support
+myst-parser>=2.0.0             # Markdown support for Sphinx
+sphinx-copybutton>=0.5.2       # Copy button for code blocks
+sphinxcontrib-bibtex>=2.6.0    # Bibliography support
+
+# -----------------------------------------------------------------------------
+# Pre-commit & Git Hooks
+# -----------------------------------------------------------------------------
+pre-commit>=3.6.0              # Git hook framework
+commitizen>=3.13.0             # Conventional commits
+
+# -----------------------------------------------------------------------------
+# Profiling & Performance
+# -----------------------------------------------------------------------------
+py-spy>=0.3.14                 # Sampling profiler (no code changes)
+scalene>=1.5.38                # CPU/GPU/memory profiler
+memray>=1.11.0                 # Memory profiler
+line-profiler>=4.1.0           # Line-by-line profiling
+memory-profiler>=0.61.0        # Memory usage profiling
+pyinstrument>=4.6.0            # Statistical profiler
+
+# -----------------------------------------------------------------------------
+# Build & Packaging
+# -----------------------------------------------------------------------------
+build>=1.0.0                   # PEP 517 build frontend
+twine>=4.0.0                   # PyPI upload tool
+wheel>=0.42.0                  # Wheel packaging format
+setuptools>=69.0.0             # Package installation
+setuptools-scm>=8.0.0          # Version from git tags
+
+# -----------------------------------------------------------------------------
+# Jupyter & Notebooks (Optional)
+# -----------------------------------------------------------------------------
+jupyter>=1.0.0                 # Jupyter meta-package
+jupyterlab>=4.0.0              # JupyterLab interface
+ipywidgets>=8.1.0              # Interactive widgets
+nbconvert>=7.14.0              # Notebook conversion
+nbformat>=5.9.0                # Notebook format
+ipykernel>=6.27.0              # IPython kernel
+
+# -----------------------------------------------------------------------------
+# Development Utilities
+# -----------------------------------------------------------------------------
+ipython>=8.19.0                # Enhanced interactive shell
+rich>=13.7.0                   # Rich terminal output
+tqdm>=4.66.0                   # Progress bars
+colorama>=0.4.6                # Cross-platform colored output
+watchdog>=3.0.0                # File system event monitoring
+python-dotenv>=1.0.0           # Environment variable management
+
+# -----------------------------------------------------------------------------
+# Data Validation & Schema
+# -----------------------------------------------------------------------------
+pydantic>=2.5.0                # Data validation
+jsonschema>=4.20.0             # JSON schema validation
+attrs>=23.2.0                  # Classes without boilerplate
+cattrs>=23.2.0                 # Structure/unstructure objects
+
+# -----------------------------------------------------------------------------
+# Additional Scientific Tools
+# -----------------------------------------------------------------------------
+# These complement the main dependencies in pyproject.toml
+black[jupyter]>=24.0.0         # Jupyter notebook formatting
+nbqa>=1.7.0                    # Run linters on notebooks
+jupytext>=1.16.0               # Jupyter notebooks as plain text
