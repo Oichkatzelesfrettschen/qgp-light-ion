@@ -29,33 +29,20 @@ References:
 - PHENIX Collaboration, Phys. Rev. Lett. 104, 132301 (2010) - Thermal photon discovery
 """
 
+from __future__ import annotations
+
 import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from io_utils import ensure_dir, save_dat
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "photons")
 
 
-def ensure_dir(path):
-    """Create directory if it doesn't exist."""
-    os.makedirs(path, exist_ok=True)
-
-
-def save_dat(filename, data_dict, header=""):
-    """Save data to .dat file for pgfplots."""
-    keys = list(data_dict.keys())
-    arrays = [np.atleast_1d(data_dict[k]) for k in keys]
-
-    with open(filename, "w") as f:
-        if header:
-            f.write(f"# {header}\n")
-        f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row = [f"{arr[i]:.8e}" for arr in arrays]
-            f.write(" ".join(row) + "\n")
-
-
-def prompt_photon_spectrum(pT, system="pp", sqrts=5020):
+def prompt_photon_spectrum(pT: np.ndarray, system: str = "pp", sqrts: float = 5020) -> np.ndarray:
     """
     Prompt photon spectrum from initial hard scattering (NLO pQCD).
 
@@ -96,7 +83,7 @@ def prompt_photon_spectrum(pT, system="pp", sqrts=5020):
     return dN_dpT
 
 
-def thermal_photon_spectrum(pT, T_eff, system="PbPb"):
+def thermal_photon_spectrum(pT: np.ndarray, T_eff: float, system: str = "PbPb") -> np.ndarray:
     """
     Thermal photon spectrum from QGP and hadron gas.
 
@@ -136,7 +123,7 @@ def thermal_photon_spectrum(pT, T_eff, system="PbPb"):
     return dN_dpT
 
 
-def direct_photon_spectrum(pT, system="PbPb", T_eff=0.250):
+def direct_photon_spectrum(pT: np.ndarray, system: str = "PbPb", T_eff: float = 0.250) -> dict[str, np.ndarray]:
     """
     Total direct photon spectrum = prompt + thermal.
 
@@ -171,7 +158,7 @@ def direct_photon_spectrum(pT, system="PbPb", T_eff=0.250):
     }
 
 
-def photon_ratio_R_gamma(pT, system="PbPb"):
+def photon_ratio_R_gamma(pT: np.ndarray, system: str = "PbPb") -> np.ndarray:
     """
     Ratio of direct photons to decay photons (from hadrons).
 
@@ -214,7 +201,7 @@ def photon_ratio_R_gamma(pT, system="PbPb"):
     return R_gamma
 
 
-def extract_effective_temperature(system_params):
+def extract_effective_temperature(system_params: dict[str, object]) -> float:
     """
     Effective temperature from inverse slope of thermal photon spectrum.
 
@@ -233,7 +220,7 @@ def extract_effective_temperature(system_params):
     """
     # Empirical scaling with multiplicity and system lifetime
     # T_eff increases with system size up to saturation
-    dNch = system_params["dNch"]
+    dNch = float(system_params["dNch"])  # type: ignore[arg-type]
     # tau_QGP available: system_params.get("tau_QGP", 5.0) fm/c
 
     # Base temperature from QGP (typical T ≈ 200-300 MeV)
@@ -246,10 +233,10 @@ def extract_effective_temperature(system_params):
 
     T_eff = T_QGP + flow_boost
 
-    return T_eff
+    return float(T_eff)
 
 
-def main():
+def main() -> None:
     ensure_dir(OUTPUT_DIR)
 
     print("Generating direct photon spectrum data...")

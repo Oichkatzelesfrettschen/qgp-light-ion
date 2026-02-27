@@ -6,12 +6,14 @@ Creates a 2D matrix of energy density values for a non-central heavy-ion collisi
 with granular hot spots from individual nucleon-nucleon collisions.
 """
 
+from __future__ import annotations
+
 import os
 
 import numpy as np
 
 
-def energy_density(x, y, impact_param=3.0):
+def energy_density(x: np.ndarray, y: np.ndarray, impact_param: float = 3.0) -> np.ndarray:
     """
     Compute energy density at (x, y) for a non-central collision.
 
@@ -57,10 +59,10 @@ def energy_density(x, y, impact_param=3.0):
     for xc, yc, amp, sigma2 in hot_spots:
         granular += amp * np.exp(-((x - xc) ** 2 + (y - yc) ** 2) / sigma2)
 
-    return background + granular
+    return background + granular  # type: ignore[no-any-return]
 
 
-def write_pgfplots_table(filename, x, y, z, samples):
+def write_pgfplots_table(filename: str, x: np.ndarray, y: np.ndarray, z: np.ndarray, samples: int) -> None:
     """
     Write data in PGFPlots table format for matrix plot.
 
@@ -75,7 +77,7 @@ def write_pgfplots_table(filename, x, y, z, samples):
             f.write("\n")  # Blank line between y-rows (required for PGFPlots matrix format)
 
 
-def main():
+def main() -> None:
     # Create data directory if it doesn't exist
     data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     os.makedirs(data_dir, exist_ok=True)

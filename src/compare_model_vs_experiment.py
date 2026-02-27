@@ -8,6 +8,8 @@ Analyzes discrepancies between:
 3. Ne-Ne/O-O ratios
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -19,7 +21,7 @@ MODEL_JET_DIR = DATA_DIR / "jet_quenching"
 MODEL_FLOW_DIR = DATA_DIR / "flow"
 
 
-def load_data(filepath):
+def load_data(filepath: Path | str) -> np.ndarray:
     """Load space-separated data, skipping comments."""
     data = []
     with open(filepath) as f:
@@ -30,21 +32,28 @@ def load_data(filepath):
     return np.array(data)
 
 
-def analyze_raa_oo():
+def analyze_raa_oo() -> dict[str, float] | None:
     """Compare O-O R_AA model vs CMS data."""
     print("=" * 80)
     print("1. O-O R_AA ANALYSIS")
     print("=" * 80)
 
+    cms_file = EXP_DIR / "CMS_OO_RAA_HIN25008.dat"
+    model_file = MODEL_JET_DIR / "RAA_OO.dat"
+    for f in (cms_file, model_file):
+        if not f.exists():
+            print(f"[SKIP] Missing data file: {f}")
+            return None
+
     # Load CMS experimental data
-    cms_data = load_data(EXP_DIR / "CMS_OO_RAA_HIN25008.dat")
+    cms_data = load_data(cms_file)
     pT_cms = cms_data[:, 2]  # pT_center
     raa_cms = cms_data[:, 3]  # R_AA
     stat_err_cms = cms_data[:, 4]
     sys_err_cms = cms_data[:, 5]
 
     # Load model prediction
-    model_data = load_data(MODEL_JET_DIR / "RAA_OO.dat")
+    model_data = load_data(model_file)
     pT_model = model_data[:, 0]
     raa_model = model_data[:, 1]
 
@@ -100,15 +109,22 @@ def analyze_raa_oo():
     }
 
 
-def analyze_raa_nene():
+def analyze_raa_nene() -> dict[str, float] | None:
     """Compare Ne-Ne R_AA model predictions."""
     print("\n" + "=" * 80)
     print("2. Ne-Ne R_AA ANALYSIS")
     print("=" * 80)
 
+    oo_file = MODEL_JET_DIR / "RAA_OO.dat"
+    nene_file = MODEL_JET_DIR / "RAA_NeNe.dat"
+    for f in (oo_file, nene_file):
+        if not f.exists():
+            print(f"[SKIP] Missing data file: {f}")
+            return None
+
     # Load model predictions
-    oo_data = load_data(MODEL_JET_DIR / "RAA_OO.dat")
-    nene_data = load_data(MODEL_JET_DIR / "RAA_NeNe.dat")
+    oo_data = load_data(oo_file)
+    nene_data = load_data(nene_file)
 
     pT = oo_data[:, 0]
     raa_oo = oo_data[:, 1]
@@ -131,14 +147,21 @@ def analyze_raa_nene():
     }
 
 
-def analyze_flow_oo():
+def analyze_flow_oo() -> dict[str, float] | None:
     """Compare O-O flow predictions vs CMS data."""
     print("\n" + "=" * 80)
     print("3. O-O FLOW ANALYSIS")
     print("=" * 80)
 
+    cms_file = EXP_DIR / "CMS_OO_flow_HIN25009.dat"
+    model_file = MODEL_FLOW_DIR / "vn_vs_cent_O.dat"
+    for f in (cms_file, model_file):
+        if not f.exists():
+            print(f"[SKIP] Missing data file: {f}")
+            return None
+
     # Load CMS experimental data
-    cms_data = load_data(EXP_DIR / "CMS_OO_flow_HIN25009.dat")
+    cms_data = load_data(cms_file)
     cent_cms = cms_data[:, 2]  # cent_mean
     v2_cms = cms_data[:, 3]
     v2_stat_cms = cms_data[:, 4]
@@ -148,7 +171,7 @@ def analyze_flow_oo():
     v3_sys_cms = cms_data[:, 8]
 
     # Load model prediction
-    model_data = load_data(MODEL_FLOW_DIR / "vn_vs_cent_O.dat")
+    model_data = load_data(model_file)
     cent_model = model_data[:, 0]
     v2_model = model_data[:, 1]
     v3_model = model_data[:, 2]
@@ -216,14 +239,21 @@ def analyze_flow_oo():
     }
 
 
-def analyze_flow_nene():
+def analyze_flow_nene() -> dict[str, float] | None:
     """Compare Ne-Ne flow predictions vs CMS data."""
     print("\n" + "=" * 80)
     print("4. Ne-Ne FLOW ANALYSIS")
     print("=" * 80)
 
+    cms_file = EXP_DIR / "CMS_NeNe_flow_HIN25009.dat"
+    model_file = MODEL_FLOW_DIR / "vn_vs_cent_Ne.dat"
+    for f in (cms_file, model_file):
+        if not f.exists():
+            print(f"[SKIP] Missing data file: {f}")
+            return None
+
     # Load CMS experimental data
-    cms_data = load_data(EXP_DIR / "CMS_NeNe_flow_HIN25009.dat")
+    cms_data = load_data(cms_file)
     cent_cms = cms_data[:, 2]  # cent_mean
     v2_cms = cms_data[:, 3]
     v2_stat_cms = cms_data[:, 4]
@@ -231,7 +261,7 @@ def analyze_flow_nene():
     _v3_cms = cms_data[:, 6]  # Available for future v3 analysis
 
     # Load model prediction
-    model_data = load_data(MODEL_FLOW_DIR / "vn_vs_cent_Ne.dat")
+    model_data = load_data(model_file)
     cent_model = model_data[:, 0]
     v2_model = model_data[:, 1]
     # v3_model available in column 2 if needed
@@ -265,22 +295,30 @@ def analyze_flow_nene():
     }
 
 
-def analyze_nene_oo_ratios():
+def analyze_nene_oo_ratios() -> dict[str, float] | None:
     """Analyze Ne-Ne/O-O ratios vs ALICE data."""
     print("\n" + "=" * 80)
     print("5. Ne-Ne/O-O RATIO ANALYSIS")
     print("=" * 80)
 
+    alice_file = EXP_DIR / "ALICE_OO_NeNe_flow_2509.06428.dat"
+    oo_file = MODEL_FLOW_DIR / "vn_vs_cent_O.dat"
+    nene_file = MODEL_FLOW_DIR / "vn_vs_cent_Ne.dat"
+    for f in (alice_file, oo_file, nene_file):
+        if not f.exists():
+            print(f"[SKIP] Missing data file: {f}")
+            return None
+
     # Load ALICE qualitative data
-    alice_data = load_data(EXP_DIR / "ALICE_OO_NeNe_flow_2509.06428.dat")
+    alice_data = load_data(alice_file)
     cent_alice = alice_data[:, 0]
     v2_ratio_alice = alice_data[:, 1]
     v2_ratio_err_alice = alice_data[:, 2]
     v3_ratio_alice = alice_data[:, 3]
 
     # Load model predictions
-    oo_data = load_data(MODEL_FLOW_DIR / "vn_vs_cent_O.dat")
-    nene_data = load_data(MODEL_FLOW_DIR / "vn_vs_cent_Ne.dat")
+    oo_data = load_data(oo_file)
+    nene_data = load_data(nene_file)
 
     cent_model = oo_data[:, 0]
     v2_oo = oo_data[:, 1]
@@ -329,7 +367,7 @@ def analyze_nene_oo_ratios():
     }
 
 
-def generate_recommendations():
+def generate_recommendations() -> None:
     """Generate parameter adjustment recommendations."""
     print("\n" + "=" * 80)
     print("PARAMETER ADJUSTMENT RECOMMENDATIONS")

@@ -1,0 +1,16 @@
+# CMS O-O anisotropic flow coefficients at sqrt_sNN = 5.36 TeV
+# Source: CMS Collaboration, arXiv:2510.02580 (HIN-25-009)
+# Observable: v2{2} and v3{2} two-particle cumulants vs centrality
+# Columns: cent_low cent_high cent_mean v2 v2_stat v2_sys v3 v3_stat v3_sys
+# PROVENANCE: MEASURED
+# Notes: Data digitized from Fig. 2 of arXiv:2510.02580
+#   Ultracentral (0-5%) v2 = 0.061 +/- 0.008
+#   v2 peaks at ~25-30% centrality
+0.0    5.0    2.5   0.0610  0.0030  0.0050  0.0280  0.0020  0.0030
+5.0   10.0    7.5   0.0820  0.0025  0.0040  0.0310  0.0018  0.0025
+10.0  20.0   15.0   0.1050  0.0020  0.0035  0.0330  0.0015  0.0022
+20.0  30.0   25.0   0.1180  0.0018  0.0032  0.0320  0.0014  0.0020
+30.0  40.0   35.0   0.1100  0.0020  0.0035  0.0290  0.0015  0.0022
+40.0  50.0   45.0   0.0940  0.0022  0.0038  0.0250  0.0016  0.0024
+50.0  60.0   55.0   0.0710  0.0025  0.0042  0.0200  0.0018  0.0028
+60.0  70.0   65.0   0.0480  0.0030  0.0048  0.0150  0.0020  0.0032

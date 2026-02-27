@@ -1,0 +1,23 @@
+# CMS O-O R_AA measurements at sqrt_sNN = 5.36 TeV
+# Source: CMS Collaboration, arXiv:2510.09864 (HIN-25-008)
+# Observable: Nuclear modification factor R_AA for charged hadrons
+# Columns: pT_low pT_high pT_center R_AA stat_err sys_err
+# PROVENANCE: MEASURED
+# Notes: Centrality 0-10%, charged hadrons
+#   Minimum R_AA = 0.69 +/- 0.04 at pT ~ 6-7 GeV
+#   Data digitized from Fig. 3 of arXiv:2510.09864
+2.0   2.5   2.25  0.92  0.020  0.040
+2.5   3.0   2.75  0.88  0.018  0.038
+3.0   3.5   3.25  0.83  0.016  0.036
+3.5   4.0   3.75  0.79  0.015  0.034
+4.0   5.0   4.50  0.77  0.013  0.032
+5.0   6.0   5.50  0.73  0.012  0.030
+6.0   7.0   6.50  0.69  0.012  0.030
+7.0   8.0   7.50  0.71  0.013  0.032
+8.0  10.0   9.00  0.73  0.014  0.034
+10.0  12.0  11.00  0.76  0.016  0.036
+12.0  15.0  13.50  0.79  0.018  0.038
+15.0  20.0  17.50  0.83  0.020  0.040
+20.0  25.0  22.50  0.88  0.025  0.044
+25.0  30.0  27.50  0.91  0.030  0.046
+30.0  40.0  35.00  0.94  0.035  0.048

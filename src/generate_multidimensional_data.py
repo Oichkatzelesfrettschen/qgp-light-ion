@@ -21,6 +21,8 @@ Physics Models:
 - Thermal photon emission
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
@@ -29,39 +31,37 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.special import iv as bessel_i
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=RuntimeWarning, message="divide by zero")
+warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value")
 
 # Add src to path for qgp_physics module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from qgp_physics import (
+from constants import (
+    ALPHA_S,
     ETA_OVER_S,
+    QHAT_PBPB,
+    SIGMA_NN_FM2,
+    T_CHEM_GEV,
+    T_KIN_GEV,
+    TAU_0,
 )
+from io_utils import ensure_dir, save_2d_grid
 
 # =============================================================================
-# CONSTANTS AND PARAMETERS
+# CONSTANTS AND PARAMETERS (from constants.py, single source of truth)
 # =============================================================================
 
-# Physical constants
-ALPHA_S = 0.3  # Strong coupling
-SIGMA_NN = 7.0  # fm^2, nucleon-nucleon cross section at LHC
 C_LIGHT = 1.0  # Natural units
 
-# Thermal parameters
-T_CHEM = 0.156  # Chemical freeze-out temperature [GeV]
-T_KIN = 0.100  # Kinetic freeze-out temperature [GeV]
-
-# Medium parameters
-QHAT_PbPb = 2.5  # GeV^2/fm for central Pb-Pb
-TAU_0 = 0.6  # Formation time [fm/c]
+# Aliases for local readability
+SIGMA_NN = SIGMA_NN_FM2
+T_CHEM = T_CHEM_GEV
+T_KIN = T_KIN_GEV
+QHAT_PbPb = QHAT_PBPB
 
 # =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
-
-
-def ensure_dir(path: str):
-    """Create directory if it doesn't exist."""
-    os.makedirs(path, exist_ok=True)
 
 
 def save_1d(
@@ -71,7 +71,7 @@ def save_1d(
     x_label: str = "x",
     y_label: str = "y",
     header: str = "",
-):
+) -> None:
     """Save 1D data for pgfplots."""
     with open(filename, "w") as f:
         if header:
@@ -81,7 +81,7 @@ def save_1d(
             f.write(f"{xi:.8e} {yi:.8e}\n")
 
 
-def save_1d_multi(filename: str, data: dict[str, np.ndarray], header: str = ""):
+def save_1d_multi(filename: str, data: dict[str, np.ndarray], header: str = "") -> None:
     """Save multiple 1D columns."""
     keys = list(data.keys())
     n_points = len(data[keys[0]])
@@ -94,18 +94,6 @@ def save_1d_multi(filename: str, data: dict[str, np.ndarray], header: str = ""):
             f.write(" ".join(row) + "\n")
 
 
-def save_2d_grid(filename: str, X: np.ndarray, Y: np.ndarray, Z: np.ndarray, header: str = ""):
-    """Save 2D grid data with proper pgfplots formatting."""
-    with open(filename, "w") as f:
-        if header:
-            f.write(f"# {header}\n")
-        f.write("# x y z\n")
-        for i in range(X.shape[0]):
-            for j in range(X.shape[1]):
-                f.write(f"{X[i, j]:.6e} {Y[i, j]:.6e} {Z[i, j]:.6e}\n")
-            f.write("\n")  # Blank line between rows
-
-
 def save_3d_slices(
     base_filename: str,
     X: np.ndarray,
@@ -114,7 +102,7 @@ def save_3d_slices(
     V: np.ndarray,
     z_values: np.ndarray,
     header: str = "",
-):
+) -> None:
     """Save 3D data as multiple 2D slices along z-axis."""
     for k, z_val in enumerate(z_values):
         filename = f"{base_filename}_z{k:03d}.dat"
@@ -133,7 +121,7 @@ def save_3d_slices(
 # =============================================================================
 
 
-def generate_1d_spectra(output_dir: str):
+def generate_1d_spectra(output_dir: str) -> None:
     """
     Generate 1D particle spectra and distributions.
 
@@ -218,7 +206,7 @@ def generate_1d_spectra(output_dir: str):
         omega_c = 0.5 * qhat * L**2
         # BDMPS-Z: P(ΔE) ~ (ΔE)^(-3/2) for ΔE < ω_c, exponential cutoff above
         P_dE = np.where(dE > 0.1, (dE + 0.1) ** (-1.5) * np.exp(-dE / omega_c), 0)
-        P_dE /= np.trapz(P_dE, dE)  # Normalize
+        P_dE /= np.trapezoid(P_dE, dE)  # Normalize
 
         save_1d(
             os.path.join(spec_dir, f"energy_loss_dist_{label}.dat"),
@@ -255,7 +243,7 @@ def generate_1d_spectra(output_dir: str):
 # =============================================================================
 
 
-def generate_2d_correlations(output_dir: str):
+def generate_2d_correlations(output_dir: str) -> None:
     """
     Generate 2D correlation functions and phase space data.
 
@@ -334,7 +322,7 @@ def generate_2d_correlations(output_dir: str):
 
     # 3. v_n correlations: v2 vs v3 event-by-event
     n_events = 5000
-    np.random.seed(42)
+    rng = np.random.default_rng(42)
 
     for system, v2_mean, v3_mean, corr in [("PbPb", 0.08, 0.03, -0.1), ("OO", 0.05, 0.025, 0.05)]:
         # Generate correlated fluctuations
@@ -342,7 +330,7 @@ def generate_2d_correlations(output_dir: str):
         sigma_v3 = v3_mean * 0.4
 
         cov = [[sigma_v2**2, corr * sigma_v2 * sigma_v3], [corr * sigma_v2 * sigma_v3, sigma_v3**2]]
-        v2_v3 = np.random.multivariate_normal([v2_mean, v3_mean], cov, n_events)
+        v2_v3 = rng.multivariate_normal([v2_mean, v3_mean], cov, n_events)
         v2_events = np.clip(v2_v3[:, 0], 0, 0.3)
         v3_events = np.clip(v2_v3[:, 1], 0, 0.15)
 
@@ -376,7 +364,7 @@ def generate_2d_correlations(output_dir: str):
     # increases with pT (less relative energy loss)
     L_eff = 6 * (1 - CENT / 100) ** 0.5  # Path length decreases toward peripheral
     qhat_eff = 2.5 * (1 - CENT / 100) ** 0.7
-    dE = 0.3 * qhat_eff * L_eff**2
+    dE = ALPHA_S * qhat_eff * L_eff**2
     R_AA = (PT / (PT + dE)) ** 6
     R_AA = R_AA * (1 - np.exp(-PT / 2))  # Low pT modification
     R_AA = np.clip(R_AA, 0.05, 1.0)
@@ -395,7 +383,7 @@ def generate_2d_correlations(output_dir: str):
 # =============================================================================
 
 
-def generate_3d_spacetime(output_dir: str):
+def generate_3d_spacetime(output_dir: str) -> None:
     """
     Generate 3D spacetime evolution data.
 
@@ -414,7 +402,7 @@ def generate_3d_spacetime(output_dir: str):
 
     x = np.linspace(-8, 8, n_xy)
     y = np.linspace(-8, 8, n_xy)
-    tau_values = np.array([0.6, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0])
+    tau_values = np.array([TAU_0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0])
 
     X, Y = np.meshgrid(x, y)
 
@@ -422,35 +410,35 @@ def generate_3d_spacetime(output_dir: str):
     b = 7.0  # Impact parameter
     R_Pb = 6.62
 
-    def initial_epsilon(x, y, b):
+    def initial_epsilon(x: np.ndarray, y: np.ndarray, b: float) -> np.ndarray:
         """Initial energy density from optical Glauber."""
 
         # Nuclear thickness functions
-        def T_A(x, y):
+        def T_A(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             r = np.sqrt(x**2 + y**2)
-            return np.exp(-(r**2) / (2 * R_Pb**2 / 3))
+            return np.exp(-(r**2) / (2 * R_Pb**2 / 3))  # type: ignore[no-any-return]
 
-        epsilon = T_A(x + b / 2, y) * T_A(x - b / 2, y)
+        epsilon: np.ndarray = T_A(x + b / 2, y) * T_A(x - b / 2, y)
         return epsilon
 
     epsilon_0 = initial_epsilon(X, Y, b)
     epsilon_0 = epsilon_0 / np.max(epsilon_0) * 50  # Peak ~ 50 GeV/fm^3
 
     # Add fluctuations (hot spots)
-    np.random.seed(123)
+    rng_hs = np.random.default_rng(42)
     n_hotspots = 15
     for _ in range(n_hotspots):
-        x0 = np.random.uniform(-5, 5)
-        y0 = np.random.uniform(-3, 3)
-        amp = np.random.uniform(0.5, 2.0)
-        sigma = np.random.uniform(0.5, 1.0)
+        x0 = rng_hs.uniform(-5, 5)
+        y0 = rng_hs.uniform(-3, 3)
+        amp = rng_hs.uniform(0.5, 2.0)
+        sigma = rng_hs.uniform(0.5, 1.0)
         epsilon_0 += amp * 10 * np.exp(-((X - x0) ** 2 + (Y - y0) ** 2) / (2 * sigma**2))
 
     # Time evolution: ε(τ) ∝ τ^(-4/3) in ideal Bjorken
     # Plus transverse expansion
     for _i, tau in enumerate(tau_values):
         # Bjorken cooling
-        epsilon_tau = epsilon_0 * (0.6 / tau) ** (4.0 / 3)
+        epsilon_tau = epsilon_0 * (TAU_0 / tau) ** (4.0 / 3)
 
         # Transverse expansion (diffusion-like spreading)
         sigma_expand = 0.5 * np.sqrt(tau)
@@ -489,7 +477,7 @@ def generate_3d_spacetime(output_dir: str):
 
     # 2. Flow velocity field at fixed τ
     tau_fixed = 3.0
-    epsilon_fixed = epsilon_0 * (0.6 / tau_fixed) ** (4.0 / 3)
+    epsilon_fixed = epsilon_0 * (TAU_0 / tau_fixed) ** (4.0 / 3)
 
     # Flow from pressure gradients: u ∝ -∇P ∝ -∇ε
     grad_x = np.gradient(epsilon_fixed, x, axis=1)
@@ -519,7 +507,7 @@ def generate_3d_spacetime(output_dir: str):
     # For each τ, find contour at T = T_fo
     freeze_out_points = []
     for i, tau in enumerate(tau_values):
-        epsilon_tau = epsilon_0 * (0.6 / tau) ** (4.0 / 3)
+        epsilon_tau = epsilon_0 * (TAU_0 / tau) ** (4.0 / 3)
         epsilon_tau = gaussian_filter(epsilon_tau, sigma=0.5 * np.sqrt(tau))
         T_tau = (epsilon_tau / 15) ** (0.25) * 1000
 
@@ -530,10 +518,10 @@ def generate_3d_spacetime(output_dir: str):
             fig, ax = plt.subplots()
             cs = ax.contour(x, y, T_tau, levels=[T_fo])
             plt.close(fig)
-            for path in cs.collections[0].get_paths():
-                vertices = path.vertices[::5]  # Subsample
-                for xi, yi in vertices:
-                    freeze_out_points.append([xi, yi, tau])
+            for path in cs.get_paths():
+                verts = np.asarray(path.vertices)[::5]  # Subsample; cast for mypy
+                for row in verts:
+                    freeze_out_points.append([float(row[0]), float(row[1]), tau])
         except Exception:
             # Fallback: simple threshold-based contour
             mask = np.abs(T_tau - T_fo) < 10  # Within 10 MeV
@@ -556,7 +544,7 @@ def generate_3d_spacetime(output_dir: str):
 # =============================================================================
 
 
-def generate_4d_parameter_scans(output_dir: str):
+def generate_4d_parameter_scans(output_dir: str) -> None:
     """
     Generate higher-dimensional data representations.
 
@@ -589,17 +577,17 @@ def generate_4d_parameter_scans(output_dir: str):
 
                 results.append([eta_s, cent, v2])
 
-        results = np.array(results)
+        results_arr = np.array(results)
         save_1d_multi(
             os.path.join(hd_dir, f"v2_etaS_cent_{system_name}.dat"),
-            {"eta_s": results[:, 0], "centrality": results[:, 1], "v2": results[:, 2]},
-            f"v2(η/s, centrality) for {system_name} system",
+            {"eta_s": results_arr[:, 0], "centrality": results_arr[:, 1], "v2": results_arr[:, 2]},
+            f"v2(eta/s, centrality) for {system_name} system",
         )
 
     # 2. Multi-observable correlation matrix
     # Simulated "events" with correlated observables
     n_events = 10000
-    np.random.seed(42)
+    rng = np.random.default_rng(42)
 
     # Define correlation structure
     # Observables: dNch/dη, <pT>, v2, v3, R_AA(10), HBT_R
@@ -622,7 +610,7 @@ def generate_4d_parameter_scans(output_dir: str):
 
     # Generate correlated samples
     L = np.linalg.cholesky(corr_matrix)
-    z = np.random.normal(0, 1, (n_events, n_obs))
+    z = rng.normal(0, 1, (n_events, n_obs))
     samples_corr = z @ L.T
 
     # Scale to physical values
@@ -696,7 +684,7 @@ def generate_4d_parameter_scans(output_dir: str):
 
     # 4. Parallel coordinates data (for high-D visualization)
     # Select subset of events for clarity
-    subset_idx = np.random.choice(n_events, 500, replace=False)
+    subset_idx = rng.choice(n_events, 500, replace=False)
     subset = samples[subset_idx]
 
     # Normalize each observable to [0, 1] for parallel coordinates
@@ -718,7 +706,7 @@ def generate_4d_parameter_scans(output_dir: str):
 # =============================================================================
 
 
-def generate_physics_connections(output_dir: str):
+def generate_physics_connections(output_dir: str) -> None:
     """
     Generate data illustrating novel physics connections.
 
@@ -752,7 +740,7 @@ def generate_physics_connections(output_dir: str):
 
     # Mark specific systems
     systems = [("pp", 1.0), ("pPb", 1.5), ("OO", 2.6), ("PbPb", 6.6)]
-    system_data = {"name_idx": [], "R_fm": [], "Knudsen": [], "response": []}
+    system_data: dict[str, list[float]] = {"name_idx": [], "R_fm": [], "Knudsen": [], "response": []}
     for i, (_name, R) in enumerate(systems):
         kn = eta_s * np.sqrt(T) / R
         resp = 0.3 / (1 + 2 * kn)
@@ -855,7 +843,7 @@ def generate_physics_connections(output_dir: str):
 # =============================================================================
 
 
-def main():
+def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate multi-dimensional QGP data")

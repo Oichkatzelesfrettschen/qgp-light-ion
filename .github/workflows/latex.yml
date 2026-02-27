@@ -1,0 +1,62 @@
+name: LaTeX Build
+
+# WHY: Verify the full document compiles without errors or warnings.
+#      Only runs on pushes to main to avoid CI cost on every PR.
+# WHAT: Generates physics data, compiles all TikZ figures, then builds the PDF.
+# HOW: Uses texlive-full action; equivalent to `make strict` locally.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[dev]"
+
+      - name: Install TeX Live
+        uses: xu-cheng/latex-action@v3
+        with:
+          # Only install required packages (faster than texlive-full)
+          extra_system_packages: "py-pygments"
+          working_directory: "."
+          root_file: "qgp-light-ion.tex"
+          latexmk_use_lualatex: false
+          latexmk_shell_escape: true
+          pre_compile: |
+            python src/generate_comprehensive_data.py
+            python src/generate_qcd_phase_diagram.py
+            python src/generate_figure_curves.py
+            python src/generate_multidimensional_data.py
+            python src/generate_photon_data.py
+            python src/generate_hbt_data.py
+            python src/generate_bjorken_hyperbolas.py
+            python src/generate_energy_density.py
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qgp-light-ion-pdf
+          path: qgp-light-ion.pdf
+          if-no-files-found: error

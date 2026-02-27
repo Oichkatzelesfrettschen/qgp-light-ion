@@ -14,6 +14,8 @@ Output files are organized by visualization type:
 - data/spacetime/           - Energy density evolution
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import sys
@@ -23,6 +25,8 @@ import numpy as np
 # Add src to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from constants import KAPPA2, T_C0_MEV
+from io_utils import ensure_dir, save_2d_grid, save_dat
 from qgp_physics import (
     NUCLEI,
     azimuthal_distribution,
@@ -41,127 +45,12 @@ from qgp_physics import (
     woods_saxon,
 )
 
-
-def ensure_dir(path):
-    """Create directory if it doesn't exist."""
-    os.makedirs(path, exist_ok=True)
-
-
-def make_provenance_header(
-    observable, classification, model_description, model_inputs=None, references=None, notes=None
-):
-    """Generate standard provenance header for model data files.
-
-    Args:
-        observable: What is being calculated (e.g., "R_AA vs pT")
-        classification: One of "PREDICTED", "SCHEMATIC"
-        model_description: Brief physics model description
-        model_inputs: Dict of input parameters and values
-        references: List of reference strings
-        notes: Additional notes
-
-    Returns:
-        Multi-line header string
-    """
-    lines = [
-        "=" * 77,
-        f" {observable}",
-        "=" * 77,
-        "",
-        f"DATA TYPE: {classification} (Model-generated)",
-        "",
-        "GENERATOR:",
-        "  Script: src/generate_comprehensive_data.py",
-        "  Physics: src/qgp_physics.py",
-        "  Project: QGP Light-Ion Whitepaper (2025)",
-        "",
-        "MODEL:",
-        f"  {model_description}",
-    ]
-
-    if model_inputs:
-        lines.append("")
-        lines.append("MODEL INPUTS:")
-        for key, val in model_inputs.items():
-            lines.append(f"  {key}: {val}")
-
-    if references:
-        lines.append("")
-        lines.append("REFERENCES:")
-        for ref in references:
-            lines.append(f"  - {ref}")
-
-    if notes:
-        lines.append("")
-        lines.append("NOTES:")
-        if isinstance(notes, list):
-            for note in notes:
-                lines.append(f"  - {note}")
-        else:
-            lines.append(f"  {notes}")
-
-    lines.append("")
-    lines.append("=" * 77)
-
-    return "\n".join(["# " + line for line in lines])
-
-
-def save_dat(filename, data_dict, header="", provenance=None):
-    """Save data to .dat file for pgfplots.
-
-    Args:
-        filename: Output file path
-        data_dict: Dict of column_name -> array
-        header: Simple one-line header (legacy support)
-        provenance: Dict with keys for make_provenance_header() (preferred)
-    """
-    keys = list(data_dict.keys())
-    arrays = [np.atleast_1d(data_dict[k]) for k in keys]
-
-    with open(filename, "w") as f:
-        if provenance:
-            f.write(make_provenance_header(**provenance) + "\n")
-            f.write(f"# COLUMNS: {' '.join(keys)}\n")
-        elif header:
-            f.write(f"# {header}\n")
-            f.write("# " + " ".join(keys) + "\n")
-        else:
-            f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row = [f"{arr[i]:.8e}" for arr in arrays]
-            f.write(" ".join(row) + "\n")
-
-
-def save_2d_grid(filename, X, Y, Z, header="", provenance=None):
-    """Save 2D grid data for pgfplots surf/contour plots.
-
-    Args:
-        filename: Output file path
-        X, Y, Z: 2D arrays for grid data
-        header: Simple one-line header (legacy support)
-        provenance: Dict with keys for make_provenance_header() (preferred)
-    """
-    with open(filename, "w") as f:
-        if provenance:
-            f.write(make_provenance_header(**provenance) + "\n")
-            f.write("# COLUMNS: x y z\n")
-        elif header:
-            f.write(f"# {header}\n")
-            f.write("# x y z\n")
-        else:
-            f.write("# x y z\n")
-        for i in range(X.shape[0]):
-            for j in range(X.shape[1]):
-                f.write(f"{X[i, j]:.6e} {Y[i, j]:.6e} {Z[i, j]:.6e}\n")
-            f.write("\n")  # Blank line between rows for gnuplot/pgfplots
-
-
 # =============================================================================
 # 1. QCD PHASE DIAGRAM
 # =============================================================================
 
 
-def generate_phase_diagram_data(output_dir):
+def generate_phase_diagram_data(output_dir: str) -> None:
     """Generate QCD phase diagram data."""
     print("  Generating QCD phase diagram...")
     phase_dir = os.path.join(output_dir, "phase_diagram")
@@ -176,8 +65,8 @@ def generate_phase_diagram_data(output_dir):
         "classification": "SCHEMATIC",
         "model_description": "Lattice QCD-constrained crossover at low mu_B, extrapolated",
         "model_inputs": {
-            "T_c(mu_B=0)": "156.5 +/- 1.5 MeV (HotQCD)",
-            "Curvature": "kappa = 0.015 (lattice Taylor expansion)",
+            "T_c(mu_B=0)": f"{T_C0_MEV} +/- 1.5 MeV (HotQCD)",
+            "Curvature": f"kappa2 = {KAPPA2} (lattice Taylor expansion)",
         },
         "references": [
             "HotQCD: Phys. Rev. D 90 (2014) 094503",
@@ -263,7 +152,7 @@ def generate_phase_diagram_data(output_dir):
 # =============================================================================
 
 
-def generate_nuclear_geometry_data(output_dir):
+def generate_nuclear_geometry_data(output_dir: str) -> None:
     """Generate nuclear density profiles and Glauber data."""
     print("  Generating nuclear geometry...")
     geom_dir = os.path.join(output_dir, "nuclear_geometry")
@@ -291,8 +180,10 @@ def generate_nuclear_geometry_data(output_dir):
             f"2D nuclear density for {nuc.name}",
         )
 
+    rng = np.random.default_rng(42)  # Seeded for reproducibility
+
     # Alpha-cluster configuration for O-16
-    alpha_pos = oxygen_alpha_cluster_positions()
+    alpha_pos = oxygen_alpha_cluster_positions(rng=rng)
     save_dat(
         os.path.join(geom_dir, "oxygen_alpha_clusters.dat"),
         {"x": alpha_pos[:, 0], "y": alpha_pos[:, 1], "z": alpha_pos[:, 2]},
@@ -300,10 +191,9 @@ def generate_nuclear_geometry_data(output_dir):
     )
 
     # Glauber model nucleon positions (sample events)
-    np.random.seed(42)  # Reproducibility
     for name in ["O", "Ne", "Pb"]:
         nuc = NUCLEI[name]
-        positions = sample_nucleon_positions(nuc, n_events=1)[0]
+        positions = sample_nucleon_positions(nuc, n_events=1, rng=rng)[0]
         save_dat(
             os.path.join(geom_dir, f"glauber_nucleons_{name}.dat"),
             {"x": positions[:, 0], "y": positions[:, 1], "z": positions[:, 2]},
@@ -317,7 +207,7 @@ def generate_nuclear_geometry_data(output_dir):
         nuc = NUCLEI[name]
         e2_list, e3_list = [], []
         for _ in range(n_events):
-            pos = sample_nucleon_positions(nuc, 1)[0]
+            pos = sample_nucleon_positions(nuc, 1, rng=rng)[0]
             ecc = calculate_eccentricities(pos)
             e2_list.append(ecc["epsilon_2"])
             e3_list.append(ecc["epsilon_3"])
@@ -349,7 +239,7 @@ def generate_nuclear_geometry_data(output_dir):
 # =============================================================================
 
 
-def generate_flow_data(output_dir):
+def generate_flow_data(output_dir: str) -> None:
     """Generate anisotropic flow data."""
     print("  Generating flow data...")
     flow_dir = os.path.join(output_dir, "flow")
@@ -454,7 +344,7 @@ def generate_flow_data(output_dir):
 # =============================================================================
 
 
-def generate_jet_quenching_data(output_dir):
+def generate_jet_quenching_data(output_dir: str) -> None:
     """Generate R_AA and energy loss data."""
     print("  Generating jet quenching data...")
     jet_dir = os.path.join(output_dir, "jet_quenching")
@@ -545,7 +435,7 @@ def generate_jet_quenching_data(output_dir):
 # =============================================================================
 
 
-def generate_strangeness_data(output_dir):
+def generate_strangeness_data(output_dir: str) -> None:
     """Generate strangeness enhancement data."""
     print("  Generating strangeness data...")
     strange_dir = os.path.join(output_dir, "strangeness")
@@ -598,7 +488,7 @@ def generate_strangeness_data(output_dir):
 # =============================================================================
 
 
-def generate_spacetime_data(output_dir):
+def generate_spacetime_data(output_dir: str) -> None:
     """Generate spacetime evolution data."""
     print("  Generating spacetime evolution data...")
     spacetime_dir = os.path.join(output_dir, "spacetime")
@@ -660,7 +550,7 @@ def generate_spacetime_data(output_dir):
 # =============================================================================
 
 
-def generate_comparison_data(output_dir):
+def generate_comparison_data(output_dir: str) -> None:
     """Generate data for multi-system comparisons."""
     print("  Generating system comparison data...")
     comp_dir = os.path.join(output_dir, "comparison")
@@ -700,7 +590,7 @@ def generate_comparison_data(output_dir):
 # =============================================================================
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate comprehensive QGP physics data for visualizations"
     )

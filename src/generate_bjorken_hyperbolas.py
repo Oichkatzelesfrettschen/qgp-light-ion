@@ -8,19 +8,20 @@ Generates pre-computed data for Bjorken spacetime diagram:
 - Temperature/energy density at each proper time
 """
 
+from __future__ import annotations
+
 import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from io_utils import ensure_dir, save_dat
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "spacetime")
 
 
-def ensure_dir(path):
-    """Create directory if it doesn't exist."""
-    os.makedirs(path, exist_ok=True)
-
-
-def generate_hyperbola(tau, z_max, n_points=100):
+def generate_hyperbola(tau: float, z_max: float, n_points: int = 100) -> tuple[np.ndarray, np.ndarray]:
     """
     Generate (z, t) points for constant proper-time hyperbola.
 
@@ -45,7 +46,7 @@ def generate_hyperbola(tau, z_max, n_points=100):
     return z, t
 
 
-def freeze_out_emission_vectors(tau_f, z_positions):
+def freeze_out_emission_vectors(tau_f: float, z_positions: np.ndarray) -> dict[str, np.ndarray]:
     """
     Calculate emission vectors perpendicular to freeze-out hyperbola.
 
@@ -87,21 +88,7 @@ def freeze_out_emission_vectors(tau_f, z_positions):
     return {"z": z_positions, "t": t, "dz": arrow_len * n_z, "dt": arrow_len * n_t}
 
 
-def save_dat(filename, data_dict, header=""):
-    """Save data to .dat file."""
-    keys = list(data_dict.keys())
-    arrays = [np.atleast_1d(data_dict[k]) for k in keys]
-
-    with open(filename, "w") as f:
-        if header:
-            f.write(f"# {header}\n")
-        f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row = [f"{arr[i]:.6f}" for arr in arrays]
-            f.write(" ".join(row) + "\n")
-
-
-def main():
+def main() -> None:
     ensure_dir(OUTPUT_DIR)
 
     print("Generating Bjorken spacetime hyperbola data...")
