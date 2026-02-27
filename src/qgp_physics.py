@@ -26,7 +26,21 @@ from scipy.special import iv as bessel_i  # Modified Bessel function I_n(x)
 if TYPE_CHECKING:
     pass
 
-warnings.filterwarnings("ignore")
+from constants import (
+    ALPHA_S,
+    EPSILON_C,  # noqa: F401 (re-exported)
+    ETA_OVER_S,
+    FLOW_KAPPA,
+    FM_TO_GEV_INV,  # noqa: F401 (re-exported)
+    HBARC,  # noqa: F401 (re-exported)
+    KAPPA2,
+    QHAT_0,  # noqa: F401 (re-exported)
+    SIGMA_NN_FM2,  # noqa: F401 (re-exported)
+    T_C0_GEV,
+)
+
+warnings.filterwarnings("ignore", category=RuntimeWarning, message="divide by zero")
+warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value")
 
 # =============================================================================
 # TYPE ALIASES FOR PHYSICS QUANTITIES
@@ -55,18 +69,12 @@ Angle = float  # radians
 ScalarOrArray = float | FloatArray
 
 # =============================================================================
-# PHYSICAL CONSTANTS
+# PHYSICAL CONSTANTS (imported from constants.py - single source of truth)
 # =============================================================================
+# Re-export for backward compatibility with callers that import from qgp_physics.
+# Canonical values: T_C0_GEV=0.1565, KAPPA2=0.012, ETA_OVER_S=0.12, etc.
 
-# QCD constants
-T_C: Temperature = 0.155  # Critical/crossover temperature [GeV] ≈ 155 MeV
-EPSILON_C: float = 1.0  # Critical energy density for deconfinement [GeV/fm³]
-HBARC: float = 0.197  # ℏc [GeV·fm]
-FM_TO_GEV_INV: float = 1 / HBARC  # Conversion factor
-
-# Transport coefficients (typical values)
-ETA_OVER_S: float = 0.12  # Shear viscosity to entropy ratio (near KSS bound 1/4π ≈ 0.08)
-QHAT_0: TransportCoefficient = 2.0  # Jet transport coefficient at T = T_c [GeV²/fm]
+T_C: Temperature = T_C0_GEV  # Crossover temperature [GeV]
 
 
 # Nuclear parameters
@@ -84,13 +92,16 @@ class Nucleus:
 
 
 # Standard nuclei used in LHC collisions
+# Radii and deformation values from constants.py (single source of truth)
 NUCLEI: dict[str, Nucleus] = {
     "O": Nucleus("Oxygen-16", A=16, Z=8, R0=2.608, a=0.513, beta2=0.0),
-    "Ne": Nucleus("Neon-20", A=20, Z=10, R0=2.791, a=0.535, beta2=0.45),  # Prolate!
+    "Ne": Nucleus("Neon-20", A=20, Z=10, R0=2.791, a=0.535, beta2=0.45),
     "Ar": Nucleus("Argon-40", A=40, Z=18, R0=3.427, a=0.569, beta2=0.0),
     "Xe": Nucleus("Xenon-129", A=129, Z=54, R0=5.36, a=0.59, beta2=0.18),
     "Pb": Nucleus("Lead-208", A=208, Z=82, R0=6.62, a=0.546, beta2=0.0),
 }
+# NOTE: The Nucleus values above are consistent with constants.py (O16_R0, NE20_R0, etc.).
+# The dataclass is kept here because Nucleus is tightly coupled to the Glauber model code.
 
 # =============================================================================
 # WOODS-SAXON DENSITY PROFILE
@@ -120,6 +131,10 @@ def woods_saxon(r: FloatArray, nucleus: Nucleus, theta: Angle = 0) -> FloatArray
     density : array
         Nuclear density (normalized to peak = 1)
     """
+    r_arr = np.asarray(r)
+    if np.any(r_arr < 0):
+        raise ValueError(f"woods_saxon: r must be >= 0, got min={r_arr.min():.4g}")
+
     # Spherical harmonics Y_l0 at theta
     Y20: float = 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta) ** 2 - 1)
     Y30: float = 0.25 * np.sqrt(7 / np.pi) * (5 * np.cos(theta) ** 3 - 3 * np.cos(theta))
@@ -167,31 +182,61 @@ def get_nuclear_profile_2d(
 # =============================================================================
 
 
-def sample_nucleon_positions(nucleus: Nucleus, n_events: int = 1) -> FloatArray:
+def sample_nucleon_positions(
+    nucleus: Nucleus,
+    n_events: int = 1,
+    rng: np.random.Generator | None = None,
+) -> FloatArray:
     """
     Sample nucleon positions from Woods-Saxon distribution using rejection sampling.
 
-    Returns array of shape (n_events, A, 3) with (x, y, z) positions in fm.
+    Parameters
+    ----------
+    nucleus : Nucleus
+        Nuclear parameters (R0, a, beta2, ...)
+    n_events : int
+        Number of independent events to generate
+    rng : numpy.random.Generator, optional
+        Random number generator.  Pass a seeded Generator for reproducibility.
+        Defaults to ``np.random.default_rng()`` (unseeded, non-reproducible).
+
+    Returns
+    -------
+    positions : array of shape (n_events, A, 3)
+        Nucleon (x, y, z) positions in fm.
     """
+    if rng is None:
+        rng = np.random.default_rng()
+
     positions: FloatArray = np.zeros((n_events, nucleus.A, 3))
+
+    MAX_REJECTION_ITERS = 10_000
 
     for event in range(n_events):
         for i in range(nucleus.A):
             accepted: bool = False
+            n_tries: int = 0
             while not accepted:
+                if n_tries >= MAX_REJECTION_ITERS:
+                    raise RuntimeError(
+                        f"Rejection sampling for nucleon {i} in {nucleus.name} "
+                        f"did not converge after {MAX_REJECTION_ITERS} iterations. "
+                        "Check Woods-Saxon parameters (R0, a) and normalization."
+                    )
                 # Sample in a box
                 r_max: Length = nucleus.R0 + 5 * nucleus.a
-                x: float = np.random.uniform(-r_max, r_max)
-                y: float = np.random.uniform(-r_max, r_max)
-                z: float = np.random.uniform(-r_max, r_max)
+                x: float = rng.uniform(-r_max, r_max)
+                y: float = rng.uniform(-r_max, r_max)
+                z: float = rng.uniform(-r_max, r_max)
                 r: Length = np.sqrt(x**2 + y**2 + z**2)
 
                 # Rejection sampling
                 theta: Angle = np.arccos(z / (r + 1e-10))
                 rho: float = woods_saxon(np.array([r]), nucleus, theta)[0]
-                if np.random.random() < rho:
+                if rng.random() < rho:
                     positions[event, i] = [x, y, z]
                     accepted = True
+                n_tries += 1
 
     return positions
 
@@ -264,8 +309,8 @@ def glauber_centrality_scan(
             np_, nc_ = calculate_participants(pos_A, pos_B, b)
             npart_list.append(np_)
             ncoll_list.append(nc_)
-        npart_mean.append(np.mean(npart_list))
-        ncoll_mean.append(np.mean(ncoll_list))
+        npart_mean.append(float(np.mean(npart_list)))
+        ncoll_mean.append(float(np.mean(ncoll_list)))
 
     return {
         "b": b_values,
@@ -291,8 +336,8 @@ def calculate_eccentricities(positions: FloatArray) -> dict[str, float]:
     y: FloatArray = positions[:, 1]
 
     # Center of mass
-    x_cm: float = np.mean(x)
-    y_cm: float = np.mean(y)
+    x_cm: float = float(np.mean(x))
+    y_cm: float = float(np.mean(y))
     x = x - x_cm
     y = y - y_cm
 
@@ -301,12 +346,12 @@ def calculate_eccentricities(positions: FloatArray) -> dict[str, float]:
 
     eccentricities: dict[str, float] = {}
     for n in [2, 3, 4, 5]:
-        numerator: float = np.abs(np.mean(r2 * np.exp(1j * n * phi)))
-        denominator: float = np.mean(r2)
+        numerator: float = float(np.abs(np.mean(r2 * np.exp(1j * n * phi))))
+        denominator: float = float(np.mean(r2))
         eccentricities[f"epsilon_{n}"] = numerator / (denominator + 1e-10)
 
     # Also return participant plane angle
-    eccentricities["Psi_2"] = 0.5 * np.angle(np.mean(r2 * np.exp(2j * phi)))
+    eccentricities["Psi_2"] = float(0.5 * np.angle(np.mean(r2 * np.exp(2j * phi))))
 
     return eccentricities
 
@@ -397,13 +442,14 @@ def qcd_crossover_line(mu_B: FloatArray) -> FloatArray:
     QCD crossover temperature as function of baryon chemical potential.
 
     Parameterization from lattice QCD:
-    T_c(μ_B) = T_c(0) * (1 - κ(μ_B/T_c)²)
+    T_c(μ_B) = T_c(0) * (1 - kappa2*(μ_B/T_c)²)
 
-    with κ ≈ 0.013
+    kappa2 = 0.012 +/- 0.002 (HotQCD/Bazavov 2020; Smecca PRD 112, 2025)
     """
-    T_c0: Temperature = 0.156  # GeV at μ_B = 0
-    kappa: float = 0.013
-    return T_c0 * (1 - kappa * (mu_B / T_c0) ** 2)
+    mu_arr = np.asarray(mu_B)
+    if np.any(mu_arr < 0):
+        raise ValueError(f"qcd_crossover_line: mu_B must be >= 0, got min={mu_arr.min():.4g} GeV")
+    return T_C0_GEV * (1 - KAPPA2 * (mu_B / T_C0_GEV) ** 2)
 
 
 def qcd_phase_boundaries() -> dict[str, FloatArray | float]:
@@ -450,16 +496,12 @@ def flow_from_eccentricity(
 
     Updated 2025-12: Calibrated to CMS O-O/Ne-Ne flow measurements.
     """
-    # Response coefficients (calibrated to 2025 LHC data)
-    # Increased from original to match CMS v2 ~ 0.06 in ultracentral O-O
-    kappa: dict[int, float] = {2: 0.35, 3: 0.25, 4: 0.15, 5: 0.08}
-
     # Viscous damping factor
     # Reduced damping in small systems - 2025 data shows strong flow
     knudsen: float = eta_over_s / system_size  # Proxy for Knudsen number
     damping: float = np.exp(-n * knudsen * 3)  # Reduced from 5 to 3
 
-    return kappa.get(n, 0.1) * epsilon_n * damping
+    return FLOW_KAPPA.get(n, 0.1) * epsilon_n * damping
 
 
 def generate_flow_vs_centrality(
@@ -553,7 +595,8 @@ def azimuthal_distribution(
 
     dN/dφ ∝ 1 + 2v₂cos(2(φ-Ψ₂)) + 2v₃cos(3(φ-Ψ₃)) + ...
     """
-    return 1 + 2 * v2 * np.cos(2 * (phi - Psi_2)) + 2 * v3 * np.cos(3 * (phi - Psi_3))
+    result: FloatArray = 1.0 + 2 * v2 * np.cos(2 * (phi - Psi_2)) + 2 * v3 * np.cos(3 * (phi - Psi_3))
+    return result
 
 
 # =============================================================================
@@ -581,11 +624,17 @@ def bdmps_energy_loss(E: Energy, L: Length, qhat: TransportCoefficient) -> Energ
     Delta_E : float
         Energy loss [GeV]
     """
-    alpha_s: float = 0.3  # Strong coupling
+    if E <= 0:
+        raise ValueError(f"Parton energy E must be positive, got E={E}")
+    if L < 0:
+        raise ValueError(f"Path length L must be non-negative, got L={L}")
+    if qhat < 0:
+        raise ValueError(f"Transport coefficient qhat must be non-negative, got qhat={qhat}")
+
     # omega_c = 0.5 * qhat * L^2 is characteristic gluon energy (for reference)
 
     # Simplified BDMPS formula: Delta_E = alpha_s * qhat * L^2 / 4
-    Delta_E: Energy = alpha_s * qhat * L**2 / 4
+    Delta_E: Energy = ALPHA_S * qhat * L**2 / 4
 
     # Can't lose more than you have
     return min(Delta_E, 0.9 * E)
@@ -601,6 +650,9 @@ def raa_model(
 
     where n is the power-law index of the spectrum.
     """
+    pT = np.atleast_1d(pT)
+    if np.any(pT <= 0):
+        raise ValueError("All pT values must be positive")
     Delta_E: FloatArray = np.array([bdmps_energy_loss(p, L_eff, qhat) for p in pT])
 
     # Shift in spectrum due to energy loss
@@ -691,7 +743,7 @@ def generate_raa_data(
 # =============================================================================
 
 
-def canonical_suppression_factor(strangeness: int, x: float) -> float:
+def canonical_suppression_factor(strangeness: int, x: float | FloatArray) -> float | FloatArray:
     """
     Canonical suppression factor for strangeness.
 
@@ -699,9 +751,16 @@ def canonical_suppression_factor(strangeness: int, x: float) -> float:
 
     where x depends on the volume and strange quark density.
     In the grand-canonical limit (x → ∞), γ_S → 1.
+
+    Parameters
+    ----------
+    strangeness : int
+        Absolute strangeness quantum number (|S| = 1, 2, 3 for K, Xi, Omega).
+    x : float or array
+        Volume-density parameter.  Scalar or array-valued (vectorized).
     """
     S: int = abs(strangeness)
-    return bessel_i(S, x) / bessel_i(0, x)
+    return bessel_i(S, x) / bessel_i(0, x)  # type: ignore[no-any-return]
 
 
 def strangeness_enhancement_curve(
@@ -718,19 +777,19 @@ def strangeness_enhancement_curve(
     x: FloatArray = 0.1 * dNch_deta**0.6
 
     # Single strange (K, Λ)
-    enhancement_S1: FloatArray = canonical_suppression_factor(1, x)
+    enhancement_S1: FloatArray = np.asarray(canonical_suppression_factor(1, x))
 
     # Double strange (Ξ)
-    enhancement_S2: FloatArray = canonical_suppression_factor(2, x)
+    enhancement_S2: FloatArray = np.asarray(canonical_suppression_factor(2, x))
 
     # Triple strange (Ω)
-    enhancement_S3: FloatArray = canonical_suppression_factor(3, x)
+    enhancement_S3: FloatArray = np.asarray(canonical_suppression_factor(3, x))
 
     # Normalize to pp baseline (low multiplicity)
     x_pp: float = 0.1 * 10**0.6
-    norm_S1: float = canonical_suppression_factor(1, x_pp)
-    norm_S2: float = canonical_suppression_factor(2, x_pp)
-    norm_S3: float = canonical_suppression_factor(3, x_pp)
+    norm_S1: float = float(canonical_suppression_factor(1, x_pp))
+    norm_S2: float = float(canonical_suppression_factor(2, x_pp))
+    norm_S3: float = float(canonical_suppression_factor(3, x_pp))
 
     return {
         "dNch_deta": dNch_deta,
@@ -796,12 +855,28 @@ def energy_density_profile_2d(
 # =============================================================================
 
 
-def oxygen_alpha_cluster_positions() -> FloatArray:
+def oxygen_alpha_cluster_positions(
+    rng: np.random.Generator | None = None,
+) -> FloatArray:
     """
     Generate O-16 alpha cluster configuration (tetrahedral).
 
     Four alpha particles at vertices of a tetrahedron.
+
+    Parameters
+    ----------
+    rng : numpy.random.Generator, optional
+        Random number generator.  Pass a seeded Generator for reproducibility.
+        Defaults to ``np.random.default_rng()`` (unseeded, non-reproducible).
+
+    Returns
+    -------
+    positions : array of shape (16, 3)
+        Nucleon positions in fm.
     """
+    if rng is None:
+        rng = np.random.default_rng()
+
     # Tetrahedron vertices (edge length ~ 3.5 fm from nuclear physics)
     a: Length = 1.8  # Scale factor [fm]
 
@@ -814,7 +889,7 @@ def oxygen_alpha_cluster_positions() -> FloatArray:
     for v in vertices:
         # 4 nucleons per alpha, randomly distributed
         for _ in range(4):
-            offset: FloatArray = np.random.normal(0, alpha_size, 3)
+            offset: FloatArray = rng.normal(0, alpha_size, 3)
             nucleon_positions.append(v + offset)
 
     return np.array(nucleon_positions)

@@ -28,33 +28,20 @@ References:
 - ALICE Collaboration, Phys. Lett. B 696, 328 (2011) - HBT in pp
 """
 
+from __future__ import annotations
+
 import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from io_utils import ensure_dir, save_dat
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "femtoscopy")
 
 
-def ensure_dir(path):
-    """Create directory if it doesn't exist."""
-    os.makedirs(path, exist_ok=True)
-
-
-def save_dat(filename, data_dict, header=""):
-    """Save data to .dat file for pgfplots."""
-    keys = list(data_dict.keys())
-    arrays = [np.atleast_1d(data_dict[k]) for k in keys]
-
-    with open(filename, "w") as f:
-        if header:
-            f.write(f"# {header}\n")
-        f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row = [f"{arr[i]:.6e}" for arr in arrays]
-            f.write(" ".join(row) + "\n")
-
-
-def correlation_function(q_inv, radius, lambda_param=0.7):
+def correlation_function(q_inv: np.ndarray, radius: float, lambda_param: float = 0.7) -> np.ndarray:
     """
     Two-particle correlation function for Gaussian source.
 
@@ -84,7 +71,10 @@ def correlation_function(q_inv, radius, lambda_param=0.7):
     return C_q
 
 
-def correlation_function_3d(q_out, q_side, q_long, R_out, R_side, R_long, lambda_param=0.7):
+def correlation_function_3d(
+    q_out: float | np.ndarray, q_side: float | np.ndarray, q_long: float | np.ndarray,
+    R_out: float, R_side: float, R_long: float, lambda_param: float = 0.7,
+) -> np.ndarray:
     """
     3D correlation function with Bertsch-Pratt decomposition.
 
@@ -119,7 +109,7 @@ def correlation_function_3d(q_out, q_side, q_long, R_out, R_side, R_long, lambda
     return C_q
 
 
-def hbt_radii_vs_centrality(system, centrality):
+def hbt_radii_vs_centrality(system: str, centrality: np.ndarray) -> dict[str, np.ndarray]:
     """
     HBT radii as function of centrality for different collision systems.
 
@@ -180,7 +170,7 @@ def hbt_radii_vs_centrality(system, centrality):
     }
 
 
-def system_size_scaling():
+def system_size_scaling() -> dict[str, np.ndarray]:
     """
     HBT radius scaling with system size (multiplicity).
 
@@ -219,7 +209,7 @@ def system_size_scaling():
     }
 
 
-def main():
+def main() -> None:
     ensure_dir(OUTPUT_DIR)
 
     print("Generating femtoscopy/HBT correlation data...")

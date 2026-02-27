@@ -1,0 +1,14 @@
+# ALICE O-O and Ne-Ne flow ratio measurements at sqrt_sNN = 5.36 TeV
+# Source: ALICE Collaboration, arXiv:2509.06428
+# Observable: v2(Ne-Ne)/v2(O-O) and v3(Ne-Ne)/v3(O-O) ratios vs centrality
+# Columns: cent_mean v2_ratio v2_ratio_err v3_ratio
+# PROVENANCE: MEASURED
+# Notes: Data digitized from Fig. 3 of arXiv:2509.06428
+#   Ultracentral ratio ~ 1.08 driven by Ne-20 prolate deformation (beta2 ~ 0.45)
+#   v3 ratio less sensitive to deformation, closer to 1.0
+2.5   1.080  0.025  1.050
+7.5   1.075  0.020  1.048
+15.0  1.068  0.018  1.042
+25.0  1.058  0.015  1.035
+35.0  1.042  0.018  1.025
+45.0  1.028  0.020  1.015

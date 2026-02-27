@@ -116,7 +116,8 @@ FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
 
 .PHONY: all clean figures data data-only test lint help advanced strict \
         lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-build \
-        fmt test-quick test-physics verify-data distclean
+        fmt test-quick test-physics test-unit verify-data distclean \
+        generate-checksums verify-checksums validate-physics
 
 # Default: build everything
 all: $(FINAL_PDF)
@@ -199,6 +200,12 @@ $(DATA_STAMP): $(DATA_SCRIPT) $(ENERGY_SCRIPT) $(MULTIDIM_SCRIPT) $(QCD_PHASE_SC
 		echo "=== Stage 5b: Figure curves ==="; \
 		$(PYTHON) $(CURVES_SCRIPT); \
 	fi
+	@# Seed committed experimental data into data/experimental/
+	@if [ -d experimental ]; then \
+		mkdir -p $(DATA_DIR)/experimental; \
+		cp experimental/*.dat $(DATA_DIR)/experimental/; \
+		echo "  Seeded experimental data: $$(ls experimental/*.dat | wc -l | tr -d ' ') files"; \
+	fi
 	@# Create symlink for figure data access
 	@rm -f $(FIG_DIR)/data
 	@ln -s ../$(DATA_DIR) $(FIG_DIR)/data
@@ -209,7 +216,6 @@ $(DATA_STAMP): $(DATA_SCRIPT) $(ENERGY_SCRIPT) $(MULTIDIM_SCRIPT) $(QCD_PHASE_SC
 	@echo "  Files: $$(find $(DATA_DIR) -name '*.dat' 2>/dev/null | wc -l | tr -d ' ') .dat files"
 
 # Convenience target for data only
-.PHONY: data data-only
 data:
 	@$(MAKE) $(DATA_STAMP)
 
@@ -284,7 +290,7 @@ lint-python: lint-ruff
 lint-ruff:
 	@echo "=== Ruff: Python lint ==="
 	@if command -v $(RUFF) >/dev/null 2>&1; then \
-		$(RUFF) check $(SRC_DIR) tests/ 2>&1 || true; \
+		$(RUFF) check $(SRC_DIR) tests/; \
 	else \
 		echo "  [SKIP] ruff not installed (pip install ruff)"; \
 	fi
@@ -325,22 +331,21 @@ lint-build: $(FINAL_PDF)
 # -----------------------------------------------------------------------------
 
 test: $(DATA_STAMP)
-	@echo "=== Running test suite ==="
-	@$(PYTHON) tests/test_data_generation.py
+	@echo "=== Running full test suite ==="
+	@$(PYTHON) -m pytest tests/ -v --tb=short
 
-# Quick test without regenerating data
+# Quick unit tests without data regeneration (no make data dependency)
 test-quick:
-	@echo "=== Running test suite (no data regen) ==="
-	@if [ -f $(DATA_STAMP) ]; then \
-		$(PYTHON) tests/test_data_generation.py; \
-	else \
-		echo "[SKIP] No data generated. Run 'make data' first."; \
-	fi
+	@echo "=== Running unit tests (no data regen) ==="
+	@$(PYTHON) -m pytest tests/test_qgp_physics.py tests/test_constants.py -v --tb=short
 
 # Validate physics module loads correctly
 test-physics:
 	@echo "=== Physics module validation ==="
 	@$(PYTHON) -c "import sys; sys.path.insert(0,'src'); from qgp_physics import *; print('  [OK] Physics module imported')"
+
+# Run only unit tests (no I/O, no data dependency)
+test-unit: test-quick
 
 # Strict build: fail on warnings and undefined references
 strict: $(FINAL_PDF)
@@ -413,6 +418,29 @@ verify-data: $(DATA_STAMP)
 		fi; \
 	done
 
+# Generate sha256 checksums for all data files (run after make data)
+generate-checksums: $(DATA_STAMP)
+	@echo "=== Generating data checksums ==="
+	find $(DATA_DIR) -name '*.dat' | sort | xargs sha256sum > $(DATA_DIR)/CHECKSUMS.sha256
+	@echo "Checksums written to $(DATA_DIR)/CHECKSUMS.sha256"
+
+# Verify data files match previously generated checksums
+verify-checksums: $(DATA_DIR)/CHECKSUMS.sha256
+	@echo "=== Verifying data checksums ==="
+	sha256sum --check $(DATA_DIR)/CHECKSUMS.sha256
+	@echo "All checksums verified"
+
+# Run chi-squared model vs experiment validation
+validate-physics: $(DATA_STAMP)
+	@echo "=== Running physics validation ==="
+	@# Ensure experimental data is available (may not be present if data/ was partially cleaned)
+	@if [ -d experimental ]; then \
+		mkdir -p $(DATA_DIR)/experimental; \
+		cp experimental/*.dat $(DATA_DIR)/experimental/; \
+	fi
+	@PYTHONPATH=$(SRC_DIR) python3 $(SRC_DIR)/compare_model_vs_experiment.py
+	@echo "Physics validation complete"
+
 # -----------------------------------------------------------------------------
 # Cleanup
 # -----------------------------------------------------------------------------
@@ -464,8 +492,11 @@ help:
 	@echo "  test-physics Validate physics module imports"
 	@echo ""
 	@echo "Quality assurance:"
-	@echo "  strict      Build and fail on any warnings/errors"
-	@echo "  verify-data Check all data directories exist"
+	@echo "  strict             Build and fail on any warnings/errors"
+	@echo "  verify-data        Check all data directories exist"
+	@echo "  generate-checksums Generate sha256 checksums for data files"
+	@echo "  verify-checksums   Verify data files match checksums"
+	@echo "  validate-physics   Run chi-squared model vs experiment validation"
 	@echo ""
 	@echo "Options:"
 	@echo "  -j N        Parallel figure compilation (e.g., make -j4)"
