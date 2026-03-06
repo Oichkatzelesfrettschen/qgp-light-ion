@@ -25,8 +25,8 @@ from scipy.integrate import trapezoid
 __all__ = [
     "QhatPosterior",
     "compute_likelihood",
-    "sample_mcmc_posterior",
     "get_credible_interval",
+    "sample_mcmc_posterior",
 ]
 
 
@@ -99,7 +99,7 @@ class QhatPosterior:
         u = rng.uniform(0, 1, n_samples)
         samples = np.interp(u, cdf, self.qhat_grid)
 
-        return samples
+        return np.asarray(samples, dtype=np.float64)
 
     def credible_interval(self, confidence: float = 0.68) -> tuple[float, float]:
         """

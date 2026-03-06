@@ -56,7 +56,7 @@ def get_backend() -> Literal["gpu", "cpu"]:
 def as_numpy(arr: Any) -> NDArray[Any]:
     """Convert CuPy array to NumPy array if on GPU."""
     if GPU_AVAILABLE and hasattr(arr, "get"):
-        return arr.get()
+        return np.asarray(arr.get())
     return np.asarray(arr)
 
 
@@ -136,7 +136,7 @@ def eccentricity_grid_gpu(
     X: NDArray[np.floating[Any]],
     Y: NDArray[np.floating[Any]],
     n: int = 2,
-) -> NDArray[np.floating[Any]]:
+) -> float:
     """
     GPU-accelerated eccentricity computation.
 
@@ -172,9 +172,9 @@ def eccentricity_grid_gpu(
 
 __all__ = [
     "GPU_AVAILABLE",
-    "get_backend",
     "as_numpy",
-    "pairwise_distance_gpu",
-    "energy_loss_grid_gpu",
     "eccentricity_grid_gpu",
+    "energy_loss_grid_gpu",
+    "get_backend",
+    "pairwise_distance_gpu",
 ]

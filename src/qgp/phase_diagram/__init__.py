@@ -1,7 +1,6 @@
 # QCD phase diagram submodule package.
 # Imports grouped by physical region for generate_qcd_phase_diagram.py.
 
-from .params import PhaseTransitionParams
 from .critical_point import (
     critical_point_box_excluded,
     critical_point_ellipse_excluded,
@@ -23,6 +22,7 @@ from .freeze_out import (
     freeze_out_parametrization,
     freeze_out_uncertainty_band,
 )
+from .params import PhaseTransitionParams
 from .trajectories import (
     color_superconductivity_region,
     cooling_trajectory,

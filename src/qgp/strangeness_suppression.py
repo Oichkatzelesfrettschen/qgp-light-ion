@@ -82,7 +82,7 @@ class CanonicalEnsemble:
             Relative weight in canonical ensemble
         """
         exponent = -n_strange * self.mu_S / self.T
-        return np.exp(exponent)
+        return float(np.exp(exponent))
 
     def threshold_density(self) -> float:
         """
@@ -98,7 +98,7 @@ class CanonicalEnsemble:
         """
         # Approximate: threshold at T_c when chemical potentials balance
         T_c = 156.5  # MeV, crossover temperature
-        if self.T < T_c:
+        if T_c > self.T:
             # Below crossover: suppression increases rapidly
             return 0.05 * (1.0 - self.T / T_c)
         else:
@@ -136,11 +136,11 @@ class CanonicalEnsemble:
 
         # Particle-specific exponent
         if particle_type.lower() == "kaon":
-            return base
+            return float(base)
         elif particle_type.lower() == "lambda":
-            return base ** 1.5
+            return float(base ** 1.5)
         elif particle_type.lower() == "xi":
-            return base ** 3.0
+            return float(base ** 3.0)
         else:
             raise ValueError(f"Unknown particle type: {particle_type}")
 
@@ -188,7 +188,7 @@ def compute_suppression_factor(
             )
             suppression[i, j] = ensemble.suppression_factor(particle_type)
 
-    return suppression
+    return np.asarray(suppression, dtype=np.float64)
 
 
 def strangeness_threshold(T: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
@@ -215,8 +215,8 @@ def strangeness_threshold(T: NDArray[np.floating[Any]]) -> NDArray[np.floating[A
     # Above T_c: suppression decreases (threshold increases)
     threshold = np.zeros_like(T)
 
-    below_Tc = T < T_c
-    above_Tc = T >= T_c
+    below_Tc = T_c > T
+    above_Tc = T_c <= T
 
     threshold[below_Tc] = 0.05 * (1.0 - T[below_Tc] / T_c)
     threshold[above_Tc] = 0.05 * (T[above_Tc] - T_c) / 50.0

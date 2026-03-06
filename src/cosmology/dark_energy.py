@@ -21,14 +21,14 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from scipy.integrate import quad
 from numpy.typing import NDArray
+from scipy.integrate import quad
 
 __all__ = [
     "DarkEnergyModel",
+    "bao_measurement",
     "comoving_distance",
     "distance_modulus",
-    "bao_measurement",
 ]
 
 
@@ -80,11 +80,11 @@ class DarkEnergyModel:
         a = 1.0 / (1.0 + z)
 
         # H(z)/H0 = sqrt(Ω_m * (1+z)³ + Ω_k * (1+z)² + Ω_Λ * a^(3(1+w)))
-        return np.sqrt(
+        return float(np.sqrt(
             self.Omega_m * (1.0 + z) ** 3
             + self.Omega_k * (1.0 + z) ** 2
             + self.Omega_Lambda * a ** (3.0 * (1.0 + self.w))
-        )
+        ))
 
     def comoving_distance_Mpc(self, z: float) -> float:
         """

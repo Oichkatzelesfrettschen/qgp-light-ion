@@ -8,7 +8,6 @@ against JWST observations of high-redshift HII regions.
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from cosmology.reionization_fronts import (
     StromgrenSphere,

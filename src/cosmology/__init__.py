@@ -23,24 +23,24 @@ References:
 - Dark energy: Perlmutter et al., ApJ 517 (1999) 565; JWST time-domain cosmology
 """
 
-from .reionization_bubble import (
-    ReionizationBubble,
-    bubble_growth_rate,
-    overlap_probability,
-)
 from .dark_energy import (
     DarkEnergyModel,
     bao_measurement,
     comoving_distance,
     distance_modulus,
 )
+from .reionization_bubble import (
+    ReionizationBubble,
+    bubble_growth_rate,
+    overlap_probability,
+)
 
 __all__ = [
-    "ReionizationBubble",
-    "bubble_growth_rate",
-    "overlap_probability",
     "DarkEnergyModel",
+    "ReionizationBubble",
     "bao_measurement",
+    "bubble_growth_rate",
     "comoving_distance",
     "distance_modulus",
+    "overlap_probability",
 ]

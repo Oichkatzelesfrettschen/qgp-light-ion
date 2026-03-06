@@ -8,7 +8,8 @@ Verifies numerical correctness against NumPy reference implementations.
 from __future__ import annotations
 
 import numpy as np
-import pytest
+
+rng = np.random.default_rng(42)
 
 from gpu import (
     GPU_AVAILABLE,
@@ -61,7 +62,7 @@ class TestAsNumpy:
 
     def test_as_numpy_2d_arrays(self) -> None:
         """Should handle 2D arrays correctly."""
-        arr = np.random.rand(5, 3)
+        arr = rng.standard_normal((5, 3))
         result = as_numpy(arr)
 
         assert result.shape == (5, 3)
@@ -73,8 +74,8 @@ class TestPairwiseDistanceGPU:
 
     def test_distance_shape(self) -> None:
         """Output shape should be (n_A, n_B)."""
-        pos_A = np.random.rand(10, 2)
-        pos_B = np.random.rand(15, 2)
+        pos_A = rng.standard_normal((10, 2))
+        pos_B = rng.standard_normal((15, 2))
 
         distances = pairwise_distance_gpu(pos_A, pos_B)
 
@@ -82,8 +83,8 @@ class TestPairwiseDistanceGPU:
 
     def test_distance_positive(self) -> None:
         """All distances should be non-negative."""
-        pos_A = np.random.rand(8, 2)
-        pos_B = np.random.rand(12, 2)
+        pos_A = rng.standard_normal((8, 2))
+        pos_B = rng.standard_normal((12, 2))
 
         distances = pairwise_distance_gpu(pos_A, pos_B)
 
@@ -120,8 +121,8 @@ class TestPairwiseDistanceGPU:
 
     def test_distance_float_output(self) -> None:
         """Output should be floating point array."""
-        pos_A = np.random.rand(5, 2)
-        pos_B = np.random.rand(7, 2)
+        pos_A = rng.standard_normal((5, 2))
+        pos_B = rng.standard_normal((7, 2))
 
         distances = pairwise_distance_gpu(pos_A, pos_B)
 
@@ -217,8 +218,8 @@ class TestEccentricityGridGPU:
 
     def test_eccentricity_bounded(self) -> None:
         """Eccentricity should be bounded 0 ≤ ε_n ≤ 1."""
-        X = np.random.randn(30, 30)
-        Y = np.random.randn(30, 30)
+        X = rng.standard_normal((30, 30))
+        Y = rng.standard_normal((30, 30))
 
         ecc = eccentricity_grid_gpu(X, Y, n=2)
 
@@ -226,8 +227,8 @@ class TestEccentricityGridGPU:
 
     def test_eccentricity_different_harmonics(self) -> None:
         """Different harmonics should give different values."""
-        X = np.random.randn(30, 30)
-        Y = np.random.randn(30, 30)
+        X = rng.standard_normal((30, 30))
+        Y = rng.standard_normal((30, 30))
 
         ecc2 = eccentricity_grid_gpu(X, Y, n=2)
         ecc3 = eccentricity_grid_gpu(X, Y, n=3)
@@ -237,8 +238,8 @@ class TestEccentricityGridGPU:
 
     def test_eccentricity_scalar_output(self) -> None:
         """Eccentricity should return scalar float."""
-        X = np.random.rand(20, 20)
-        Y = np.random.rand(20, 20)
+        X = rng.standard_normal((20, 20))
+        Y = rng.standard_normal((20, 20))
 
         ecc = eccentricity_grid_gpu(X, Y, n=2)
 

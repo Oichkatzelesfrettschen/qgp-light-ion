@@ -8,7 +8,6 @@ and percolation theory predictions.
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from cosmology.reionization_bubble import (
     ReionizationBubble,

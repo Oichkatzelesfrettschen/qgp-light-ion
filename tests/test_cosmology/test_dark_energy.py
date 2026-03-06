@@ -231,7 +231,7 @@ class TestBAOMeasurement:
         assert bao["z_BAO"] == 0.5
         assert bao["d_M_Mpc"] > 0
         assert bao["D_V_Mpc"] > 0
-        assert 0 < bao["r_s_over_D_V"]
+        assert bao["r_s_over_D_V"] > 0
 
     def test_bao_measurement_z075(self) -> None:
         """BAO at z=0.75 should be intermediate."""

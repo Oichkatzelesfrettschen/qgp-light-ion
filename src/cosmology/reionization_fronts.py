@@ -72,7 +72,7 @@ class StromgrenSphere:
         # α(T) = 1.269e-13 * (T / 1e4)^{-0.75} cm³ s⁻¹
         T_4 = self.T_K / 1e4
 
-        return 1.269e-13 * T_4 ** (-0.75)
+        return float(1.269e-13 * T_4 ** (-0.75))
 
     def stromgren_radius_cm(self) -> float:
         """
@@ -95,7 +95,7 @@ class StromgrenSphere:
 
         R_s_cm = (numerator / denominator) ** (1.0 / 3.0)
 
-        return R_s_cm
+        return float(R_s_cm)
 
     def expansion_speed_cm_s(self, time_s: float) -> float:
         """
@@ -129,7 +129,7 @@ class StromgrenSphere:
 
         v_exp = c_s * np.sqrt(1.0 + dimensionless_time**2)
 
-        return v_exp
+        return float(v_exp)
 
     def recombination_timescale_s(self) -> float:
         """
@@ -185,8 +185,6 @@ def ionization_front_expansion(
     # Transition: use smooth blend R(t) = sqrt(R_s² + (early_time_growth)²)
 
     # Early-time radius growth
-    t_s = R_s / c_s  # Transition timescale
-
     # Coefficient for early-time growth: R_early(t) ~ sqrt(coeff * t)
     # From spherical blast wave: R_early ~ (E * t² / ρ)^{1/5} ~ t^{2/5}
     # For ionization fronts: closer to R ~ t^{1/2}
@@ -202,7 +200,7 @@ def ionization_front_expansion(
     # Use R(t) = sqrt(R_s² + R_early²) which naturally transitions
     R_cm = np.sqrt(R_s**2 + R_early**2)
 
-    return R_cm
+    return np.asarray(R_cm, dtype=np.float64)
 
 
 def ly_alpha_profile(
@@ -236,8 +234,6 @@ def ly_alpha_profile(
     m_H = 1.673e-24  # g
     T_K = 100.0  # Temperature of neutral gas (K)
 
-    c_km_s = 3e5  # Speed of light (km/s)
-
     # Doppler width: v_D = sqrt(2 * k_B * T / m_H)
     v_D_cm_s = np.sqrt(2.0 * k_B * T_K / m_H)
     v_D_km_s = v_D_cm_s / 1e5
@@ -251,18 +247,13 @@ def ly_alpha_profile(
     # τ(v) ~ N_HI * σ_0 * phi(v)
     # where N_HI is column density and phi is normalized profile
 
-    n_H_neutral = neutral_density_cm3 * (1.0 - ionized_fraction)
-
     # Optical depth: τ(v) ~ σ * N_HI * φ(v)
     # where N_HI is column density (cm⁻²) and φ(v) is profile
     # Typical neutral clouds have large column densities: N_HI ~ 10^15-10^20 cm⁻²
 
     # Estimate optical depth from density and path length
     # For 1 kpc path length at n_H ~ 10^-4 cm⁻³: N_HI ~ 3e18 cm⁻²
-    path_length_kpc = 1.0
-    path_length_cm = path_length_kpc * 3.086e21
-
-    column_density_cm2 = n_H_neutral * path_length_cm
+    # (column_density = n_H_neutral * path_length_cm, used in scaling tau_0)
 
     # Lorentzian optical depth with neutral fraction scaling
     # Pure Lorentzian (no damping wings for simplicity)
@@ -284,4 +275,4 @@ def ly_alpha_profile(
     # Transmission: T = exp(-τ)
     transmission = np.exp(-tau)
 
-    return transmission
+    return np.asarray(transmission, dtype=np.float64)

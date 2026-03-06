@@ -24,8 +24,8 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from scipy.special import erf
 from numpy.typing import NDArray
+from scipy.special import erf
 
 __all__ = [
     "ReionizationBubble",
@@ -96,7 +96,7 @@ class ReionizationBubble:
         t_dyn_cMpc = bubble_size_cMpc / 3e4  # Speed of light in cMpc/Myr
         t_growth = np.sqrt(t_dyn_cMpc * t_rec_Myr)
 
-        return t_growth
+        return float(t_growth)
 
     def critical_bubble_size(self) -> float:
         """
@@ -128,7 +128,7 @@ class ReionizationBubble:
             # Power law: R_crit ∝ (1 - x_e)^α
             # At x_e=0.5: (1-0.5)^0.6 = 0.5^0.6 ≈ 0.66, so R_crit ≈ 66 cMpc
             # Matches percolation scale
-            R_crit = 100.0 * (1.0 - self.x_e) ** 0.6
+            R_crit = float(100.0 * (1.0 - self.x_e) ** 0.6)
             return max(R_crit, 1.0)
 
     def ionization_probability(self, distance_cMpc: float) -> float:
@@ -157,9 +157,9 @@ class ReionizationBubble:
 
         # Complementary error function: ionized if inside bubble + diffuse edge
         if distance_cMpc < R_crit:
-            return 1.0 - 0.5 * (1.0 + erf((distance_cMpc - R_crit) / (sigma * np.sqrt(2))))
+            return float(1.0 - 0.5 * (1.0 + erf((distance_cMpc - R_crit) / (sigma * np.sqrt(2)))))
         else:
-            return 0.5 * (1.0 + erf((R_crit - distance_cMpc) / (sigma * np.sqrt(2))))
+            return float(0.5 * (1.0 + erf((R_crit - distance_cMpc) / (sigma * np.sqrt(2)))))
 
 
 def bubble_growth_rate(
@@ -231,4 +231,4 @@ def overlap_probability(
     exponent = np.clip(exponent, -100, 100)
     overlap = 1.0 / (1.0 + np.exp(exponent))
 
-    return overlap
+    return np.asarray(overlap, dtype=np.float64)

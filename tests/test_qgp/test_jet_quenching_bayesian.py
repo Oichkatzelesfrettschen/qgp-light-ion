@@ -98,7 +98,7 @@ class TestPosteriorSampling:
         lower, upper = posterior.credible_interval(confidence=0.68)
 
         assert lower < upper
-        assert 1.0 <= lower
+        assert lower >= 1.0
         assert upper <= 4.0
 
     def test_credible_interval_contains_median(self) -> None:
