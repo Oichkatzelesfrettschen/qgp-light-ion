@@ -63,8 +63,8 @@ def generate_dark_energy_data(output_dir: str) -> None:
         provenance=provenance_omega_m,
     )
 
-    # Distance modulus z-evolution for different w values
-    z_vals = np.linspace(0.0, 3.0, 40)
+    # Distance modulus z-evolution for different w values (z > 0 since undefined at z=0)
+    z_vals = np.linspace(0.01, 3.0, 40)
     mu_lcdm = distance_modulus(z_vals, w=-1.0)
     mu_w0wa = distance_modulus(z_vals, w=-0.8)
 
