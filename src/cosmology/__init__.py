@@ -1,15 +1,46 @@
 """
-Cosmology Module (Tier 2)
+Cosmology Tier 2: Large-scale structure and reionization.
 
-This module implements cosmological physics models:
-- Reionization bubble dynamics (JWST-era)
-- Dark energy reconstruction (BAO/SNe)
-- Reionization-QGP analogy functions
+This tier connects QGP physics (Tier 1) to cosmological structure formation
+(early universe, dark energy, reionization fronts).
 
-This tier operates independently from Tier 1 (QGP) but uses shared
-Bayesian inference infrastructure.
+Modules:
+- reionization_bubble: Bubble growth and overlap statistics in cosmic reionization
+- dark_energy: Dark energy equation of state and acceleration history
+- bao_distance: Baryon acoustic oscillation and sound horizon measurements
 
-Not yet implemented (phases 15-17).
+Physical context:
+The early universe QGP transition (~1 microsecond after Big Bang) sets the
+initial conditions for baryon-photon coupling that leads to acoustic oscillations
+in the primordial plasma. After recombination (z~1000), the universe becomes
+optically thin, and by z~6 galaxies reionize the intergalactic medium through
+UV radiation. The reionization bubble growth follows similar percolation physics
+to QGP bubble nucleation in heavy-ion collisions.
+
+References:
+- Reionization: Gnedin, ApJ 535 (2000) L75; Planck Collaboration XXVII (2018)
+- BAO: Eisenstein et al., ApJ 633 (2005) 560; DESI DR2 (2025)
+- Dark energy: Perlmutter et al., ApJ 517 (1999) 565; JWST time-domain cosmology
 """
 
-__all__ = []
+from .reionization_bubble import (
+    ReionizationBubble,
+    bubble_growth_rate,
+    overlap_probability,
+)
+from .dark_energy import (
+    DarkEnergyModel,
+    bao_measurement,
+    comoving_distance,
+    distance_modulus,
+)
+
+__all__ = [
+    "ReionizationBubble",
+    "bubble_growth_rate",
+    "overlap_probability",
+    "DarkEnergyModel",
+    "bao_measurement",
+    "comoving_distance",
+    "distance_modulus",
+]

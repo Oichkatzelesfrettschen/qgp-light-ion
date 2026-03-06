@@ -61,21 +61,26 @@ skip_if_no_data = pytest.mark.skipif(
 # ---------------------------------------------------------------------------
 
 class TestSourceFiles:
-    """Verify that key source files are present."""
+    """Verify that key source files are present in restructured qgp package."""
 
-    def test_generate_comprehensive_data_exists(self):
-        assert (SRC_DIR / "generate_comprehensive_data.py").exists(), (
-            "generate_comprehensive_data.py not found in src/"
+    def test_qgp_package_exists(self):
+        assert (SRC_DIR / "qgp" / "__init__.py").exists(), (
+            "qgp/__init__.py not found in src/"
         )
 
-    def test_qgp_physics_exists(self):
-        assert (SRC_DIR / "qgp_physics.py").exists(), "qgp_physics.py not found in src/"
+    def test_qgp_generate_module_exists(self):
+        assert (SRC_DIR / "qgp" / "generate.py").exists(), (
+            "qgp/generate.py not found in src/"
+        )
 
-    def test_constants_exists(self):
-        assert (SRC_DIR / "constants.py").exists(), "constants.py not found in src/"
+    def test_qgp_physics_module_exists(self):
+        assert (SRC_DIR / "qgp" / "physics.py").exists(), "qgp/physics.py not found in src/"
 
-    def test_io_utils_exists(self):
-        assert (SRC_DIR / "io_utils.py").exists(), "io_utils.py not found in src/"
+    def test_qgp_constants_module_exists(self):
+        assert (SRC_DIR / "qgp" / "constants.py").exists(), "qgp/constants.py not found in src/"
+
+    def test_qgp_io_utils_module_exists(self):
+        assert (SRC_DIR / "qgp" / "io_utils.py").exists(), "qgp/io_utils.py not found in src/"
 
     def test_makefile_exists(self):
         makefile = PROJECT_ROOT / "Makefile"
@@ -225,7 +230,7 @@ class TestGeneratorScript:
             [
                 sys.executable,
                 "-c",
-                "import sys; sys.path.insert(0,'src'); import generate_comprehensive_data",
+                "import sys; sys.path.insert(0,'src'); from qgp import generate",
             ],
             capture_output=True,
             text=True,
@@ -233,5 +238,5 @@ class TestGeneratorScript:
             timeout=30,
         )
         assert result.returncode == 0, (
-            f"generate_comprehensive_data import failed:\n{result.stderr}"
+            f"qgp.generate module import failed:\n{result.stderr}"
         )
