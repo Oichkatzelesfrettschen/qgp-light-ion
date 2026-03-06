@@ -123,7 +123,8 @@ FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
         test lint help advanced strict \
         lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-mypy lint-build \
         fmt test-quick test-physics test-unit test-qgp test-cosmology test-gpu verify-data distclean \
-        generate-checksums verify-checksums validate-physics coverage lint-qgp lint-cosmology
+        generate-checksums verify-checksums validate-physics coverage lint-qgp lint-cosmology \
+        data-fetch data-verify-experimental
 
 # Default: build everything
 all: $(FINAL_PDF)
@@ -267,6 +268,16 @@ data-gpu: data
 data-cpu: GPU_BACKEND = 0
 data-cpu: data
 	@echo "Data generation completed (CPU backend)"
+
+# Fetch all experimental data from HEPData (requires internet access)
+data-fetch:
+	@echo "=== Fetching experimental data from HEPData ==="
+	$(PYTHON) src/tools/fetch_experimental_data.py
+
+# Verify committed experimental data matches CHECKSUMS.sha256
+data-verify-experimental:
+	@echo "=== Verifying experimental data checksums ==="
+	$(PYTHON) src/tools/fetch_experimental_data.py --verify-only
 
 # -----------------------------------------------------------------------------
 # Directory Creation

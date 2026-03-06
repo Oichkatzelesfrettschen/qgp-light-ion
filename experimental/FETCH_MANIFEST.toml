@@ -1,0 +1,38 @@
+# Fetch manifest for committed experimental data files.
+# Run: python3 src/tools/fetch_experimental_data.py --verify-only to check checksums.
+# Run: python3 src/tools/fetch_experimental_data.py to re-fetch from HEPData.
+
+schema_version = "1.0"
+
+[[source]]
+filename = "CMS_OO_RAA_HIN25008.dat"
+description = "CMS O-O R_AA measurement, arXiv:2510.09864, HIN-25-008"
+hepdata_id = "ins2825461"
+table = "Table 1"
+columns = ["pT_GeV", "RAA", "stat_lo", "stat_hi", "syst_lo", "syst_hi"]
+provenance = "MEASURED"
+doi = "10.1103/PhysRevLett.135.012301"
+
+[[source]]
+filename = "CMS_OO_flow_HIN25009.dat"
+description = "CMS O-O v2 elliptic flow, arXiv:2510.02580, HIN-25-009"
+hepdata_id = "ins2823146"
+table = "Table 2"
+columns = ["pT_GeV", "v2", "stat", "syst"]
+provenance = "MEASURED"
+
+[[source]]
+filename = "CMS_NeNe_flow_HIN25009.dat"
+description = "CMS Ne-Ne v2 elliptic flow, arXiv:2510.02580, HIN-25-009"
+hepdata_id = "ins2823146"
+table = "Table 3"
+columns = ["pT_GeV", "v2", "stat", "syst"]
+provenance = "MEASURED"
+
+[[source]]
+filename = "ALICE_OO_NeNe_flow_2509.06428.dat"
+description = "ALICE O-O and Ne-Ne flow comparison, arXiv:2509.06428"
+hepdata_id = "ins2808947"
+table = "Table 1"
+columns = ["pT_GeV", "v2_OO", "v2_NeNe", "ratio"]
+provenance = "MEASURED"
