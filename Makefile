@@ -111,6 +111,8 @@ FIG_ADV_PDFS := $(foreach f,$(FIG_ADVANCED),$(BUILD_DIR)/figures/$(f).pdf)
 # -----------------------------------------------------------------------------
 TEX_BODY    := $(BUILD_DIR)/body.tex
 DATA_STAMP  := $(DATA_DIR)/.generated
+QGP_STAMP   := $(DATA_DIR)/.generated
+COSMOLOGY_STAMP := $(DATA_DIR)/.generated-cosmology
 FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
 
 # =============================================================================
@@ -245,14 +247,14 @@ data-qgp:
 	echo "=== Tier 1 data generation not yet available (using legacy pipeline) ===" && \
 	$(MAKE) $(DATA_STAMP)
 
+# Cosmology stamp rule: hard dependency on generate.py
+$(COSMOLOGY_STAMP): $(SRC_DIR)/cosmology/generate.py
+	@mkdir -p $(DATA_DIR)/cosmology
+	$(PYTHON) $(SRC_DIR)/cosmology/generate.py --output-dir $(DATA_DIR)
+	@touch $@
+
 # Tier-specific data generation (Tier 2: Cosmology)
-data-cosmology:
-	@echo "=== Tier 2: Cosmology Data Generation ==="
-	@if [ -f $(SRC_DIR)/cosmology/generate.py ]; then \
-		$(PYTHON) $(SRC_DIR)/cosmology/generate.py --output-dir $(DATA_DIR); \
-	else \
-		echo "  [SKIP] Cosmology module not yet implemented"; \
-	fi
+data-cosmology: $(COSMOLOGY_STAMP)
 
 # Force GPU backend (requires NVIDIA CUDA and cupy)
 data-gpu: GPU_BACKEND = 1
@@ -283,14 +285,14 @@ $(BUILD_DIR) $(BUILD_DIR)/figures:
 lint-qgp:
 	@echo "=== Tier 1: QGP Physics Linting ==="
 	@$(PYTHON) -m mypy src/qgp/
-	@$(RUFF) check src/qgp/ tests/test_qgp* 2>&1 || true
+	@$(RUFF) check src/qgp/ tests/test_qgp/
 
 # Tier-specific linting (Tier 2: Cosmology)
 lint-cosmology:
 	@echo "=== Tier 2: Cosmology Linting ==="
 	@if [ -d src/cosmology ]; then \
 		$(PYTHON) -m mypy src/cosmology/; \
-		$(RUFF) check src/cosmology/ tests/test_cosmology* 2>&1 || true; \
+		$(RUFF) check src/cosmology/ tests/test_cosmology/; \
 	else \
 		echo "  [SKIP] Cosmology module not yet implemented"; \
 	fi
@@ -407,7 +409,7 @@ test-quick:
 # Validate physics module loads correctly
 test-physics:
 	@echo "=== Physics module validation ==="
-	@$(PYTHON) -c "import sys; sys.path.insert(0,'src'); from qgp_physics import *; print('  [OK] Physics module imported')"
+	@$(PYTHON) -c "import sys; sys.path.insert(0,'src'); from qgp.physics import woods_saxon, NUCLEI; print('  [OK] Physics module imported')"
 
 # Run only unit tests (no I/O, no data dependency)
 test-unit: test-quick
