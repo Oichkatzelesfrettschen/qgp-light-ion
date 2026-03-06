@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/dark_energy.py
+# hypothesis_version: 6.151.6
+
+[-1.0, 0.0, 1e-06, 0.001, 0.32, 0.5, 0.68, 1.0, 3.0, 5.0, 10.0, 25.0, 67.4, 149.3, 307.75, 2998.0, 1000000.0, 100, 'D_V_Mpc', 'DarkEnergyModel', 'H_z_kms', 'bao_measurement', 'comoving_distance', 'd_M_Mpc', 'distance_modulus', 'r_s_over_D_V', 'z_BAO']

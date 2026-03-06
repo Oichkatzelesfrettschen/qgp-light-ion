@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/qgp/phase_diagram/__init__.py
+# hypothesis_version: 6.151.6
+
+['cooling_trajectory', 'first_order_frg', 'first_order_line', 'first_order_njl', 'first_order_pqm']

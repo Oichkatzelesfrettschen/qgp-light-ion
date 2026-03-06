@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/reionization_fronts.py
+# hypothesis_version: 6.151.6
+
+[-0.75, 0.0, 1.673e-24, 1.381e-16, 5.9e-14, 1.269e-13, 1.602e-12, 0.0001, 0.1, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 7.7, 13.6, 100.0, 10000.0, 100000.0, 300000.0, 3.086e+21, 'StromgrenSphere', 'ly_alpha_profile']

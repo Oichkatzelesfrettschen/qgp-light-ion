@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/tools/fetch_experimental_data.py
+# hypothesis_version: 6.151.6
+
+[1.0, 400, 404, 4096, '\nDone!', '#\n', '# ', '# Columns: ', '*.dat', ', ', '--dry-run', '--update', '--verify-only', '=', 'CHECKSUMS.sha256', 'FETCH_MANIFEST.toml', '__main__', 'columns', 'doi', 'experimental', 'filename', 'hepdata_id', 'rb', 'source', 'store_true', 'table', 'unreachable', 'utf-8', 'values', 'w']

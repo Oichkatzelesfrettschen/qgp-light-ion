@@ -22,6 +22,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import trapezoid
 
+from shared.mcmc import credible_interval
+
 __all__ = [
     "QhatPosterior",
     "compute_likelihood",
@@ -256,6 +258,8 @@ def get_credible_interval(
     """
     Compute credible interval from posterior samples.
 
+    Delegates to shared.mcmc.credible_interval for implementation consistency.
+
     Parameters
     ----------
     samples : NDArray
@@ -268,7 +272,5 @@ def get_credible_interval(
     tuple[float, float]
         (lower, upper) bounds.
     """
-    alpha = (1 - confidence) / 2
-    return float(np.percentile(samples, alpha * 100)), float(
-        np.percentile(samples, (1 - alpha) * 100)
-    )
+    samples_f64 = np.asarray(samples, dtype=np.float64)
+    return credible_interval(samples_f64, level=confidence)

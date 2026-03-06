@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/qgp/__init__.py
+# hypothesis_version: 6.151.6
+
+['KAPPA2', 'KAPPA2_ERR', 'KAPPA4', 'Nucleus', 'T_C0_MEV', 'T_C0_MEV_ERR', 'bao_measurement', 'bdmps_energy_loss', 'comoving_distance', 'constants', 'distance_modulus', 'ensure_dir', 'first_order_frg', 'first_order_line', 'first_order_njl', 'first_order_pqm', 'load_dat', 'raa_model', 'save_2d_grid', 'save_curve', 'save_curve_multi', 'save_dat', 'woods_saxon']

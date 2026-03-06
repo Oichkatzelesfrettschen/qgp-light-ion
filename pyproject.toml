@@ -248,6 +248,8 @@ module = [
     "numpy.*",
     "scipy.*",
     "matplotlib.*",
+    "tomllib",  # Python 3.11+ stdlib, backport is tomli
+    "tomli",    # tomllib backport for Python 3.10
 ]
 ignore_missing_imports = true
 

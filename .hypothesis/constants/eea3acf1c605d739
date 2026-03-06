@@ -1,0 +1,4 @@
+# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/../shared/mcmc.py
+# hypothesis_version: 6.151.6
+
+[0.001, 0.68, 1.0, 2.0]

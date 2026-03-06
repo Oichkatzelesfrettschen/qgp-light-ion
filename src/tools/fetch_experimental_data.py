@@ -22,7 +22,7 @@ from typing import Any
 try:
     import tomllib
 except ImportError:
-    import tomli as tomllib  # type: ignore
+    import tomli as tomllib
 
 
 HEPDATA_BASE = "https://www.hepdata.net/download/table"
@@ -59,8 +59,9 @@ def fetch_hepdata_table(
         try:
             url = f"{HEPDATA_BASE}/{hepdata_id}/{table}/json"
             with urllib.request.urlopen(url, timeout=30) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data.get("values", [])
+                data: dict[str, Any] = json.loads(resp.read().decode("utf-8"))
+                values = data.get("values", [])
+                return list(values) if values else []
         except urllib.error.HTTPError as exc:
             if exc.code in (400, 404):
                 raise  # Non-retriable errors
@@ -70,7 +71,7 @@ def fetch_hepdata_table(
         except (urllib.error.URLError, TimeoutError):
             if attempt == max_retries:
                 raise
-            print(f"  WARNING: Connection error, retrying...", file=sys.stderr)
+            print("  WARNING: Connection error, retrying...", file=sys.stderr)
 
         # Exponential backoff with jitter: sleep in [0, base * 2^attempt]
         delay = _rng.uniform(0, base_delay_s * (2 ** attempt))
@@ -114,7 +115,7 @@ def write_dat_file(
         f.write("# " + "=" * 77 + "\n")
         f.write(f"#  {source['description']}\n")
         f.write("# " + "=" * 77 + "\n")
-        f.write(f"#\n")
+        f.write("#\n")
         f.write(f"# DATA TYPE: {source['provenance']}\n")
         if "doi" in source:
             f.write(f"# DOI: {source['doi']}\n")

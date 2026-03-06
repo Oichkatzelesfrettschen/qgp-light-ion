@@ -17,18 +17,16 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from hypothesis import given, strategies as st
-from numpy.typing import NDArray
+from hypothesis import given
+from hypothesis import strategies as st
 
 # Ensure src/ is on the path
 SRC_DIR = Path(__file__).parent.parent.parent / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from qgp.constants import T_C0_MEV
-from qgp.physics import NUCLEI, bdmps_energy_loss, raa_model, woods_saxon
 from cosmology.reionization_fronts import ionized_fraction_evolution
-
+from qgp.physics import NUCLEI, bdmps_energy_loss, raa_model, woods_saxon
 
 # =============================================================================
 # Tier 1: QGP Physics Properties

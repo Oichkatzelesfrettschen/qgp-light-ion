@@ -34,13 +34,25 @@ from .reionization_bubble import (
     bubble_growth_rate,
     overlap_probability,
 )
+from .reionization_fronts import (
+    StromgrenSphere,
+    ionization_front_expansion,
+    ionized_fraction_evolution,
+    ly_alpha_profile,
+    neutral_column_density,
+)
 
 __all__ = [
     "DarkEnergyModel",
     "ReionizationBubble",
+    "StromgrenSphere",
     "bao_measurement",
     "bubble_growth_rate",
     "comoving_distance",
     "distance_modulus",
+    "ionization_front_expansion",
+    "ionized_fraction_evolution",
+    "ly_alpha_profile",
+    "neutral_column_density",
     "overlap_probability",
 ]

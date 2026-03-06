@@ -1,12 +1,11 @@
-"""
-Shared Utilities Module
+"""Shared utilities for QGP and Cosmology tiers."""
 
-Common utilities and helper functions used by multiple tiers:
-- Mathematical functions (interpolation, MCMC helpers)
-- Visualization utilities
-- Common I/O patterns
+from .interpolation import log_interp1d, monotone_cubic_spline
+from .mcmc import credible_interval, run_emcee_sampler
 
-Not yet implemented (phases 15-17).
-"""
-
-__all__ = []
+__all__ = [
+    "credible_interval",
+    "log_interp1d",
+    "monotone_cubic_spline",
+    "run_emcee_sampler",
+]
