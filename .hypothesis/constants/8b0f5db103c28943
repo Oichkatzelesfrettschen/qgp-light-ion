@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/qgp/physics.py
-# hypothesis_version: 6.151.6
-
-[0.0, 1e-10, 0.02, 0.04, 0.05, 0.08, 0.1, 0.12, 0.22, 0.235, 0.25, 0.3, 0.31, 0.38, 0.4, 0.5, 0.6, 0.65, 0.8, 0.82, 0.9, 1.0, 1.1, 1.2, 1.5, 1.8, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 100, 135, 160, 170, 236, 383, 1200, 1940, 10000, '# ', '%s', '=', 'A_perp', 'Ar', 'Argon-40', 'Lead', 'Lead-208', 'N_coll', 'N_part', 'Ne', 'NeNe', 'Neon', 'Neon-20', 'O', 'O-16', 'OO', 'Oxygen', 'Oxygen-16', 'Pb', 'Pb-208', 'PbPb', 'Psi_2', 'R_AA', 'T_critical', 'T_crossover', 'T_first_order', 'Xe', 'XeXe', 'Xenon', 'Xenon-129', '__main__', 'b', 'centrality', 'dET_dy', 'dNch_deta', 'divide by zero', 'edge', 'enhancement_K', 'enhancement_Lambda', 'enhancement_Omega', 'enhancement_Xi', 'epsilon_Bj', 'err', 'high_pT_recovery', 'ignore', 'invalid value', 'mu_B_critical', 'mu_B_crossover', 'mu_B_first_order', 'pPb', 'pT', 'pT_peak', 'pp', 'suppression_max', 'v2', 'v3', 'v4', 'w', 'width']

@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/qgp/io_utils.py
-# hypothesis_version: 6.151.6
-
-['#', '# ', '# COLUMNS: x y z\n', '# x y z\n', '%.6e', '%.6f', '%.8e', '=', 'GENERATOR:', 'MODEL INPUTS:', 'MODEL:', 'NOTES:', 'REFERENCES:', 'w', 'x y', 'x y err']

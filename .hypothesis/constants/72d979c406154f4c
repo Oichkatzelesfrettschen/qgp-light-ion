@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/../gpu/__init__.py
-# hypothesis_version: 6.151.6
-
-[0.3, 0.9, 4.0, 'GPU_AVAILABLE', 'as_numpy', 'cpu', 'energy_loss_grid_gpu', 'get', 'get_backend', 'gpu', 'nvidia-smi']

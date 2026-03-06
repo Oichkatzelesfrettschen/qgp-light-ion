@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/../qgp/jet_quenching_bayesian.py
-# hypothesis_version: 6.151.6
-
-[-2.0, -0.5, 0.2, 0.5, 0.68, 1.0, 2.0, 8.0, 10000, 'QhatPosterior', 'compute_likelihood', 'gaussian', 'log_uniform', 'mean', 'median', 'mode', 'pt', 'raa_data', 'raa_err']

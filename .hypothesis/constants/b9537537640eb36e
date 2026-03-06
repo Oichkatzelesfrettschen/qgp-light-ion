@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/../shared/__init__.py
-# hypothesis_version: 6.151.6
-
-['credible_interval', 'log_interp1d', 'run_emcee_sampler']

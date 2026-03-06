@@ -72,3 +72,10 @@ env/
 
 # Pytest cache
 .pytest_cache/
+
+# Hypothesis cache (property-based testing examples)
+.hypothesis/
+
+# Coverage reports
+.coverage
+htmlcov/

@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/../qgp/strangeness_suppression.py
-# hypothesis_version: 6.151.6
-
-[0.001, 0.05, 0.1, 1.0, 1.5, 2.0, 3.0, 50.0, 156.5, 'CanonicalEnsemble', 'ij', 'kaon', 'lambda', 'xi']

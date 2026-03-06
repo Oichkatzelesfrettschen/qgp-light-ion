@@ -1,4 +1,0 @@
-# file: /home/eirikr/Github/qgp-light-ion/src/cosmology/reionization_bubble.py
-# hypothesis_version: 6.151.6
-
-[0.0, 0.01, 0.15, 0.35, 0.5, 0.6, 0.99, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 20.0, 67.4, 100.0, 30000.0, 3.086e+17, -100, 100, 'ReionizationBubble', 'bubble_growth_rate', 'ij', 'overlap_probability']
