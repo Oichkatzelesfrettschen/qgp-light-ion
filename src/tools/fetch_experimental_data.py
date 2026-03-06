@@ -61,7 +61,16 @@ def fetch_hepdata_table(
             with urllib.request.urlopen(url, timeout=30) as resp:
                 data: dict[str, Any] = json.loads(resp.read().decode("utf-8"))
                 values = data.get("values", [])
-                return list(values) if values else []
+                # Security: Validate response type (prevent type confusion attacks)
+                if not isinstance(values, list):
+                    raise ValueError(
+                        f"HEPData response 'values' field must be list, got {type(values).__name__}"
+                    )
+                if values and not isinstance(values[0], dict):
+                    raise ValueError(
+                        f"HEPData response rows must be dicts, got {type(values[0]).__name__}"
+                    )
+                return values
         except urllib.error.HTTPError as exc:
             if exc.code in (400, 404):
                 raise  # Non-retriable errors
@@ -235,6 +244,14 @@ def main(argv: list[str] | None = None) -> None:
 
             if not args.dry_run:
                 output_path = DATA_DIR / filename
+                # Security: Validate path is within DATA_DIR (prevent ../../../ traversal)
+                try:
+                    output_path.resolve().relative_to(DATA_DIR.resolve())
+                except ValueError as exc:
+                    raise ValueError(
+                        f"Path traversal detected in filename: {filename} "
+                        f"(resolved to {output_path.resolve()}, outside {DATA_DIR.resolve()})"
+                    ) from exc
                 write_dat_file(output_path, source, rows)
                 print(f"  Wrote {output_path}")
         except Exception as e:

@@ -243,7 +243,7 @@ GPU_BACKEND ?= $(GPU_AVAILABLE)
 # Tier-specific data generation (Tier 1: QGP physics)
 data-qgp:
 	@echo "=== Tier 1: QGP Physics Data Generation (GPU=$(GPU_BACKEND)) ==="
-	@$(PYTHON) -c "import os; os.environ['GPU_BACKEND'] = '$(GPU_BACKEND)'" && \
+	@$(PYTHON) $(SRC_DIR)/bin/set_gpu_backend.py $(GPU_BACKEND) && \
 	$(PYTHON) $(SRC_DIR)/qgp/generate.py --output-dir $(DATA_DIR) || \
 	echo "=== Tier 1 data generation not yet available (using legacy pipeline) ===" && \
 	$(MAKE) $(DATA_STAMP)
