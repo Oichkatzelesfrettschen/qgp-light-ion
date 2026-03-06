@@ -33,7 +33,26 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Extended scientific computing (not required for core data generation)
+# Tier 1: QGP microphysics (core dependencies, usually already in `dependencies`)
+qgp = [
+    "numpy>=1.24,<3.0",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+]
+
+# Tier 2: Cosmology extensions (Bayesian inference, visualization)
+cosmology = [
+    "emcee>=3.1",               # MCMC sampling for posteriors
+    "corner>=2.2",              # Corner plots for posterior visualization
+]
+
+# Tier 3: GPU acceleration (optional, requires NVIDIA CUDA toolkit)
+gpu = [
+    "cupy>=12.0",               # CuPy for GPU array operations
+    "pycuda>=2022.2",           # Direct CUDA kernel programming (optional)
+]
+
+# Extended scientific computing (legacy, for backwards compatibility)
 extras = [
     "numba>=0.58",
     "scikit-learn>=1.3",
@@ -46,7 +65,7 @@ extras = [
     "plotly>=5.15",
 ]
 
-# Development tools
+# Development tools (for all tiers)
 dev = [
     "ruff>=0.8",
     "mypy>=1.8",
@@ -70,7 +89,6 @@ notebook = [
 ]
 
 # macOS-specific optimizations (Apple Silicon / Accelerate framework)
-# These use Apple's native BLAS/LAPACK and ML frameworks
 macos = [
     "pyobjc-framework-Accelerate>=10.0; sys_platform == 'darwin'",
     "pyobjc-framework-Metal>=10.0; sys_platform == 'darwin'",
@@ -93,9 +111,9 @@ hep = [
     "hepunits>=2.3",            # HEP unit conversions
 ]
 
-# Full installation with all optional dependencies
+# Full installation with all optional dependencies and all tiers
 all = [
-    "qgp-light-ion[extras,dev,docs,notebook,macos,hep]",
+    "qgp-light-ion[qgp,cosmology,gpu,extras,dev,docs,notebook,macos,hep]",
 ]
 
 [project.urls]
@@ -226,6 +244,22 @@ module = [
     "numpy.*",
     "scipy.*",
     "matplotlib.*",
+]
+ignore_missing_imports = true
+
+# Tier 2: Cosmology packages (may not be installed)
+[[tool.mypy.overrides]]
+module = [
+    "emcee.*",
+    "corner.*",
+]
+ignore_missing_imports = true
+
+# Tier 3: GPU packages (may not be installed, requires NVIDIA CUDA)
+[[tool.mypy.overrides]]
+module = [
+    "cupy.*",
+    "pycuda.*",
 ]
 ignore_missing_imports = true
 

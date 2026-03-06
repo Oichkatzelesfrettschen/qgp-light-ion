@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid valu
 
 # Add src to path for qgp_physics module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from constants import (
+from .constants import (
     ALPHA_S,
     ETA_OVER_S,
     QHAT_PBPB,
@@ -45,7 +45,7 @@ from constants import (
     T_KIN_GEV,
     TAU_0,
 )
-from io_utils import ensure_dir, save_2d_grid
+from .io_utils import ensure_dir, save_2d_grid
 
 # =============================================================================
 # CONSTANTS AND PARAMETERS (from constants.py, single source of truth)

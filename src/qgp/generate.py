@@ -25,9 +25,9 @@ import numpy as np
 # Add src to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from constants import KAPPA2, T_C0_MEV
-from io_utils import ensure_dir, save_2d_grid, save_dat
-from qgp_physics import (
+from .constants import KAPPA2, T_C0_MEV
+from .io_utils import ensure_dir, save_2d_grid, save_dat
+from .physics import (
     NUCLEI,
     azimuthal_distribution,
     calculate_eccentricities,

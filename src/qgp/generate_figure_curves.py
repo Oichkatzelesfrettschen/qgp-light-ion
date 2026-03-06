@@ -20,8 +20,8 @@ import numpy as np
 
 # Ensure src/ is importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from constants import KAPPA2, T_C0_MEV
-from io_utils import (
+from .constants import KAPPA2, T_C0_MEV
+from .io_utils import (
     ensure_dir,
     save_curve,
     save_curve_multi,

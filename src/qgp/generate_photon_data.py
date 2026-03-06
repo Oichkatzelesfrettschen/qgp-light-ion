@@ -37,7 +37,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from io_utils import ensure_dir, save_dat
+from .io_utils import ensure_dir, save_dat
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "photons")
 

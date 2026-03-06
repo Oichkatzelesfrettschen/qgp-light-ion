@@ -16,7 +16,7 @@ import os
 import numpy as np
 import pytest
 
-from io_utils import (
+from qgp.io_utils import (
     ensure_dir,
     load_dat,
     make_provenance_header,

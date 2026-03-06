@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 
 # conftest.py sets up sys.path; import directly.
-from constants import (
+from qgp.constants import (
     ALPHA_S,
     ETA_OVER_S,
     FLOW_KAPPA,

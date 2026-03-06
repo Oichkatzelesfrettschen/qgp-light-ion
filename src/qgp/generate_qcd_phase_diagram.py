@@ -35,39 +35,39 @@ import numpy as np
 
 # Ensure src/ is importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from io_utils import (
+from .io_utils import (
     ensure_dir,
     save_curve,
     save_curve_multi,
     save_points_with_errors,
 )
-from phase_diagram.critical_point import (
+from .phase_diagram.critical_point import (
     critical_point_ellipse_excluded,
     critical_point_exclusion_boundary,
     critical_point_exclusion_region,
     critical_point_frg_box,
     critical_point_frg_ellipse,
 )
-from phase_diagram.crossover import crossover_temperature, crossover_uncertainty_band
-from phase_diagram.first_order import (
+from .phase_diagram.crossover import crossover_temperature, crossover_uncertainty_band
+from .phase_diagram.first_order import (
     first_order_consensus_band,
     first_order_frg,
     first_order_line,
     first_order_njl,
     first_order_pqm,
 )
-from phase_diagram.freeze_out import (
+from .phase_diagram.freeze_out import (
     freeze_out_parametrization,
     freeze_out_uncertainty_band,
 )
-from phase_diagram.params import (
+from .phase_diagram.params import (
     COLLISION_SYSTEMS,
     FREEZE_OUT_DATA,
     FUTURE_FACILITIES,
     ISENTROPE_VALUES,
     PhaseTransitionParams,
 )
-from phase_diagram.trajectories import (
+from .phase_diagram.trajectories import (
     color_superconductivity_region,
     cooling_trajectory,
     early_universe_trajectory,

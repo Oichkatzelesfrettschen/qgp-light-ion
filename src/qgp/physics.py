@@ -26,7 +26,7 @@ from scipy.special import iv as bessel_i  # Modified Bessel function I_n(x)
 if TYPE_CHECKING:
     pass
 
-from constants import (
+from .constants import (
     ALPHA_S,
     AR40_A,
     AR40_ATOMIC_NUMBER,

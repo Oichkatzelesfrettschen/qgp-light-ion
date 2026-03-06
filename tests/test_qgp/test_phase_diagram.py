@@ -15,8 +15,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from constants import KAPPA2, KAPPA2_ERR, KAPPA4, T_C0_MEV, T_C0_MEV_ERR
-from phase_diagram.critical_point import (
+from qgp.constants import KAPPA2, KAPPA2_ERR, KAPPA4, T_C0_MEV, T_C0_MEV_ERR
+from qgp.phase_diagram.critical_point import (
     critical_point_box_excluded,
     critical_point_ellipse_excluded,
     critical_point_exclusion_boundary,
@@ -24,21 +24,21 @@ from phase_diagram.critical_point import (
     critical_point_frg_box,
     critical_point_frg_ellipse,
 )
-from phase_diagram.crossover import crossover_temperature, crossover_uncertainty_band
-from phase_diagram.first_order import (
+from qgp.phase_diagram.crossover import crossover_temperature, crossover_uncertainty_band
+from qgp.phase_diagram.first_order import (
     first_order_consensus_band,
     first_order_frg,
     first_order_line,
     first_order_njl,
     first_order_pqm,
 )
-from phase_diagram.freeze_out import (
+from qgp.phase_diagram.freeze_out import (
     freeze_out_from_sqrt_s,
     freeze_out_parametrization,
     freeze_out_uncertainty_band,
 )
-from phase_diagram.params import PhaseTransitionParams
-from phase_diagram.trajectories import (
+from qgp.phase_diagram.params import PhaseTransitionParams
+from qgp.phase_diagram.trajectories import (
     color_superconductivity_region,
     cooling_trajectory,
     early_universe_trajectory,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from constants import KAPPA2, KAPPA2_ERR, KAPPA4, T_C0_MEV, T_C0_MEV_ERR
+from ..constants import KAPPA2, KAPPA2_ERR, KAPPA4, T_C0_MEV, T_C0_MEV_ERR
 
 
 @dataclass

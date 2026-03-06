@@ -19,10 +19,10 @@ import math
 import numpy as np
 import pytest
 
-from constants import KAPPA2, T_C0_GEV
+from qgp.constants import KAPPA2, T_C0_GEV
 
 # conftest.py inserts src/ into sys.path.
-from qgp_physics import (
+from qgp.physics import (
     NUCLEI,
     azimuthal_distribution,
     bdmps_energy_loss,

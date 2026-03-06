@@ -69,15 +69,18 @@ CONTENT_MD  := QGP_Light_Ion.md
 BIB_FILE    := references.bib
 COLORS_TEX  := $(FIG_DIR)/accessible_colors.tex
 
-# Data generation scripts
-DATA_SCRIPT       := $(SRC_DIR)/generate_comprehensive_data.py
-ENERGY_SCRIPT     := $(SRC_DIR)/generate_energy_density.py
-MULTIDIM_SCRIPT   := $(SRC_DIR)/generate_multidimensional_data.py
-HBT_SCRIPT        := $(SRC_DIR)/generate_hbt_data.py
-PHOTON_SCRIPT     := $(SRC_DIR)/generate_photon_data.py
-QCD_PHASE_SCRIPT  := $(SRC_DIR)/generate_qcd_phase_diagram.py
-CURVES_SCRIPT     := $(SRC_DIR)/generate_figure_curves.py
-PHYSICS_MOD       := $(SRC_DIR)/qgp_physics.py
+# Data generation scripts (Tier 1: QGP)
+DATA_SCRIPT       := $(SRC_DIR)/qgp/generate.py
+ENERGY_SCRIPT     := $(SRC_DIR)/qgp/generate_energy_density.py
+MULTIDIM_SCRIPT   := $(SRC_DIR)/qgp/generate_multidimensional_data.py
+HBT_SCRIPT        := $(SRC_DIR)/qgp/generate_hbt_data.py
+PHOTON_SCRIPT     := $(SRC_DIR)/qgp/generate_photon_data.py
+QCD_PHASE_SCRIPT  := $(SRC_DIR)/qgp/generate_qcd_phase_diagram.py
+CURVES_SCRIPT     := $(SRC_DIR)/qgp/generate_figure_curves.py
+PHYSICS_MOD       := $(SRC_DIR)/qgp/physics.py
+
+# Data generation scripts (Tier 2: Cosmology) - optional, not yet implemented
+COSMOLOGY_SCRIPT  := $(SRC_DIR)/cosmology/generate.py
 
 # Figure sources - organized by category
 # Original figures (10)
@@ -114,10 +117,11 @@ FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
 # Targets
 # =============================================================================
 
-.PHONY: all clean figures data data-only test lint help advanced strict \
+.PHONY: all clean figures data data-only data-qgp data-cosmology data-gpu data-cpu \
+        test lint help advanced strict \
         lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-mypy lint-build \
-        fmt test-quick test-physics test-unit verify-data distclean \
-        generate-checksums verify-checksums validate-physics coverage
+        fmt test-quick test-physics test-unit test-qgp test-cosmology test-gpu verify-data distclean \
+        generate-checksums verify-checksums validate-physics coverage lint-qgp lint-cosmology
 
 # Default: build everything
 all: $(FINAL_PDF)
@@ -222,6 +226,46 @@ data:
 data-only: $(DATA_STAMP)
 	@echo "Data generated (no figures compiled)"
 
+# =============================================================================
+# GPU Detection and Tier-Aware Data Generation
+# =============================================================================
+
+# Detect GPU availability (NVIDIA CUDA)
+GPU_AVAILABLE := $(shell $(PYTHON) -c "import subprocess; ret = subprocess.call(['which', 'nvidia-smi'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); print('1' if ret == 0 else '0')")
+
+# GPU_BACKEND control: use GPU if available, unless explicitly disabled
+# Set GPU_BACKEND=0 to force CPU, or GPU_BACKEND=1 to force GPU
+GPU_BACKEND ?= $(GPU_AVAILABLE)
+
+# Tier-specific data generation (Tier 1: QGP physics)
+data-qgp:
+	@echo "=== Tier 1: QGP Physics Data Generation (GPU=$(GPU_BACKEND)) ==="
+	@$(PYTHON) -c "import os; os.environ['GPU_BACKEND'] = '$(GPU_BACKEND)'" && \
+	$(PYTHON) $(SRC_DIR)/qgp/generate.py --output-dir $(DATA_DIR) || \
+	echo "=== Tier 1 data generation not yet available (using legacy pipeline) ===" && \
+	$(MAKE) $(DATA_STAMP)
+
+# Tier-specific data generation (Tier 2: Cosmology)
+data-cosmology:
+	@echo "=== Tier 2: Cosmology Data Generation ==="
+	@if [ -f $(SRC_DIR)/cosmology/generate.py ]; then \
+		$(PYTHON) $(SRC_DIR)/cosmology/generate.py --output-dir $(DATA_DIR); \
+	else \
+		echo "  [SKIP] Cosmology module not yet implemented"; \
+	fi
+
+# Force GPU backend (requires NVIDIA CUDA and cupy)
+data-gpu: GPU_BACKEND = 1
+data-gpu: data
+	@if [ "$(GPU_AVAILABLE)" = "0" ]; then \
+		echo "WARNING: GPU requested but nvidia-smi not found"; \
+	fi
+
+# Force CPU backend (fallback)
+data-cpu: GPU_BACKEND = 0
+data-cpu: data
+	@echo "Data generation completed (CPU backend)"
+
 # -----------------------------------------------------------------------------
 # Directory Creation
 # -----------------------------------------------------------------------------
@@ -234,6 +278,22 @@ $(BUILD_DIR) $(BUILD_DIR)/figures:
 # -----------------------------------------------------------------------------
 # Quality Assurance - Linting
 # -----------------------------------------------------------------------------
+
+# Tier-specific linting (Tier 1: QGP)
+lint-qgp:
+	@echo "=== Tier 1: QGP Physics Linting ==="
+	@$(PYTHON) -m mypy src/qgp/
+	@$(RUFF) check src/qgp/ tests/test_qgp* 2>&1 || true
+
+# Tier-specific linting (Tier 2: Cosmology)
+lint-cosmology:
+	@echo "=== Tier 2: Cosmology Linting ==="
+	@if [ -d src/cosmology ]; then \
+		$(PYTHON) -m mypy src/cosmology/; \
+		$(RUFF) check src/cosmology/ tests/test_cosmology* 2>&1 || true; \
+	else \
+		echo "  [SKIP] Cosmology module not yet implemented"; \
+	fi
 
 # Combined lint target: runs all linters
 lint: lint-latex lint-python lint-mypy
@@ -342,7 +402,7 @@ test: $(DATA_STAMP)
 # Quick unit tests without data regeneration (no make data dependency)
 test-quick:
 	@echo "=== Running unit tests (no data regen) ==="
-	@$(PYTHON) -m pytest tests/test_qgp_physics.py tests/test_constants.py -v --tb=short
+	@$(PYTHON) -m pytest tests/test_qgp/test_qgp_physics.py tests/test_qgp/test_constants.py -v --tb=short
 
 # Validate physics module loads correctly
 test-physics:
@@ -351,6 +411,33 @@ test-physics:
 
 # Run only unit tests (no I/O, no data dependency)
 test-unit: test-quick
+
+# Tier-specific tests (Tier 1: QGP physics)
+test-qgp: $(DATA_STAMP)
+	@echo "=== Tier 1: QGP Physics Tests ==="
+	@if [ -d tests/test_qgp ]; then \
+		$(PYTHON) -m pytest tests/test_qgp/ -v --tb=short; \
+	else \
+		$(PYTHON) -m pytest tests/test_qgp_physics.py tests/test_constants.py tests/test_phase_diagram.py tests/test_io_utils.py -v --tb=short; \
+	fi
+
+# Tier-specific tests (Tier 2: Cosmology)
+test-cosmology: $(DATA_STAMP)
+	@echo "=== Tier 2: Cosmology Tests ==="
+	@if [ -d tests/test_cosmology ]; then \
+		$(PYTHON) -m pytest tests/test_cosmology/ -v --tb=short; \
+	else \
+		echo "  [SKIP] Cosmology tests not yet available"; \
+	fi
+
+# GPU backend tests
+test-gpu:
+	@echo "=== Tier 3: GPU Backend Tests ==="
+	@if [ -d tests/test_gpu ]; then \
+		$(PYTHON) -m pytest tests/test_gpu/ -v --tb=short; \
+	else \
+		echo "  [SKIP] GPU tests not yet available"; \
+	fi
 
 # Test coverage report
 coverage:
