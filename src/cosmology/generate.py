@@ -22,16 +22,13 @@ import numpy as np
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-from qgp.io_utils import ensure_dir, make_provenance_header, save_dat
-from cosmology.dark_energy import DarkEnergyModel, bao_measurement, comoving_distance, distance_modulus
-from cosmology.reionization_bubble import ReionizationBubble, bubble_growth_rate, overlap_probability
+from cosmology.dark_energy import comoving_distance, distance_modulus
+from cosmology.reionization_bubble import overlap_probability
 from cosmology.reionization_fronts import (
-    StromgrenSphere,
-    ionization_front_expansion,
     ionized_fraction_evolution,
     ly_alpha_profile,
-    neutral_column_density,
 )
+from qgp.io_utils import ensure_dir, save_dat
 
 # =============================================================================
 # 1. DARK ENERGY
@@ -56,7 +53,7 @@ def generate_dark_energy_data(output_dir: str) -> None:
         "observable": "Hubble distance vs Omega_m (dark energy parameter sweep)",
         "classification": "SCHEMATIC",
         "model_description": "Friedmann-Lemaitre-Robertson-Walker metric, flat universe assumption",
-        "model_inputs": {"w0": -1.0, "wa": 0.0, "Omega_Lambda": f"1 - Omega_m"},
+        "model_inputs": {"w0": -1.0, "wa": 0.0, "Omega_Lambda": "1 - Omega_m"},
         "references": ["Perlmutter et al., ApJ 517 (1999) 565"],
         "notes": "Illustrative sweep at w0=-1 (LCDM)",
     }
@@ -100,11 +97,6 @@ def generate_reionization_bubble_data(output_dir: str) -> None:
     # Bubble radii for different redshifts
     z_vals = np.linspace(6.0, 20.0, 20)
     bubble_size_cMpc = np.linspace(0.1, 5.0, 20)  # comoving Mpc
-
-    # Compute bubble growth rates at different redshifts
-    z_array = np.array([z_vals[0]])
-    bubble_array = np.array([bubble_size_cMpc[0]])
-    growth_rates = bubble_growth_rate(z_array, bubble_array)
 
     R_s_cMpc = bubble_size_cMpc
     R_ion_cMpc = bubble_size_cMpc * (1.0 + np.linspace(0, 0.5, len(bubble_size_cMpc)))

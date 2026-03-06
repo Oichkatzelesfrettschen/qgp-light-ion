@@ -63,6 +63,7 @@ extras = [
     "pint>=0.22",
     "seaborn>=0.12",
     "plotly>=5.15",
+    "pyarrow>=13.0",
 ]
 
 # Development tools (for all tiers)
@@ -72,6 +73,8 @@ dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "pre-commit>=3.5",
+    "hypothesis[numpy]>=6.100",
+    "tomli>=2.0; python_version < '3.11'",
 ]
 
 # Documentation
@@ -205,14 +208,15 @@ ignore = [
 
 # Per-file ignores
 [tool.ruff.lint.per-file-ignores]
-# Tests can have assertions and unused variables
-"tests/*.py" = ["S101", "F841"]
+# Tests can have assertions and unused variables (all test subdirs)
+"tests/**/*.py" = ["S101", "F841"]
 # Main scripts can be executable
-"src/generate_*.py" = ["T201"]  # Allow print in generators
-"src/compare_*.py" = ["T201"]   # Allow print in comparison scripts
+"src/qgp/generate*.py" = ["T201"]  # Allow print in generators
+"src/cosmology/generate*.py" = ["T201"]  # Allow print in generators
+"src/compare_model_vs_experiment.py" = ["T201"]  # Allow print in comparison scripts
 
 [tool.ruff.lint.isort]
-known-first-party = ["qgp_physics"]
+known-first-party = ["qgp", "cosmology", "gpu", "shared"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -295,6 +299,8 @@ addopts = "-v --tb=short --strict-markers"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks integration tests",
+    "fuzz: property-based tests using hypothesis (deselect with '-m \"not fuzz\"')",
+    "data: tests requiring generated data files (deselect with '-m \"not data\"')",
 ]
 
 # =============================================================================
