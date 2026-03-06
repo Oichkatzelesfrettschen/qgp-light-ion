@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from phase_diagram.params import PhaseTransitionParams
+from .params import PhaseTransitionParams
 
 
 def critical_point_exclusion_region(n_points: int = 100) -> tuple[np.ndarray, np.ndarray]:

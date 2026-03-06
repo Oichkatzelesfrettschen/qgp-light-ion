@@ -23,7 +23,7 @@ def make_provenance_header(
     observable: str,
     classification: str,
     model_description: str,
-    model_inputs: dict | None = None,
+    model_inputs: dict[str, Any] | None = None,
     references: list[str] | None = None,
     notes: str | list[str] | None = None,
 ) -> str:
@@ -89,7 +89,7 @@ def save_dat(
     filename: str,
     data_dict: dict[str, Any],
     header: str = "",
-    provenance: dict | None = None,
+    provenance: dict[str, Any] | None = None,
 ) -> None:
     """Save columnar data to a .dat file for pgfplots.
 
@@ -115,9 +115,8 @@ def save_dat(
             f.write("# " + " ".join(keys) + "\n")
         else:
             f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row = [f"{arr[i]:.8e}" for arr in arrays]
-            f.write(" ".join(row) + "\n")
+        data = np.column_stack(arrays)
+        np.savetxt(f, data, fmt="%.8e")
 
 
 def save_2d_grid(
@@ -126,7 +125,7 @@ def save_2d_grid(
     Y: np.ndarray,
     Z: np.ndarray,
     header: str = "",
-    provenance: dict | None = None,
+    provenance: dict[str, Any] | None = None,
 ) -> None:
     """Save 2D grid data for pgfplots surf/contour plots.
 
@@ -150,8 +149,8 @@ def save_2d_grid(
         else:
             f.write("# x y z\n")
         for i in range(X.shape[0]):
-            for j in range(X.shape[1]):
-                f.write(f"{X[i, j]:.6e} {Y[i, j]:.6e} {Z[i, j]:.6e}\n")
+            block = np.column_stack([X[i, :], Y[i, :], Z[i, :]])
+            np.savetxt(f, block, fmt="%.6e")
             f.write("\n")  # pgfplots requires blank line between row-blocks
 
 
@@ -179,8 +178,8 @@ def save_curve(
             for comment in comments:
                 f.write(f"# {comment}\n")
         f.write(f"# {header}\n")
-        for xi, yi in zip(x, y):
-            f.write(f"{xi:.6f} {yi:.6f}\n")
+        data = np.column_stack([x, y])
+        np.savetxt(f, data, fmt="%.6f")
     print(f"  {os.path.basename(filepath)}: {len(x)} points")
 
 
@@ -208,9 +207,8 @@ def save_curve_multi(
             for comment in comments:
                 f.write(f"# {comment}\n")
         f.write(f"# {header}\n")
-        for i, xi in enumerate(x):
-            row = f"{xi:.6f}" + "".join(f" {col[i]:.6f}" for col in columns)
-            f.write(row + "\n")
+        data = np.column_stack([x, *columns])
+        np.savetxt(f, data, fmt="%.6f")
     print(f"  {os.path.basename(filepath)}: {len(x)} points x {len(columns) + 1} columns")
 
 
@@ -234,8 +232,8 @@ def save_curve_with_errors(
     filepath = os.path.join(output_dir, filename) if output_dir else filename
     with open(filepath, "w") as f:
         f.write(f"# {header}\n")
-        for xi, yi, ei in zip(x, y, err):
-            f.write(f"{xi:.6f} {yi:.6f} {ei:.6f}\n")
+        data = np.column_stack([x, y, err])
+        np.savetxt(f, data, fmt="%.6f")
     print(f"  {os.path.basename(filepath)}: {len(x)} points with errors")
 
 

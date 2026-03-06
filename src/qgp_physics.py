@@ -28,15 +28,37 @@ if TYPE_CHECKING:
 
 from constants import (
     ALPHA_S,
+    AR40_A,
+    AR40_ATOMIC_NUMBER,
+    AR40_MASS_NUMBER,
+    AR40_R0,
     EPSILON_C,  # noqa: F401 (re-exported)
     ETA_OVER_S,
     FLOW_KAPPA,
     FM_TO_GEV_INV,  # noqa: F401 (re-exported)
     HBARC,  # noqa: F401 (re-exported)
     KAPPA2,
+    NE20_A,
+    NE20_ATOMIC_NUMBER,
+    NE20_BETA2,
+    NE20_MASS_NUMBER,
+    NE20_R0,
+    O16_A,
+    O16_ATOMIC_NUMBER,
+    O16_MASS_NUMBER,
+    O16_R0,
+    PB208_A,
+    PB208_ATOMIC_NUMBER,
+    PB208_MASS_NUMBER,
+    PB208_R0,
     QHAT_0,  # noqa: F401 (re-exported)
     SIGMA_NN_FM2,  # noqa: F401 (re-exported)
     T_C0_GEV,
+    XE129_A,
+    XE129_ATOMIC_NUMBER,
+    XE129_BETA2,
+    XE129_MASS_NUMBER,
+    XE129_R0,
 )
 
 warnings.filterwarnings("ignore", category=RuntimeWarning, message="divide by zero")
@@ -92,16 +114,14 @@ class Nucleus:
 
 
 # Standard nuclei used in LHC collisions
-# Radii and deformation values from constants.py (single source of truth)
+# All values sourced from constants.py (single source of truth)
 NUCLEI: dict[str, Nucleus] = {
-    "O": Nucleus("Oxygen-16", A=16, Z=8, R0=2.608, a=0.513, beta2=0.0),
-    "Ne": Nucleus("Neon-20", A=20, Z=10, R0=2.791, a=0.535, beta2=0.45),
-    "Ar": Nucleus("Argon-40", A=40, Z=18, R0=3.427, a=0.569, beta2=0.0),
-    "Xe": Nucleus("Xenon-129", A=129, Z=54, R0=5.36, a=0.59, beta2=0.18),
-    "Pb": Nucleus("Lead-208", A=208, Z=82, R0=6.62, a=0.546, beta2=0.0),
+    "O": Nucleus("Oxygen-16", A=O16_MASS_NUMBER, Z=O16_ATOMIC_NUMBER, R0=O16_R0, a=O16_A),
+    "Ne": Nucleus("Neon-20", A=NE20_MASS_NUMBER, Z=NE20_ATOMIC_NUMBER, R0=NE20_R0, a=NE20_A, beta2=NE20_BETA2),
+    "Ar": Nucleus("Argon-40", A=AR40_MASS_NUMBER, Z=AR40_ATOMIC_NUMBER, R0=AR40_R0, a=AR40_A),
+    "Xe": Nucleus("Xenon-129", A=XE129_MASS_NUMBER, Z=XE129_ATOMIC_NUMBER, R0=XE129_R0, a=XE129_A, beta2=XE129_BETA2),
+    "Pb": Nucleus("Lead-208", A=PB208_MASS_NUMBER, Z=PB208_ATOMIC_NUMBER, R0=PB208_R0, a=PB208_A),
 }
-# NOTE: The Nucleus values above are consistent with constants.py (O16_R0, NE20_R0, etc.).
-# The dataclass is kept here because Nucleus is tightly coupled to the Glauber model code.
 
 # =============================================================================
 # WOODS-SAXON DENSITY PROFILE
@@ -161,16 +181,15 @@ def get_nuclear_profile_2d(
     R: FloatArray = np.sqrt(X**2 + Y**2)
 
     # For deformed nuclei, average over orientations or use specific angle
-    # Here we show the maximum deformation (θ = π/2 for prolate)
+    # Here we show the maximum deformation (theta = pi/2 for prolate)
     if nucleus.beta2 > 0:
-        # Show prolate shape - elongated along one axis
-        # Compute per-point angles for deformed profile
-        rho: FloatArray = np.zeros_like(R)
-        for i in range(grid_size):
-            for j in range(grid_size):
-                r_eff: float = np.sqrt(X[i, j] ** 2 + Y[i, j] ** 2)
-                theta_eff: Angle = np.arctan2(abs(Y[i, j]), abs(X[i, j]))
-                rho[i, j] = woods_saxon(np.array([r_eff]), nucleus, theta_eff)[0]
+        # Vectorized deformed profile: compute per-point angles
+        r_eff: FloatArray = np.sqrt(X**2 + Y**2)
+        theta_eff: FloatArray = np.arctan2(np.abs(Y), np.abs(X))
+        Y20: FloatArray = 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta_eff) ** 2 - 1)
+        Y30: FloatArray = 0.25 * np.sqrt(7 / np.pi) * (5 * np.cos(theta_eff) ** 3 - 3 * np.cos(theta_eff))
+        R_deformed: FloatArray = nucleus.R0 * (1 + nucleus.beta2 * Y20 + nucleus.beta3 * Y30)
+        rho: FloatArray = 1.0 / (1.0 + np.exp((r_eff - R_deformed) / nucleus.a))
     else:
         rho = woods_saxon(R, nucleus)
 
@@ -211,32 +230,42 @@ def sample_nucleon_positions(
     positions: FloatArray = np.zeros((n_events, nucleus.A, 3))
 
     MAX_REJECTION_ITERS = 10_000
+    r_max: Length = nucleus.R0 + 5 * nucleus.a
+    batch_size = max(nucleus.A * 4, 64)  # Generate candidates in batches
 
     for event in range(n_events):
-        for i in range(nucleus.A):
-            accepted: bool = False
-            n_tries: int = 0
-            while not accepted:
-                if n_tries >= MAX_REJECTION_ITERS:
-                    raise RuntimeError(
-                        f"Rejection sampling for nucleon {i} in {nucleus.name} "
-                        f"did not converge after {MAX_REJECTION_ITERS} iterations. "
-                        "Check Woods-Saxon parameters (R0, a) and normalization."
-                    )
-                # Sample in a box
-                r_max: Length = nucleus.R0 + 5 * nucleus.a
-                x: float = rng.uniform(-r_max, r_max)
-                y: float = rng.uniform(-r_max, r_max)
-                z: float = rng.uniform(-r_max, r_max)
-                r: Length = np.sqrt(x**2 + y**2 + z**2)
+        n_accepted = 0
+        total_tries = 0
+        while n_accepted < nucleus.A:
+            if total_tries >= MAX_REJECTION_ITERS:
+                raise RuntimeError(
+                    f"Rejection sampling for {nucleus.name} "
+                    f"did not converge after {MAX_REJECTION_ITERS} iterations. "
+                    "Check Woods-Saxon parameters (R0, a) and normalization."
+                )
+            # Generate batch of candidates
+            n_need = nucleus.A - n_accepted
+            candidates: FloatArray = rng.uniform(-r_max, r_max, size=(batch_size, 3))
+            r_cand: FloatArray = np.sqrt(np.sum(candidates**2, axis=1))
 
-                # Rejection sampling
-                theta: Angle = np.arccos(z / (r + 1e-10))
-                rho: float = woods_saxon(np.array([r]), nucleus, theta)[0]
-                if rng.random() < rho:
-                    positions[event, i] = [x, y, z]
-                    accepted = True
-                n_tries += 1
+            # Compute acceptance probability via Woods-Saxon
+            theta_cand: FloatArray = np.arccos(np.clip(candidates[:, 2] / (r_cand + 1e-10), -1, 1))
+
+            # Vectorized Woods-Saxon with per-point theta for deformed nuclei
+            Y20: FloatArray = 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta_cand) ** 2 - 1)
+            Y30: FloatArray = 0.25 * np.sqrt(7 / np.pi) * (5 * np.cos(theta_cand) ** 3 - 3 * np.cos(theta_cand))
+            R_eff: FloatArray = nucleus.R0 * (1 + nucleus.beta2 * Y20 + nucleus.beta3 * Y30)
+            rho: FloatArray = 1.0 / (1.0 + np.exp((r_cand - R_eff) / nucleus.a))
+
+            # Accept/reject
+            accept_mask: BoolArray = rng.random(batch_size) < rho
+            accepted_pos = candidates[accept_mask]
+
+            # Take only as many as we need
+            take = min(len(accepted_pos), n_need)
+            positions[event, n_accepted:n_accepted + take] = accepted_pos[:take]
+            n_accepted += take
+            total_tries += batch_size
 
     return positions
 
@@ -270,18 +299,16 @@ def calculate_participants(
     # Interaction radius from cross section
     r_int: Length = np.sqrt(sigma_nn / np.pi)
 
-    participants_A: BoolArray = np.zeros(len(pos_A), dtype=bool)
-    participants_B: BoolArray = np.zeros(len(pos_B), dtype=bool)
-    n_coll: int = 0
+    # Vectorized pairwise transverse distance using broadcasting
+    # pos_A[:, 0:1] has shape (A_a, 1), pos_B_shifted[:, 0] has shape (A_b,)
+    dx: FloatArray = pos_A[:, 0:1] - pos_B_shifted[:, 0]  # (A_a, A_b)
+    dy: FloatArray = pos_A[:, 1:2] - pos_B_shifted[:, 1]  # (A_a, A_b)
+    d_T: FloatArray = np.sqrt(dx**2 + dy**2)
 
-    for i, pA in enumerate(pos_A):
-        for j, pB in enumerate(pos_B_shifted):
-            # Transverse distance
-            d_T: Length = np.sqrt((pA[0] - pB[0]) ** 2 + (pA[1] - pB[1]) ** 2)
-            if d_T < r_int:
-                participants_A[i] = True
-                participants_B[j] = True
-                n_coll += 1
+    interacting: BoolArray = d_T < r_int
+    participants_A: BoolArray = np.any(interacting, axis=1)
+    participants_B: BoolArray = np.any(interacting, axis=0)
+    n_coll: int = int(np.sum(interacting))
 
     return int(np.sum(participants_A) + np.sum(participants_B)), n_coll
 
@@ -653,7 +680,9 @@ def raa_model(
     pT = np.atleast_1d(pT)
     if np.any(pT <= 0):
         raise ValueError("All pT values must be positive")
-    Delta_E: FloatArray = np.array([bdmps_energy_loss(p, L_eff, qhat) for p in pT])
+    # Inline vectorized BDMPS-Z: Delta_E = alpha_s * qhat * L^2 / 4, capped at 0.9*pT
+    Delta_E_raw: float = ALPHA_S * qhat * L_eff**2 / 4
+    Delta_E: FloatArray = np.minimum(Delta_E_raw, 0.9 * pT)
 
     # Shift in spectrum due to energy loss
     # This is simplified; full calculation involves fragmentation
@@ -912,9 +941,11 @@ def export_for_pgfplots(
     with open(filename, "w") as f:
         f.write(f"# {header}\n")
         f.write("# " + " ".join(keys) + "\n")
-        for i in range(len(arrays[0])):
-            row: list[str] = [str(arr[i] if i < len(arr) else arr[-1]) for arr in arrays]
-            f.write(" ".join(row) + "\n")
+        max_len = max(len(arr) for arr in arrays)
+        # Pad shorter arrays by repeating last value
+        padded = [np.pad(arr, (0, max_len - len(arr)), mode="edge") for arr in arrays]
+        data_block: FloatArray = np.column_stack(padded)
+        np.savetxt(f, data_block, fmt="%s")
 
 
 if __name__ == "__main__":

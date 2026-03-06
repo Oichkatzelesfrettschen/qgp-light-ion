@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+echo "=== Pre-push gate: lint + test ==="
+make lint
+python3 -m pytest tests/test_qgp_physics.py tests/test_constants.py tests/test_phase_diagram.py tests/test_io_utils.py -v --tb=short
+echo "=== Pre-push gate passed ==="

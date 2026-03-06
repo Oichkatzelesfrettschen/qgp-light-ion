@@ -115,9 +115,9 @@ FINAL_PDF   := $(BUILD_DIR)/qgp-light-ion.pdf
 # =============================================================================
 
 .PHONY: all clean figures data data-only test lint help advanced strict \
-        lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-build \
+        lint-latex lint-python lint-chktex lint-lacheck lint-ruff lint-mypy lint-build \
         fmt test-quick test-physics test-unit verify-data distclean \
-        generate-checksums verify-checksums validate-physics
+        generate-checksums verify-checksums validate-physics coverage
 
 # Default: build everything
 all: $(FINAL_PDF)
@@ -186,11 +186,11 @@ $(DATA_STAMP): $(DATA_SCRIPT) $(ENERGY_SCRIPT) $(MULTIDIM_SCRIPT) $(QCD_PHASE_SC
 	$(PYTHON) $(MULTIDIM_SCRIPT) --output-dir $(DATA_DIR)
 	@if [ -f $(HBT_SCRIPT) ]; then \
 		echo "=== Stage 4a: HBT data ==="; \
-		$(PYTHON) $(HBT_SCRIPT) 2>/dev/null || true; \
+		$(PYTHON) $(HBT_SCRIPT) || echo "WARNING: HBT data generation failed (non-fatal)"; \
 	fi
 	@if [ -f $(PHOTON_SCRIPT) ]; then \
 		echo "=== Stage 4b: Photon data ==="; \
-		$(PYTHON) $(PHOTON_SCRIPT) 2>/dev/null || true; \
+		$(PYTHON) $(PHOTON_SCRIPT) || echo "WARNING: Photon data generation failed (non-fatal)"; \
 	fi
 	@if [ -f $(QCD_PHASE_SCRIPT) ]; then \
 		echo "=== Stage 5a: QCD phase diagram (high-fidelity) ==="; \
@@ -236,7 +236,7 @@ $(BUILD_DIR) $(BUILD_DIR)/figures:
 # -----------------------------------------------------------------------------
 
 # Combined lint target: runs all linters
-lint: lint-latex lint-python
+lint: lint-latex lint-python lint-mypy
 	@echo ""
 	@echo "========================================"
 	@echo "All linting complete"
@@ -295,6 +295,11 @@ lint-ruff:
 		echo "  [SKIP] ruff not installed (pip install ruff)"; \
 	fi
 
+# Mypy type checking
+lint-mypy:
+	@echo "=== Mypy: Python type check ==="
+	@$(PYTHON) -m mypy src/
+
 # Format Python code with ruff
 fmt:
 	@echo "=== Ruff: Python format ==="
@@ -347,6 +352,12 @@ test-physics:
 # Run only unit tests (no I/O, no data dependency)
 test-unit: test-quick
 
+# Test coverage report
+coverage:
+	@echo "=== Running tests with coverage ==="
+	@$(PYTHON) -m pytest tests/ --cov=src --cov-report=term-missing --cov-report=html:build/coverage-html
+	@echo "Coverage report: build/coverage-html/index.html"
+
 # Strict build: fail on warnings and undefined references
 strict: $(FINAL_PDF)
 	@echo "=== Strict Build Validation ==="
@@ -390,6 +401,22 @@ strict: $(FINAL_PDF)
 		ERRORS=$$((ERRORS + 1)); \
 	else \
 		echo "  [OK] All figures found"; \
+	fi; \
+	echo "Checking Python lint (ruff)..."; \
+	if $(RUFF) check $(SRC_DIR) tests/ >/dev/null 2>&1; then \
+		echo "  [OK] Ruff: no issues"; \
+	else \
+		echo "  [FAIL] Ruff found issues:"; \
+		$(RUFF) check $(SRC_DIR) tests/ 2>&1 | head -5; \
+		ERRORS=$$((ERRORS + 1)); \
+	fi; \
+	echo "Checking Python types (mypy)..."; \
+	if $(PYTHON) -m mypy src/ >/dev/null 2>&1; then \
+		echo "  [OK] Mypy: no issues"; \
+	else \
+		echo "  [FAIL] Mypy found issues:"; \
+		$(PYTHON) -m mypy src/ 2>&1 | tail -5; \
+		ERRORS=$$((ERRORS + 1)); \
 	fi; \
 	echo ""; \
 	if [ $$ERRORS -gt 0 ]; then \
@@ -477,12 +504,13 @@ help:
 	@echo "  figures     Compile figure PDFs only"
 	@echo ""
 	@echo "Linting:"
-	@echo "  lint        Run all linters (LaTeX + Python)"
+	@echo "  lint        Run all linters (LaTeX + Python + mypy)"
 	@echo "  lint-latex  Run LaTeX linters (chktex + lacheck)"
 	@echo "  lint-chktex Run ChkTeX on .tex files"
 	@echo "  lint-lacheck Run Lacheck on main document"
 	@echo "  lint-python Run Python linter (ruff)"
 	@echo "  lint-ruff   Run Ruff on src/ and tests/"
+	@echo "  lint-mypy   Run mypy type checker on src/"
 	@echo "  lint-build  Analyze build log for issues"
 	@echo "  fmt         Auto-format Python code with ruff"
 	@echo ""
@@ -490,6 +518,7 @@ help:
 	@echo "  test        Run full test suite (regenerates data)"
 	@echo "  test-quick  Run tests without data regeneration"
 	@echo "  test-physics Validate physics module imports"
+	@echo "  coverage    Run tests with coverage report"
 	@echo ""
 	@echo "Quality assurance:"
 	@echo "  strict             Build and fail on any warnings/errors"

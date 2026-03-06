@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from phase_diagram.params import PhaseTransitionParams
+from .params import PhaseTransitionParams
 
 
 def first_order_line(mu_B: np.ndarray, params: PhaseTransitionParams) -> np.ndarray:

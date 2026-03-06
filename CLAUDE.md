@@ -13,14 +13,15 @@ A scientific whitepaper exploring Quark-Gluon Plasma (QGP) formation in light-io
 ## Build Commands
 
 ```bash
-make              # Full build: data → figures → PDF
+make              # Full build: data -> figures -> PDF
 make -j4          # Parallel figure compilation (4 cores)
 make data         # Generate physics data only
 make figures      # Compile TikZ figures only
 make clean        # Remove all generated files
 make test         # Run data validation tests
-make lint         # Run all linters (LaTeX + Python)
-make strict       # Build and fail on any LaTeX errors/warnings
+make lint         # Run all linters (LaTeX + Python + mypy)
+make strict       # Build and fail on any LaTeX/Python errors
+make coverage     # Run tests with coverage report
 make VERBOSE=1    # Show full compiler output
 make help         # Show all targets
 ```
@@ -126,10 +127,14 @@ cd figures && pdflatex qcd_phase_diagram.tex  # Single figure
 ```bash
 make test         # Full test suite (regenerates data)
 make test-quick   # Tests without data regeneration
-make lint         # All linters (chktex, lacheck, ruff)
+make lint         # All linters (chktex, lacheck, ruff, mypy)
 make lint-python  # Python only (ruff)
+make lint-mypy    # Python type checking (mypy)
+make coverage     # Tests with coverage report (build/coverage-html/)
 make fmt          # Auto-format Python with ruff
 ```
+
+**Local pre-push gate:** Activate with `git config core.hooksPath .githooks` to run lint + tests before every push.
 
 Tests in `tests/test_data_generation.py` validate:
 - Data file existence and format

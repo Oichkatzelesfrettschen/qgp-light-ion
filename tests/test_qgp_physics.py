@@ -79,6 +79,11 @@ class TestWoodsSaxon:
         rho = woods_saxon(r, nucleus)
         assert np.all(np.diff(rho) <= 1e-12), "Woods-Saxon density not monotonically decreasing"
 
+    def test_negative_r_raises_valueerror(self):
+        """Negative radial distance must raise ValueError."""
+        with pytest.raises(ValueError, match="r must be >= 0"):
+            woods_saxon(np.array([-1.0]), NUCLEI["O"])
+
     def test_pb208_broader_than_o16(self):
         """Pb-208 has larger radius; density falls off more slowly."""
         r = np.array([5.0])
@@ -277,6 +282,15 @@ class TestBdmpsEnergyLoss:
         """Zero path length means no energy loss."""
         delta_E = bdmps_energy_loss(E=50.0, L=0.0, qhat=2.0)
         assert delta_E == pytest.approx(0.0)
+
+    @pytest.mark.parametrize(
+        "E,L,qhat",
+        [(-1.0, 5.0, 2.0), (0.0, 5.0, 2.0), (50.0, -1.0, 2.0), (50.0, 5.0, -1.0)],
+    )
+    def test_invalid_inputs_raise_valueerror(self, E, L, qhat):
+        """Invalid (negative or zero energy) inputs must raise ValueError."""
+        with pytest.raises(ValueError):
+            bdmps_energy_loss(E=E, L=L, qhat=qhat)
 
 
 # ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 # QCD phase diagram submodule package.
 # Imports grouped by physical region for generate_qcd_phase_diagram.py.
 
-from phase_diagram.critical_point import (
+from .critical_point import (
     critical_point_box_excluded,
     critical_point_ellipse_excluded,
     critical_point_exclusion_boundary,
@@ -9,20 +9,20 @@ from phase_diagram.critical_point import (
     critical_point_frg_box,
     critical_point_frg_ellipse,
 )
-from phase_diagram.crossover import crossover_temperature, crossover_uncertainty_band
-from phase_diagram.first_order import (
+from .crossover import crossover_temperature, crossover_uncertainty_band
+from .first_order import (
     first_order_consensus_band,
     first_order_frg,
     first_order_line,
     first_order_njl,
     first_order_pqm,
 )
-from phase_diagram.freeze_out import (
+from .freeze_out import (
     freeze_out_from_sqrt_s,
     freeze_out_parametrization,
     freeze_out_uncertainty_band,
 )
-from phase_diagram.trajectories import (
+from .trajectories import (
     color_superconductivity_region,
     cooling_trajectory,
     early_universe_trajectory,

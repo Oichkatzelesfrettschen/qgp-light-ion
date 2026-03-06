@@ -45,6 +45,7 @@ jobs:
           latexmk_use_lualatex: false
           latexmk_shell_escape: true
           pre_compile: |
+            set -e
             python src/generate_comprehensive_data.py
             python src/generate_qcd_phase_diagram.py
             python src/generate_figure_curves.py

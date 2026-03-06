@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import os
-import sys
 from dataclasses import dataclass
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from constants import KAPPA2, KAPPA2_ERR, KAPPA4, T_C0_MEV, T_C0_MEV_ERR
 
 
